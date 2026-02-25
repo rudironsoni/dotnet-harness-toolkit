@@ -16,6 +16,12 @@ git add plugins
 
 if git diff --cached --quiet; then
   log "No plugin bundle changes to commit"
+  if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+    {
+      echo "changed=false"
+      echo "commit_sha="
+    } >> "$GITHUB_OUTPUT"
+  fi
   popd >/dev/null
   exit 0
 fi
@@ -26,5 +32,12 @@ GIT_COMMITTER_NAME="github-actions[bot]" \
 GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" \
 git commit -m "chore: regenerate plugin bundles"
 git push
+
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  {
+    echo "changed=true"
+    echo "commit_sha=$(git rev-parse HEAD)"
+  } >> "$GITHUB_OUTPUT"
+fi
 
 popd >/dev/null
