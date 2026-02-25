@@ -6,7 +6,7 @@ license: MIT
 targets: ["*"]
 tags: ["foundation", "dotnet", "skill"]
 version: "0.0.1"
-author: "dotnet-artisan"
+author: "dotnet-harness-toolkit"
 claudecode:
   allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 codexcli:
@@ -18,7 +18,7 @@ opencode:
 
 # dotnet-advisor
 
-Router and index skill for **dotnet-artisan**. Always loaded. Routes .NET development queries to the appropriate specialist skills based on context.
+Router and index skill for **dotnet-harness-toolkit**. Always loaded. Routes .NET development queries to the appropriate specialist skills based on context.
 
 ## Scope
 

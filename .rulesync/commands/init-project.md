@@ -1,11 +1,11 @@
 ---
-description: "Initialize dotnet-artisan context for this repository"
+description: "Initialize dotnet-harness-toolkit context for this repository"
 targets: ["*"]
 copilot:
   description: "Initialize .NET project context and load routing"
 ---
 
-Initialize dotnet-artisan context for this repository.
+Initialize dotnet-harness-toolkit context for this repository.
 
 1. Invoke [skill:dotnet-advisor].
 2. Invoke [skill:dotnet-version-detection].

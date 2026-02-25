@@ -19,7 +19,7 @@ tools:
 targets: ["*"]
 tags: ["dotnet", "subagent"]
 version: "0.0.1"
-author: "dotnet-artisan"
+author: "dotnet-harness-toolkit"
 user-invocable: false
 claudecode:
   model: inherit
