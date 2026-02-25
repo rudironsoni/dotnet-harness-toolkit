@@ -117,7 +117,8 @@ build_claudecode_bundle() {
 # Claude Code Plugin Install
 
 ```bash
-claude plugin marketplace add "https://github.com/rudironsoni/dotnet-harness-toolkit/tree/main/plugins/claudecode"
+REPO_BASE_URL="${REPO_BASE_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit/tree/main}"
+claude plugin marketplace add "$REPO_BASE_URL/plugins/claudecode"
 claude plugin install dotnet-harness-toolkit@dotnet-harness-toolkit-marketplace
 claude agents
 ```
@@ -158,7 +159,8 @@ build_copilot_bundle() {
 # Copilot CLI Plugin Install
 
 ```bash
-npx -y @github/copilot plugin marketplace add "https://github.com/rudironsoni/dotnet-harness-toolkit/tree/main/plugins/copilot"
+REPO_BASE_URL="${REPO_BASE_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit/tree/main}"
+npx -y @github/copilot plugin marketplace add "$REPO_BASE_URL/plugins/copilot"
 npx -y @github/copilot plugin install dotnet-harness-toolkit@dotnet-harness-toolkit-marketplace
 npx -y @github/copilot plugin list
 ```
@@ -193,12 +195,17 @@ build_geminicli_bundle() {
 # Gemini CLI Extension Install
 
 ```bash
-REPO_URL="https://github.com/rudironsoni/dotnet-harness-toolkit.git"
-TMP_DIR="$(mktemp -d)"
-git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
-git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/geminicli
-GEMINI_API_KEY=<your-key> gemini extensions install "$TMP_DIR/dotnet-harness-toolkit/plugins/geminicli" --consent
-GEMINI_API_KEY=<your-key> gemini extensions list
+(
+  set -euo pipefail
+  REPO_URL="${REPO_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit.git}"
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+
+  git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
+  git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/geminicli
+  GEMINI_API_KEY=<your-key> gemini extensions install "$TMP_DIR/dotnet-harness-toolkit/plugins/geminicli" --consent
+  GEMINI_API_KEY=<your-key> gemini extensions list
+)
 ```
 EOF
 }
@@ -220,15 +227,20 @@ build_opencode_bundle() {
 # OpenCode Plugin Install
 
 ```bash
-REPO_URL="https://github.com/rudironsoni/dotnet-harness-toolkit.git"
-TMP_DIR="$(mktemp -d)"
-git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
-git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/opencode
-BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/opencode"
-cp -R "$BUNDLE_DIR/.opencode" ".opencode"
-cp "$BUNDLE_DIR/opencode.json" "opencode.json"
-cp "$BUNDLE_DIR/AGENTS.md" "AGENTS.md"
-opencode agent list
+(
+  set -euo pipefail
+  REPO_URL="${REPO_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit.git}"
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+
+  git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
+  git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/opencode
+  BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/opencode"
+  cp -R "$BUNDLE_DIR/.opencode" ".opencode"
+  cp "$BUNDLE_DIR/opencode.json" "opencode.json"
+  cp "$BUNDLE_DIR/AGENTS.md" "AGENTS.md"
+  opencode agent list
+)
 ```
 EOF
 }
@@ -249,15 +261,20 @@ build_codex_manual_bundle() {
 # Codex CLI Manual Install
 
 ```bash
-REPO_URL="https://github.com/rudironsoni/dotnet-harness-toolkit.git"
-TMP_DIR="$(mktemp -d)"
-git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
-git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/codexcli
-BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/codexcli"
-cp "$BUNDLE_DIR/workspace/AGENTS.md" "AGENTS.md"
-cp -R "$BUNDLE_DIR/workspace/.codex" "./"
-mkdir -p ~/.codex/prompts
-cp -R "$BUNDLE_DIR/global/.codex/prompts/." ~/.codex/prompts/
+(
+  set -euo pipefail
+  REPO_URL="${REPO_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit.git}"
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+
+  git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
+  git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/codexcli
+  BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/codexcli"
+  cp "$BUNDLE_DIR/workspace/AGENTS.md" "AGENTS.md"
+  cp -R "$BUNDLE_DIR/workspace/.codex" "./"
+  mkdir -p ~/.codex/prompts
+  cp -R "$BUNDLE_DIR/global/.codex/prompts/." ~/.codex/prompts/
+)
 ```
 EOF
 }
@@ -281,14 +298,19 @@ build_antigravity_manual_bundle() {
 # Antigravity Manual Install
 
 ```bash
-REPO_URL="https://github.com/rudironsoni/dotnet-harness-toolkit.git"
-TMP_DIR="$(mktemp -d)"
-git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
-git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/antigravity
-BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/antigravity"
-cp -R "$BUNDLE_DIR/workspace/.agent" "./"
-mkdir -p ~/.gemini/antigravity/skills
-cp -R "$BUNDLE_DIR/global/.gemini/antigravity/skills/." ~/.gemini/antigravity/skills/
+(
+  set -euo pipefail
+  REPO_URL="${REPO_URL:-https://github.com/rudironsoni/dotnet-harness-toolkit.git}"
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+
+  git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR/dotnet-harness-toolkit"
+  git -C "$TMP_DIR/dotnet-harness-toolkit" sparse-checkout set plugins/antigravity
+  BUNDLE_DIR="$TMP_DIR/dotnet-harness-toolkit/plugins/antigravity"
+  cp -R "$BUNDLE_DIR/workspace/.agent" "./"
+  mkdir -p ~/.gemini/antigravity/skills
+  cp -R "$BUNDLE_DIR/global/.gemini/antigravity/skills/." ~/.gemini/antigravity/skills/
+)
 ```
 EOF
 }
