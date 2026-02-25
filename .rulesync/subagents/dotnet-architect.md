@@ -18,6 +18,7 @@ targets: ["*"]
 tags: ["dotnet", "subagent"]
 version: "0.0.1"
 author: "dotnet-artisan"
+user-invocable: true
 claudecode:
   model: inherit
 opencode:
