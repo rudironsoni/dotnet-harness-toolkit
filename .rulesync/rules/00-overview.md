@@ -1,17 +1,17 @@
 ---
 root: true
 targets: ["*"]
-description: "dotnet-artisan: Comprehensive .NET development skills for all AI agents"
+description: "dotnet-harness-toolkit: Comprehensive .NET development skills for all AI agents"
 globs: ["**/*"]
 ---
 
-# dotnet-artisan
+# dotnet-harness-toolkit
 
 Comprehensive .NET development skills for modern C#, ASP.NET, MAUI, Blazor, and cloud-native applications.
 
 ## Overview
 
-**dotnet-artisan** is an agent-independent toolkit providing 131 skills and 14 specialist agents for .NET development. It follows the [Agent Skills](https://github.com/anthropics/agent-skills) open standard and is compatible with Claude Code, GitHub Copilot CLI, OpenCode, OpenAI Codex, and Gemini CLI.
+**dotnet-harness-toolkit** is an agent-independent toolkit providing 131 skills and 14 specialist agents for .NET development. It follows the [Agent Skills](https://github.com/anthropics/agent-skills) open standard and is compatible with Claude Code, GitHub Copilot CLI, OpenCode, OpenAI Codex, and Gemini CLI.
 
 ## Installation
 

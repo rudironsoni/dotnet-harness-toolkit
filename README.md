@@ -17,7 +17,7 @@ This repository solves that by using **RuleSync** as the source of truth.
 - Make .NET guidance reusable across Claude Code, OpenCode, Codex CLI, Gemini CLI, and GitHub Copilot CLI
 - Keep frontmatter and metadata interoperable across agent ecosystems
 - Provide a strong .NET default workflow with onboarding and routing
-- Preserve and evolve the dotnet-artisan knowledge base in a portable format
+- Preserve and evolve the dotnet-harness-toolkit knowledge base in a portable format
 
 ## What is in this repo
 

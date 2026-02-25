@@ -8,7 +8,7 @@ model: haiku
 targets: ["*"]
 tags: ["foundation", "dotnet", "skill"]
 version: "0.0.1"
-author: "dotnet-artisan"
+author: "dotnet-harness-toolkit"
 claudecode:
   allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 codexcli:

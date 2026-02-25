@@ -1,7 +1,7 @@
 ---
 root: false
 targets: ["*"]
-description: "dotnet-artisan authoring conventions for skills, subagents, commands, and hooks"
+description: "dotnet-harness-toolkit authoring conventions for skills, subagents, commands, and hooks"
 globs: [".rulesync/**/*"]
 ---
 
