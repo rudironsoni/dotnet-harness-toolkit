@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -46,4 +48,11 @@ jobs:
         run: bash scripts/ci/smoke_install.sh
 
       - name: Commit plugin bundles
+        id: commit_plugins
         run: bash scripts/cd/commit_plugins.sh
+
+      - name: Tag and release plugin bundles
+        if: steps.commit_plugins.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/cd/tag_and_release_plugins.sh "${{ steps.commit_plugins.outputs.commit_sha }}"
