@@ -78,7 +78,10 @@ if [[ "$push_exit_code" -ne 0 ]]; then
       exit 0
     fi
 
-    if [[ "$pr_url" == *"not permitted to create or approve pull requests"* ]]; then
+    if [[ "$pr_url" == *"not permitted to create or approve pull requests"* \
+      || "$pr_url" == *"not permitted"* \
+      || "$pr_url" == *"permission"* \
+      || "$pr_url" == *"Resource not accessible by integration"* ]]; then
       compare_url="https://github.com/${repo_slug}/compare/main...${fallback_branch}?expand=1"
       log "GitHub Actions token cannot create PRs in this repo; open manually: $compare_url"
       emit_outputs "false" "$commit_sha" "$compare_url" "false"
