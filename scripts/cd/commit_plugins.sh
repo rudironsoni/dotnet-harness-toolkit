@@ -14,12 +14,14 @@ emit_outputs() {
   local changed="$1"
   local commit_sha="$2"
   local pr_url="$3"
+  local pr_created="$4"
 
   if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     {
       echo "changed=$changed"
       echo "commit_sha=$commit_sha"
       echo "pr_url=$pr_url"
+      echo "pr_created=$pr_created"
     } >> "$GITHUB_OUTPUT"
   fi
 }
@@ -30,7 +32,7 @@ git add plugins
 
 if git diff --cached --quiet; then
   log "No plugin bundle changes to commit"
-  emit_outputs "false" "" ""
+  emit_outputs "false" "" "" "false"
   popd >/dev/null
   exit 0
 fi
@@ -64,18 +66,34 @@ if [[ "$push_exit_code" -ne 0 ]]; then
     pr_title="chore: regenerate plugin bundles"
     pr_body="Automated plugin bundle regeneration from GitHub Actions run ${GITHUB_RUN_ID:-unknown}."
 
-    pr_url="$(gh pr create -R "$repo_slug" --base main --head "$fallback_branch" --title "$pr_title" --body "$pr_body")"
-    log "Created fallback PR: $pr_url"
+    set +e
+    pr_url="$(gh pr create -R "$repo_slug" --base main --head "$fallback_branch" --title "$pr_title" --body "$pr_body" 2>&1)"
+    pr_create_exit_code=$?
+    set -e
 
-    emit_outputs "false" "$commit_sha" "$pr_url"
-    popd >/dev/null
-    exit 0
+    if [[ "$pr_create_exit_code" -eq 0 ]]; then
+      log "Created fallback PR: $pr_url"
+      emit_outputs "false" "$commit_sha" "$pr_url" "true"
+      popd >/dev/null
+      exit 0
+    fi
+
+    if [[ "$pr_url" == *"not permitted to create or approve pull requests"* ]]; then
+      compare_url="https://github.com/${repo_slug}/compare/main...${fallback_branch}?expand=1"
+      log "GitHub Actions token cannot create PRs in this repo; open manually: $compare_url"
+      emit_outputs "false" "$commit_sha" "$compare_url" "false"
+      popd >/dev/null
+      exit 0
+    fi
+
+    printf '%s\n' "$pr_url"
+    fail "Failed to create fallback PR"
   fi
 
   printf '%s\n' "$push_output"
   fail "Failed to push plugin bundle commit"
 fi
 
-emit_outputs "true" "$commit_sha" ""
+emit_outputs "true" "$commit_sha" "" "false"
 
 popd >/dev/null
