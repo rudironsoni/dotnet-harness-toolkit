@@ -2,7 +2,6 @@
 name: dotnet-library-api-compat
 description: Maintains library compatibility. Binary/source compat rules, type forwarders, SemVer impact.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["api", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for api tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-library-api-compat

@@ -2,7 +2,6 @@
 name: dotnet-mermaid-diagrams
 description: Creates Mermaid diagrams for .NET. Architecture, sequence, class, deployment, ER, flowcharts.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["foundation", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for foundation tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-mermaid-diagrams

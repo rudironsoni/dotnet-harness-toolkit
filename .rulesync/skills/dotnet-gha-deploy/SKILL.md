@@ -2,7 +2,6 @@
 name: dotnet-gha-deploy
 description: Deploys .NET from GitHub Actions. Azure Web Apps, GitHub Pages, container registries.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["cicd", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for cicd tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-gha-deploy

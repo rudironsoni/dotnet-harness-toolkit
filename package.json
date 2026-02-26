@@ -9,7 +9,9 @@
     "rulesync:validate": "bash scripts/ci/validate_rulesync.sh",
     "rulesync:install": "rulesync install",
     "validate:subagents": "bash scripts/ci/validate_subagents.sh",
-    "ci:rulesync": "bash scripts/ci/validate_subagents.sh && bash scripts/ci/validate_rulesync.sh"
+    "ci:rulesync": "bash scripts/ci/validate_subagents.sh && bash scripts/ci/validate_rulesync.sh",
+    "build:bundles": "bash scripts/build/build_plugin_bundles.sh",
+    "build:opencode-plugin": "cd packages/opencode-plugin && npm run build"
   },
   "devDependencies": {
     "rulesync": "^7.6.3"

@@ -2,7 +2,6 @@
 name: dotnet-aot-wasm
 description: Compiles .NET to WebAssembly AOT. Blazor/Uno WASM, size vs speed, lazy loading, Brotli.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["aot", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for aot tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-aot-wasm

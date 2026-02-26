@@ -2,7 +2,6 @@
 name: dotnet-resilience
 description: Adds fault tolerance. Polly v8 + MS.Extensions.Http.Resilience, retry/circuit breaker/timeout.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["architecture", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for architecture tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-resilience

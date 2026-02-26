@@ -2,7 +2,6 @@
 name: dotnet-api-versioning
 description: Versions HTTP APIs. Asp.Versioning.Http/Mvc, URL segment, header, query string, sunset.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["api", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for api tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-api-versioning

@@ -2,7 +2,6 @@
 name: dotnet-gha-publish
 description: Publishes .NET artifacts from GitHub Actions. NuGet push, container images, signing, SBOM.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["cicd", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for cicd tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-gha-publish

@@ -3,6 +3,8 @@ root: true
 targets: ["*"]
 description: "dotnet-agent-harness: Comprehensive .NET development skills for all AI agents"
 globs: ["**/*"]
+antigravity:
+  trigger: always_on
 ---
 
 # dotnet-agent-harness

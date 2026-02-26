@@ -1,7 +1,6 @@
 ---
 name: dotnet-data-access-strategy
 description: Chooses a data access approach. EF Core vs Dapper vs ADO.NET decision matrix, tradeoffs.
-user-invocable: true
 license: MIT
 targets: ["*"]
 tags: ["architecture", "dotnet", "skill"]
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for architecture tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-data-access-strategy

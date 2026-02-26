@@ -2,7 +2,6 @@
 name: dotnet-csharp-concurrency-patterns
 description: Synchronizes threads and protects shared state. lock, SemaphoreSlim, Interlocked, concurrent collections.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["csharp", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for csharp tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-csharp-concurrency-patterns

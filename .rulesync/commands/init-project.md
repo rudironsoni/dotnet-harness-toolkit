@@ -1,8 +1,12 @@
 ---
 description: "Initialize dotnet-agent-harness context for this repository"
 targets: ["*"]
+claudecode:
+  allowed-tools: ["Read", "Grep", "Glob", "Bash"]
 copilot:
   description: "Initialize .NET project context and load routing"
+antigravity:
+  trigger: "/init-project"
 ---
 
 Initialize dotnet-agent-harness context for this repository.

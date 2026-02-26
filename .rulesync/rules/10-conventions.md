@@ -3,6 +3,9 @@ root: false
 targets: ["*"]
 description: "dotnet-agent-harness authoring conventions for skills, subagents, commands, and hooks"
 globs: [".rulesync/**/*"]
+antigravity:
+  trigger: glob
+  globs: [".rulesync/**/*"]
 ---
 
 # Authoring Conventions

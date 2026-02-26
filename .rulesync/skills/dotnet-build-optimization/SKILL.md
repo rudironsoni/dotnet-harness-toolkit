@@ -2,7 +2,6 @@
 name: dotnet-build-optimization
 description: Diagnoses slow builds and incremental failures. Binary logs, parallel builds, restore.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["csharp", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for csharp tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-build-optimization

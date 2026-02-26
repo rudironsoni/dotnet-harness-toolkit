@@ -2,7 +2,6 @@
 name: dotnet-api-surface-validation
 description: Detects API surface changes in CI. PublicApiAnalyzers, Verify snapshots, ApiCompat gating.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["api", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for api tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-api-surface-validation

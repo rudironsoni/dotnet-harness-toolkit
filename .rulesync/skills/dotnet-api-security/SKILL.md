@@ -2,7 +2,6 @@
 name: dotnet-api-security
 description: Secures ASP.NET Core APIs. Identity, OAuth/OIDC, JWT bearer, passkeys, CORS, rate limiting.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["api", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for api tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-api-security

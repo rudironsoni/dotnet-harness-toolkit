@@ -1,7 +1,6 @@
 ---
 name: dotnet-version-upgrade
 description: Upgrades .NET to a newer TFM. LTS-to-LTS, staged through STS, preview, upgrade paths.
-user-invocable: true
 license: MIT
 targets: ["*"]
 tags: ["csharp", "dotnet", "skill"]
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for csharp tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-version-upgrade

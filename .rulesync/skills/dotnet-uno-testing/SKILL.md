@@ -2,7 +2,6 @@
 name: dotnet-uno-testing
 description: Tests Uno Platform apps. Playwright for WASM, platform-specific patterns, runtime heads.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["testing", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for testing tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-uno-testing

@@ -2,7 +2,6 @@
 name: dotnet-roslyn-analyzers
 description: Authors Roslyn analyzers. DiagnosticAnalyzer, CodeFixProvider, CodeRefactoring, multi-version.
 license: MIT
-user-invocable: false
 targets: ["*"]
 tags: ["csharp", "dotnet", "skill"]
 version: "0.0.1"
@@ -12,8 +11,7 @@ claudecode:
 codexcli:
   short-description: ".NET skill guidance for csharp tasks"
 opencode:
-  mode: "skill"
-  version: "1.0.0"
+  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
 ---
 
 # dotnet-roslyn-analyzers
