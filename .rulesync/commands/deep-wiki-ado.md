@@ -1,3 +1,7 @@
+---
+description: Generate Node.js script to convert wiki to Azure DevOps Wiki format
+---
+
 # /deep-wiki:ado
 
 Generate a Node.js script to convert wiki to Azure DevOps Wiki-compatible format

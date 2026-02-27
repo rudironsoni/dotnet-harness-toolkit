@@ -1,3 +1,7 @@
+---
+description: Generate AGENTS.md files for coding agent context
+---
+
 # /deep-wiki:agents
 
 Generate AGENTS.md files for pertinent folders (only where missing)

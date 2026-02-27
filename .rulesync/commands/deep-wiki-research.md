@@ -1,3 +1,7 @@
+---
+description: Deep research with evidence-based analysis
+---
+
 # /deep-wiki:research
 
 Multi-turn deep investigation with evidence-based analysis

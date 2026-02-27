@@ -1,3 +1,7 @@
+---
+description: AI-Powered Wiki Generator for Code Repositories
+---
+
 # 🌊 Deep Wiki
 
 ## AI-Powered Wiki Generator for Code Repositories — GitHub Copilot CLI Plugin\*\*

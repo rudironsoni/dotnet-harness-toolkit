@@ -1,3 +1,7 @@
+---
+description: Ask questions about the repository
+---
+
 # /deep-wiki:ask
 
 Ask a question about the repository

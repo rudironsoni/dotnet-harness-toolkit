@@ -1,3 +1,7 @@
+---
+description: Fast wiki generation (concise, rate-limit-friendly)
+---
+
 # /deep-wiki:crisp
 
 Fast wiki generation — concise, parallelized, rate-limit-friendly

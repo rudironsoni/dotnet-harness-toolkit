@@ -1,3 +1,7 @@
+---
+description: Package wiki as VitePress dark-theme site
+---
+
 # /deep-wiki:build
 
 Package generated wiki as a VitePress site with dark theme

@@ -1,3 +1,7 @@
+---
+description: Generate single wiki page with dark-mode diagrams
+---
+
 # /deep-wiki:page
 
 Generate a single wiki page with dark-mode Mermaid diagrams

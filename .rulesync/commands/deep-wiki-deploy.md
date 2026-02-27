@@ -1,3 +1,7 @@
+---
+description: Generate GitHub Actions workflow to deploy wiki
+---
+
 # /deep-wiki:deploy
 
 Generate GitHub Actions workflow to deploy wiki to GitHub Pages

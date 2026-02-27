@@ -1,3 +1,7 @@
+---
+description: Deep research with evidence-based analysis
+---
+
 # wiki-researcher
 
 Deep research with zero tolerance for shallow analysis — evidence-first

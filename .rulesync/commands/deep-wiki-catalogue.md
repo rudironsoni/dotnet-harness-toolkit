@@ -1,3 +1,7 @@
+---
+description: Generate hierarchical wiki structure as JSON
+---
+
 # /deep-wiki:catalogue
 
 Generate only the hierarchical wiki structure as JSON

@@ -1,3 +1,7 @@
+---
+description: Analyzes repos and generates structured catalogues
+---
+
 # wiki-architect
 
 Analyzes repos, generates structured catalogues + onboarding architecture

@@ -1,3 +1,7 @@
+---
+description: Generates pages with dark-mode Mermaid diagrams
+---
+
 # wiki-writer
 
 Generates pages with dark-mode Mermaid diagrams and deep citations

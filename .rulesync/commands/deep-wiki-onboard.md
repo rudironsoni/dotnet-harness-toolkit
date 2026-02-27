@@ -1,3 +1,7 @@
+---
+description: Generate audience-specific onboarding guides
+---
+
 # /deep-wiki:onboard
 
 Generate 4 audience-tailored onboarding guides

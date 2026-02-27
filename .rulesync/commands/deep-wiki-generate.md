@@ -1,3 +1,7 @@
+---
+description: Generate complete wiki with pages and onboarding
+---
+
 # /deep-wiki:generate
 
 Generate a complete wiki — catalogue + all pages + onboarding guides + VitePress site
