@@ -163,7 +163,7 @@ function main() {
 
   const files = findMarkdownFiles(RULESYNC_DIR);
   let fixed = 0;
-  let errors = [];
+  const errors = [];
 
   for (const file of files) {
     try {

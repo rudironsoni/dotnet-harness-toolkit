@@ -385,11 +385,11 @@ function main() {
   }
 
   // Report results
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log(`Files checked: ${stats.filesChecked}`);
   console.log(`Errors: ${stats.errors.length}`);
   console.log(`Warnings: ${stats.warnings.length}`);
-  console.log('='.repeat(70) + '\n');
+  console.log(`${'='.repeat(70)}\n`);
 
   if (stats.errors.length > 0) {
     console.log('ERRORS:');
