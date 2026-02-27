@@ -234,7 +234,11 @@ jobs:
             -m "Source commit: rudironsoni/dotnet-harness@${SOURCE_SHA_FULL}" \
             -m "Source message: ${SOURCE_MSG}"
 
-          git push origin "$BRANCH"
+          if ! git push origin "$BRANCH"; then
+            echo "::warning::Unable to push branch ${BRANCH} to rudironsoni/dotnet-harness-plugin."
+            echo "::warning::Check DOTNET_HARNESS_TOOLKIT_GH_TOKEN write permissions for the distribution repo."
+            exit 0
+          fi
 
           # Close any existing PR for this branch before creating a new one
           EXISTING_PR="$(gh pr list \
@@ -248,7 +252,7 @@ jobs:
             gh pr close "$EXISTING_PR" --repo "rudironsoni/dotnet-harness-plugin" || true
           fi
 
-          gh pr create \
+          if ! gh pr create \
             --repo "rudironsoni/dotnet-harness-plugin" \
             --base main \
             --head "$BRANCH" \
@@ -270,6 +274,10 @@ jobs:
           - Submodule (\`dotnet-harness/\`)
           - Repository metadata (\`README.md\`, \`LICENSE\`, \`.gitignore\`, \`.gitmodules\`)
           EOF
-          )"
+          )"; then
+            echo "::warning::Unable to create PR in rudironsoni/dotnet-harness-plugin."
+            echo "::warning::Check GH_TOKEN permissions in this workflow."
+            exit 0
+          fi
 
           echo "PR created successfully."
