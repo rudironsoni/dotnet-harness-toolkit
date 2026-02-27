@@ -4,17 +4,6 @@ on:
   pull_request:
   push:
     branches: ["main"]
-    paths:
-      - "rulesync.jsonc"
-      - ".rulesync/**"
-      - ".github/actions/validate-rulesync/**"
-      - "scripts/ci/validate_rulesync.sh"
-      - "scripts/lint/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/rulesync-validate.yml"
-      - ".markdownlint-cli2.yaml"
-      - ".cspell.json"
 
 # Restrict to read-only by default; jobs opt-in as needed
 permissions: {}
