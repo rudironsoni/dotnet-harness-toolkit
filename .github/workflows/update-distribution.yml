@@ -176,8 +176,19 @@ jobs:
           fi
 
           cd "${DIST}/${SUBMODULE_PATH}"
-          git fetch origin main
-          git checkout "$SOURCE_SHA_FULL"
+          git fetch --force --prune origin +refs/heads/main:refs/remotes/origin/main
+          git fetch --force --prune --unshallow origin || true
+
+          if ! git cat-file -e "${SOURCE_SHA_FULL}^{commit}" 2>/dev/null; then
+            git fetch --force --prune origin "${SOURCE_SHA_FULL}" || true
+          fi
+
+          if ! git cat-file -e "${SOURCE_SHA_FULL}^{commit}" 2>/dev/null; then
+            echo "Could not resolve source commit in submodule: ${SOURCE_SHA_FULL}"
+            exit 1
+          fi
+
+          git checkout "${SOURCE_SHA_FULL}"
           cd "${DIST}"
 
       - name: Check for changes
