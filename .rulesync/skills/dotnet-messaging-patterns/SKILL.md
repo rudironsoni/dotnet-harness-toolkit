@@ -2,21 +2,23 @@
 name: dotnet-messaging-patterns
 description: Builds event-driven systems. Pub/sub, competing consumers, DLQ, sagas, delivery guarantees.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-messaging-patterns
 
-Durable messaging patterns for .NET event-driven architectures. Covers publish/subscribe, competing consumers, dead-letter queues, saga/process manager orchestration, and delivery guarantee strategies using Azure Service Bus, RabbitMQ, and MassTransit.
+Durable messaging patterns for .NET event-driven architectures. Covers publish/subscribe, competing consumers,
+dead-letter queues, saga/process manager orchestration, and delivery guarantee strategies using Azure Service Bus,
+RabbitMQ, and MassTransit.
 
 ## Scope
 
@@ -33,7 +35,9 @@ Durable messaging patterns for .NET event-driven architectures. Covers publish/s
 - JSON/binary serialization configuration -- see [skill:dotnet-serialization]
 - In-process producer/consumer queues with Channel<T> -- see [skill:dotnet-channels]
 
-Cross-references: [skill:dotnet-background-services] for hosting message consumers, [skill:dotnet-resilience] for fault tolerance around message handlers, [skill:dotnet-serialization] for message envelope serialization, [skill:dotnet-channels] for in-process queuing patterns.
+Cross-references: [skill:dotnet-background-services] for hosting message consumers, [skill:dotnet-resilience] for fault
+tolerance around message handlers, [skill:dotnet-serialization] for message envelope serialization,
+[skill:dotnet-channels] for in-process queuing patterns.
 
 ---
 
@@ -41,23 +45,25 @@ Cross-references: [skill:dotnet-background-services] for hosting message consume
 
 ### Message Types
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Command** | Request an action (one recipient) | `PlaceOrder`, `ShipPackage` |
-| **Event** | Notify something happened (many recipients) | `OrderPlaced`, `PaymentReceived` |
-| **Document** | Transfer data between systems | `CustomerProfile`, `ProductCatalog` |
+| Type         | Purpose                                     | Example                             |
+| ------------ | ------------------------------------------- | ----------------------------------- |
+| **Command**  | Request an action (one recipient)           | `PlaceOrder`, `ShipPackage`         |
+| **Event**    | Notify something happened (many recipients) | `OrderPlaced`, `PaymentReceived`    |
+| **Document** | Transfer data between systems               | `CustomerProfile`, `ProductCatalog` |
 
-Commands are sent to a specific queue; events are published to a topic/exchange and delivered to all subscribers. This distinction drives the choice between point-to-point and pub/sub topologies.
+Commands are sent to a specific queue; events are published to a topic/exchange and delivered to all subscribers. This
+distinction drives the choice between point-to-point and pub/sub topologies.
 
 ### Delivery Guarantees
 
-| Guarantee | Behavior | Implementation |
-|-----------|----------|----------------|
-| **At-most-once** | Fire and forget; message may be lost | No ack, no retry |
+| Guarantee         | Behavior                                                | Implementation                          |
+| ----------------- | ------------------------------------------------------- | --------------------------------------- |
+| **At-most-once**  | Fire and forget; message may be lost                    | No ack, no retry                        |
 | **At-least-once** | Message retried until acknowledged; duplicates possible | Ack after processing + retry on failure |
-| **Exactly-once** | Each message processed exactly once | At-least-once + idempotent consumer |
+| **Exactly-once**  | Each message processed exactly once                     | At-least-once + idempotent consumer     |
 
-**At-least-once with idempotent consumers** is the standard approach for durable messaging. True exactly-once requires distributed transactions (which most brokers do not support) or consumer-side deduplication.
+**At-least-once with idempotent consumers** is the standard approach for durable messaging. True exactly-once requires
+distributed transactions (which most brokers do not support) or consumer-side deduplication.
 
 ---
 
@@ -144,7 +150,8 @@ await channel.BasicPublishAsync(
 
 ### MassTransit Publish
 
-MassTransit abstracts the broker, providing a unified API for Azure Service Bus, RabbitMQ, Amazon SQS, and in-memory transport.
+MassTransit abstracts the broker, providing a unified API for Azure Service Bus, RabbitMQ, Amazon SQS, and in-memory
+transport.
 
 ```csharp
 // Registration
@@ -206,7 +213,8 @@ public record OrderPlaced(Guid OrderId, decimal Total);
 
 ## Competing Consumers
 
-Multiple consumer instances process messages from the same queue in parallel. The broker delivers each message to exactly one consumer, distributing load across instances.
+Multiple consumer instances process messages from the same queue in parallel. The broker delivers each message to
+exactly one consumer, distributing load across instances.
 
 ### Pattern
 
@@ -243,7 +251,9 @@ x.AddConsumer<OrderProcessor>(cfg =>
 ### Ordering Considerations
 
 Competing consumers sacrifice strict ordering for throughput. When order matters:
-- **Azure Service Bus**: Use sessions (`RequiresSession = true`) to guarantee FIFO within a session ID (e.g., per customer)
+
+- **Azure Service Bus**: Use sessions (`RequiresSession = true`) to guarantee FIFO within a session ID (e.g., per
+  customer)
 - **RabbitMQ**: Use a single consumer per queue, or consistent-hash exchange to partition by key
 - **MassTransit**: Configure `UseMessagePartitioner` for key-based ordering
 
@@ -251,16 +261,17 @@ Competing consumers sacrifice strict ordering for throughput. When order matters
 
 ## Dead-Letter Queues
 
-Dead-letter queues (DLQs) capture messages that cannot be processed after exhausting retries. They prevent poison messages from blocking the main queue.
+Dead-letter queues (DLQs) capture messages that cannot be processed after exhausting retries. They prevent poison
+messages from blocking the main queue.
 
 ### Why Messages Are Dead-Lettered
 
-| Reason | Trigger |
-|--------|---------|
-| Max delivery attempts exceeded | Message failed processing N times |
-| TTL expired | Message sat in queue past its time-to-live |
-| Consumer rejection | Consumer explicitly dead-letters the message |
-| Queue length exceeded | Queue overflow policy routes to DLQ |
+| Reason                         | Trigger                                      |
+| ------------------------------ | -------------------------------------------- |
+| Max delivery attempts exceeded | Message failed processing N times            |
+| TTL expired                    | Message sat in queue past its time-to-live   |
+| Consumer rejection             | Consumer explicitly dead-letters the message |
+| Queue length exceeded          | Queue overflow policy routes to DLQ          |
 
 ### Azure Service Bus DLQ
 
@@ -297,7 +308,8 @@ while (true)
 
 ### MassTransit Error/Fault Queues
 
-MassTransit automatically creates `_error` and `_skipped` queues. Failed messages after retry exhaustion move to the error queue with fault metadata.
+MassTransit automatically creates `_error` and `_skipped` queues. Failed messages after retry exhaustion move to the
+error queue with fault metadata.
 
 ```csharp
 // Configure retry before dead-lettering
@@ -318,14 +330,15 @@ Always monitor DLQ depth with alerts. Unmonitored DLQs accumulate silently until
 
 ## Saga / Process Manager
 
-Sagas coordinate multi-step business processes across services. Each step publishes events that trigger the next step, with compensation logic for failures.
+Sagas coordinate multi-step business processes across services. Each step publishes events that trigger the next step,
+with compensation logic for failures.
 
 ### Choreography vs Orchestration
 
-| Style | How it works | Use when |
-|-------|-------------|----------|
-| **Choreography** | Services react to events independently; no central coordinator | Simple flows, few steps, loosely coupled |
-| **Orchestration** | A saga/process manager directs each step | Complex flows, compensation needed, visibility required |
+| Style             | How it works                                                   | Use when                                                |
+| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------- |
+| **Choreography**  | Services react to events independently; no central coordinator | Simple flows, few steps, loosely coupled                |
+| **Orchestration** | A saga/process manager directs each step                       | Complex flows, compensation needed, visibility required |
 
 ### MassTransit State Machine Saga
 
@@ -406,12 +419,12 @@ builder.Services.AddMassTransit(x =>
 
 ### Saga Persistence
 
-| Store | Package | Use when |
-|-------|---------|----------|
+| Store                 | Package                           | Use when                                 |
+| --------------------- | --------------------------------- | ---------------------------------------- |
 | Entity Framework Core | `MassTransit.EntityFrameworkCore` | Already using EF Core; need transactions |
-| MongoDB | `MassTransit.MongoDb` | Document-oriented state; high throughput |
-| Redis | `MassTransit.Redis` | Ephemeral sagas; low latency |
-| In-Memory | Built-in | Testing only -- state lost on restart |
+| MongoDB               | `MassTransit.MongoDb`             | Document-oriented state; high throughput |
+| Redis                 | `MassTransit.Redis`               | Ephemeral sagas; low latency             |
+| In-Memory             | Built-in                          | Testing only -- state lost on restart    |
 
 ### Compensation Pattern
 
@@ -431,7 +444,8 @@ OrderSubmitted -> RequestPayment -> PaymentReceived -> ReserveInventory
 
 ## Idempotent Consumers
 
-At-least-once delivery means consumers may receive the same message multiple times. Idempotent consumers ensure repeated processing produces the same result.
+At-least-once delivery means consumers may receive the same message multiple times. Idempotent consumers ensure repeated
+processing produces the same result.
 
 ### Database-Based Deduplication
 
@@ -476,6 +490,7 @@ public sealed class IdempotentOrderConsumer(
 ### Natural Idempotency
 
 Prefer operations that are naturally idempotent:
+
 - **Upserts** (`INSERT ... ON CONFLICT UPDATE`) instead of blind inserts
 - **Conditional updates** (`UPDATE ... WHERE Status = 'Pending'`) instead of unconditional
 - **Deterministic IDs** derived from message content instead of auto-generated
@@ -497,18 +512,26 @@ public sealed record MessageEnvelope<T>(
     T Payload);
 ```
 
-MassTransit provides this automatically via `ConsumeContext` (MessageId, CorrelationId, Headers). When using raw broker clients, implement envelopes explicitly.
+MassTransit provides this automatically via `ConsumeContext` (MessageId, CorrelationId, Headers). When using raw broker
+clients, implement envelopes explicitly.
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not use auto-complete with Azure Service Bus** -- set `AutoCompleteMessages = false` and call `CompleteMessageAsync` after successful processing. Auto-complete acknowledges before processing finishes, risking data loss on failure.
-2. **Do not forget to handle poison messages** -- always configure max delivery count and DLQ monitoring. Without these, a single bad message blocks the entire queue indefinitely.
-3. **Do not use in-memory saga persistence in production** -- saga state is lost on restart, leaving business processes in unknown states. Use Entity Framework, MongoDB, or Redis persistence.
-4. **Do not assume message ordering across partitions** -- competing consumers and topic subscriptions deliver messages out of order by default. Use sessions or partitioning when order matters.
-5. **Do not skip idempotency for at-least-once consumers** -- brokers may redeliver on timeout, network glitch, or consumer restart. Every consumer must handle duplicate messages safely.
-6. **Do not hardcode connection strings** -- use environment variables or Azure Key Vault references. For local development, use user secrets or `.env` files excluded from source control.
+1. **Do not use auto-complete with Azure Service Bus** -- set `AutoCompleteMessages = false` and call
+   `CompleteMessageAsync` after successful processing. Auto-complete acknowledges before processing finishes, risking
+   data loss on failure.
+2. **Do not forget to handle poison messages** -- always configure max delivery count and DLQ monitoring. Without these,
+   a single bad message blocks the entire queue indefinitely.
+3. **Do not use in-memory saga persistence in production** -- saga state is lost on restart, leaving business processes
+   in unknown states. Use Entity Framework, MongoDB, or Redis persistence.
+4. **Do not assume message ordering across partitions** -- competing consumers and topic subscriptions deliver messages
+   out of order by default. Use sessions or partitioning when order matters.
+5. **Do not skip idempotency for at-least-once consumers** -- brokers may redeliver on timeout, network glitch, or
+   consumer restart. Every consumer must handle duplicate messages safely.
+6. **Do not hardcode connection strings** -- use environment variables or Azure Key Vault references. For local
+   development, use user secrets or `.env` files excluded from source control.
 
 ---
 

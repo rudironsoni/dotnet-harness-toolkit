@@ -2,21 +2,23 @@
 name: dotnet-csharp-configuration
 description: Configures Options pattern, user secrets, and feature flags. IOptions<T>, FeatureManagement.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-configuration
 
-Configuration patterns for .NET applications using Microsoft.Extensions.Configuration and Microsoft.Extensions.Options. Covers the Options pattern (`IOptions<T>`, `IOptionsMonitor<T>`, `IOptionsSnapshot<T>`), validation, user secrets, environment-based configuration, and feature flags with `Microsoft.FeatureManagement`.
+Configuration patterns for .NET applications using Microsoft.Extensions.Configuration and Microsoft.Extensions.Options.
+Covers the Options pattern (`IOptions<T>`, `IOptionsMonitor<T>`, `IOptionsSnapshot<T>`), validation, user secrets,
+environment-based configuration, and feature flags with `Microsoft.FeatureManagement`.
 
 ## Scope
 
@@ -32,7 +34,8 @@ Configuration patterns for .NET applications using Microsoft.Extensions.Configur
 - EditorConfig and analyzer rule configuration -- see [skill:dotnet-editorconfig]
 - Structured logging pipeline configuration -- see [skill:dotnet-structured-logging]
 
-Cross-references: [skill:dotnet-csharp-dependency-injection] for service registration patterns, [skill:dotnet-csharp-coding-standards] for naming conventions.
+Cross-references: [skill:dotnet-csharp-dependency-injection] for service registration patterns,
+[skill:dotnet-csharp-coding-standards] for naming conventions.
 
 ---
 
@@ -72,7 +75,8 @@ public sealed class SmtpOptions
 }
 ```
 
-> Options classes use `{ get; set; }` (not `init`) because the configuration binder and `PostConfigure` need to mutate properties. Use `[Required]` via data annotations for mandatory fields instead.
+> Options classes use `{ get; set; }` (not `init`) because the configuration binder and `PostConfigure` need to mutate
+> properties. Use `[Required]` via data annotations for mandatory fields instead.
 
 ### Registration
 
@@ -101,11 +105,11 @@ builder.Services
 
 ## Options Interfaces
 
-| Interface | Lifetime | Reload Behavior | Use Case |
-|-----------|----------|-----------------|----------|
-| `IOptions<T>` | Singleton | Never reloads after startup | Static config, most services |
-| `IOptionsSnapshot<T>` | Scoped | Reloads per request/scope | Per-request config in ASP.NET |
-| `IOptionsMonitor<T>` | Singleton | Live reload + change notification | Singletons, background services |
+| Interface             | Lifetime  | Reload Behavior                   | Use Case                        |
+| --------------------- | --------- | --------------------------------- | ------------------------------- |
+| `IOptions<T>`         | Singleton | Never reloads after startup       | Static config, most services    |
+| `IOptionsSnapshot<T>` | Scoped    | Reloads per request/scope         | Per-request config in ASP.NET   |
+| `IOptionsMonitor<T>`  | Singleton | Live reload + change notification | Singletons, background services |
 
 ### Injection Examples
 
@@ -222,7 +226,8 @@ builder.Services.AddSingleton<IValidateOptions<SmtpOptions>, SmtpOptionsValidato
 
 ### `ValidateOnStart` (Fail Fast)
 
-Always use `.ValidateOnStart()` to surface configuration errors at startup instead of at first resolution. Without it, invalid config only throws when `IOptions<T>.Value` is first accessed.
+Always use `.ValidateOnStart()` to surface configuration errors at startup instead of at first resolution. Without it,
+invalid config only throws when `IOptions<T>.Value` is first accessed.
 
 ---
 
@@ -245,9 +250,11 @@ dotnet user-secrets list
 dotnet user-secrets clear
 ```
 
-User secrets are stored in `~/.microsoft/usersecrets/<UserSecretsId>/secrets.json` and override `appsettings.json` values in Development.
+User secrets are stored in `~/.microsoft/usersecrets/<UserSecretsId>/secrets.json` and override `appsettings.json`
+values in Development.
 
 **Key rules:**
+
 - Never use user secrets in production -- use environment variables, Azure Key Vault, or other vault providers
 - User secrets are loaded automatically when `ASPNETCORE_ENVIRONMENT=Development`
 - For non-web hosts, explicitly add: `builder.Configuration.AddUserSecrets<Program>()`
@@ -296,7 +303,8 @@ else
 
 ## Feature Flags with Microsoft.FeatureManagement
 
-`Microsoft.FeatureManagement.AspNetCore` provides structured feature flag support with filters, targeting, and gradual rollout.
+`Microsoft.FeatureManagement.AspNetCore` provides structured feature flag support with filters, targeting, and gradual
+rollout.
 
 ### Setup
 
@@ -328,10 +336,8 @@ builder.Services.AddFeatureManagement();
           "Name": "Targeting",
           "Parameters": {
             "Audience": {
-              "Users": [ "alice@example.com" ],
-              "Groups": [
-                { "Name": "Beta", "RolloutPercentage": 100 }
-              ],
+              "Users": ["alice@example.com"],
+              "Groups": [{ "Name": "Beta", "RolloutPercentage": 100 }],
               "DefaultRolloutPercentage": 0
             }
           }
@@ -376,12 +382,12 @@ public async Task<IActionResult> Search(string query, CancellationToken ct = def
 
 ### Feature Filters
 
-| Filter | Purpose |
-|--------|---------|
-| `Percentage` | Enable for N% of requests (random) |
-| `TimeWindow` | Enable between start/end dates |
-| `Targeting` | Enable for specific users, groups, or rollout percentage |
-| Custom | Implement `IFeatureFilter` for domain-specific logic |
+| Filter       | Purpose                                                  |
+| ------------ | -------------------------------------------------------- |
+| `Percentage` | Enable for N% of requests (random)                       |
+| `TimeWindow` | Enable between start/end dates                           |
+| `Targeting`  | Enable for specific users, groups, or rollout percentage |
+| Custom       | Implement `IFeatureFilter` for domain-specific logic     |
 
 ### Custom Feature Filter
 

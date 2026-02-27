@@ -2,21 +2,23 @@
 name: dotnet-minimal-apis
 description: Builds ASP.NET Core Minimal APIs -- route groups, filters, TypedResults, OpenAPI.
 license: MIT
-targets: ["*"]
-tags: ["api", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['api', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for api tasks"
+  short-description: '.NET skill guidance for api tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-minimal-apis
 
-Minimal APIs are Microsoft's recommended approach for new ASP.NET Core HTTP API projects. They provide a lightweight, lambda-based programming model with first-class OpenAPI support, endpoint filters for cross-cutting concerns, and route groups for organization at scale.
+Minimal APIs are Microsoft's recommended approach for new ASP.NET Core HTTP API projects. They provide a lightweight,
+lambda-based programming model with first-class OpenAPI support, endpoint filters for cross-cutting concerns, and route
+groups for organization at scale.
 
 ## Scope
 
@@ -36,13 +38,16 @@ Minimal APIs are Microsoft's recommended approach for new ASP.NET Core HTTP API 
 - OpenAPI document generation -- see [skill:dotnet-openapi]
 - gRPC and real-time communication -- see [skill:dotnet-grpc] and [skill:dotnet-realtime-communication]
 
-Cross-references: [skill:dotnet-architecture-patterns] for organizing large APIs, [skill:dotnet-input-validation] for request validation, [skill:dotnet-api-versioning] for versioning strategies, [skill:dotnet-openapi] for OpenAPI customization.
+Cross-references: [skill:dotnet-architecture-patterns] for organizing large APIs, [skill:dotnet-input-validation] for
+request validation, [skill:dotnet-api-versioning] for versioning strategies, [skill:dotnet-openapi] for OpenAPI
+customization.
 
 ---
 
 ## Route Groups
 
-Route groups organize related endpoints under a shared prefix, applying common configuration (filters, metadata, authorization) once. They replace repetitive chaining of `MapGet`/`MapPost` with shared prefixes.
+Route groups organize related endpoints under a shared prefix, applying common configuration (filters, metadata,
+authorization) once. They replace repetitive chaining of `MapGet`/`MapPost` with shared prefixes.
 
 ```csharp
 var app = builder.Build();
@@ -101,7 +106,8 @@ orders.MapPost("/", CreateOrder);
 
 ## Endpoint Filters
 
-Endpoint filters provide a pipeline for cross-cutting concerns (logging, validation, authorization enrichment) similar to MVC action filters but specific to Minimal APIs.
+Endpoint filters provide a pipeline for cross-cutting concerns (logging, validation, authorization enrichment) similar
+to MVC action filters but specific to Minimal APIs.
 
 ### IEndpointFilter Interface
 
@@ -169,7 +175,9 @@ Response <- Filter1 <- Filter2 <- Filter3 <-
 
 ## TypedResults
 
-Always use `TypedResults` (static factory) instead of `Results` (interface factory) for Minimal API return values. `TypedResults` returns concrete types that the OpenAPI metadata generator can inspect at build time, producing accurate response schemas automatically.
+Always use `TypedResults` (static factory) instead of `Results` (interface factory) for Minimal API return values.
+`TypedResults` returns concrete types that the OpenAPI metadata generator can inspect at build time, producing accurate
+response schemas automatically.
 
 ```csharp
 // PREFERRED: TypedResults -- concrete return types, auto-generates OpenAPI metadata
@@ -188,7 +196,8 @@ products.MapGet("/{id:int}", async (int id, AppDbContext db) =>
 
 ### Union Return Types
 
-Use `Results<T1, T2, ...>` to declare all possible response types for a single endpoint. This enables accurate OpenAPI documentation with multiple response codes:
+Use `Results<T1, T2, ...>` to declare all possible response types for a single endpoint. This enables accurate OpenAPI
+documentation with multiple response codes:
 
 ```csharp
 products.MapPost("/", async Task<Results<Created<Product>, ValidationProblem, Conflict>> (
@@ -208,7 +217,8 @@ products.MapPost("/", async Task<Results<Created<Product>, ValidationProblem, Co
 
 ## OpenAPI 3.1 Integration
 
-.NET 10 adds built-in OpenAPI 3.1 support via `Microsoft.AspNetCore.OpenApi`. Minimal APIs generate OpenAPI metadata from `TypedResults`, parameter bindings, and attributes automatically.
+.NET 10 adds built-in OpenAPI 3.1 support via `Microsoft.AspNetCore.OpenApi`. Minimal APIs generate OpenAPI metadata
+from `TypedResults`, parameter bindings, and attributes automatically.
 
 ```csharp
 builder.Services.AddOpenApi();
@@ -232,7 +242,8 @@ products.MapGet("/{id:int}", GetProductById)
     .ProducesProblem(StatusCodes.Status404NotFound);
 ```
 
-For advanced OpenAPI customization (document transformers, operation transformers, schema customization), see [skill:dotnet-openapi].
+For advanced OpenAPI customization (document transformers, operation transformers, schema customization), see
+[skill:dotnet-openapi].
 
 ---
 
@@ -338,7 +349,8 @@ app.MapCarter(); // Auto-discovers and registers all ICarterModule implementatio
 
 ### Vertical Slice Organization
 
-For projects using vertical slice architecture (see [skill:dotnet-architecture-patterns]), each feature owns its endpoints, handlers, and models in a single directory:
+For projects using vertical slice architecture (see [skill:dotnet-architecture-patterns]), each feature owns its
+endpoints, handlers, and models in a single directory:
 
 ```
 Features/
@@ -366,13 +378,16 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 ```
 
-**Gotcha:** `ConfigureHttpJsonOptions` configures JSON serialization for Minimal APIs only. MVC controllers use a separate pipeline -- configure via `builder.Services.AddControllers().AddJsonOptions(...)`. Mixing them up has no effect.
+**Gotcha:** `ConfigureHttpJsonOptions` configures JSON serialization for Minimal APIs only. MVC controllers use a
+separate pipeline -- configure via `builder.Services.AddControllers().AddJsonOptions(...)`. Mixing them up has no
+effect.
 
 ---
 
 ## Parameter Binding
 
-Minimal APIs bind parameters from route, query, headers, body, and DI automatically based on type and attribute annotations.
+Minimal APIs bind parameters from route, query, headers, body, and DI automatically based on type and attribute
+annotations.
 
 ```csharp
 // Route parameter (from URL segment)
@@ -403,11 +418,16 @@ public record ProductQuery(
 
 ## Agent Gotchas
 
-1. **Do not use `Results` when `TypedResults` is available** -- `Results.Ok(value)` returns `IResult` and the OpenAPI generator cannot infer response schemas. Use `TypedResults.Ok(value)` to enable automatic schema generation.
-2. **Do not forget `ConfigureHttpJsonOptions` only applies to Minimal APIs** -- MVC controllers need `.AddControllers().AddJsonOptions()` separately.
-3. **Do not apply validation logic inline in every endpoint** -- use endpoint filters or cross-reference [skill:dotnet-input-validation] for centralized validation patterns.
-4. **Do not register filters in the wrong order** -- first-registered filter is outermost. Put broad filters (logging) first, specific filters (validation) closer to the handler.
-5. **Do not put all endpoints in `Program.cs`** -- organize into extension method classes or Carter modules once you have more than a handful of endpoints.
+1. **Do not use `Results` when `TypedResults` is available** -- `Results.Ok(value)` returns `IResult` and the OpenAPI
+   generator cannot infer response schemas. Use `TypedResults.Ok(value)` to enable automatic schema generation.
+2. **Do not forget `ConfigureHttpJsonOptions` only applies to Minimal APIs** -- MVC controllers need
+   `.AddControllers().AddJsonOptions()` separately.
+3. **Do not apply validation logic inline in every endpoint** -- use endpoint filters or cross-reference
+   [skill:dotnet-input-validation] for centralized validation patterns.
+4. **Do not register filters in the wrong order** -- first-registered filter is outermost. Put broad filters (logging)
+   first, specific filters (validation) closer to the handler.
+5. **Do not put all endpoints in `Program.cs`** -- organize into extension method classes or Carter modules once you
+   have more than a handful of endpoints.
 
 ---
 
@@ -424,9 +444,12 @@ public record ProductQuery(
 
 Minimal API patterns in this skill are grounded in guidance from:
 
-- **David Fowler** -- AspNetCoreDiagnosticScenarios ([github.com/davidfowl/AspNetCoreDiagnosticScenarios](https://github.com/davidfowl/AspNetCoreDiagnosticScenarios)). Authoritative source on ASP.NET Core request pipeline design, middleware best practices, and diagnostic anti-patterns.
+- **David Fowler** -- AspNetCoreDiagnosticScenarios
+  ([github.com/davidfowl/AspNetCoreDiagnosticScenarios](https://github.com/davidfowl/AspNetCoreDiagnosticScenarios)).
+  Authoritative source on ASP.NET Core request pipeline design, middleware best practices, and diagnostic anti-patterns.
 
-> These sources inform the patterns and rationale presented above. This skill does not claim to represent or speak for any individual.
+> These sources inform the patterns and rationale presented above. This skill does not claim to represent or speak for
+> any individual.
 
 ---
 

@@ -2,21 +2,22 @@
 name: dotnet-http-client
 description: Consumes HTTP APIs. IHttpClientFactory, typed/named clients, resilience, DelegatingHandlers.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-http-client
 
-Best practices for consuming HTTP APIs in .NET applications using `IHttpClientFactory`. Covers named and typed clients, resilience pipeline integration, `DelegatingHandler` chains for cross-cutting concerns, and testing strategies.
+Best practices for consuming HTTP APIs in .NET applications using `IHttpClientFactory`. Covers named and typed clients,
+resilience pipeline integration, `DelegatingHandler` chains for cross-cutting concerns, and testing strategies.
 
 ## Scope
 
@@ -32,7 +33,9 @@ Best practices for consuming HTTP APIs in .NET applications using `IHttpClientFa
 - Resilience pipeline configuration (Polly v8, retry, circuit breaker) -- see [skill:dotnet-resilience]
 - Integration testing frameworks -- see [skill:dotnet-integration-testing]
 
-Cross-references: [skill:dotnet-resilience] for resilience pipeline configuration, [skill:dotnet-csharp-dependency-injection] for service registration, [skill:dotnet-csharp-async-patterns] for async HTTP patterns.
+Cross-references: [skill:dotnet-resilience] for resilience pipeline configuration,
+[skill:dotnet-csharp-dependency-injection] for service registration, [skill:dotnet-csharp-async-patterns] for async HTTP
+patterns.
 
 ---
 
@@ -40,10 +43,13 @@ Cross-references: [skill:dotnet-resilience] for resilience pipeline configuratio
 
 Creating `HttpClient` instances directly causes two problems:
 
-1. **Socket exhaustion** -- each `HttpClient` instance holds its own connection pool. Creating and disposing many instances exhausts available sockets (`SocketException: Address already in use`).
-2. **DNS staleness** -- a long-lived singleton `HttpClient` caches DNS lookups indefinitely, missing DNS changes during blue-green deployments or failovers.
+1. **Socket exhaustion** -- each `HttpClient` instance holds its own connection pool. Creating and disposing many
+   instances exhausts available sockets (`SocketException: Address already in use`).
+2. **DNS staleness** -- a long-lived singleton `HttpClient` caches DNS lookups indefinitely, missing DNS changes during
+   blue-green deployments or failovers.
 
-`IHttpClientFactory` solves both by managing `HttpMessageHandler` lifetimes with automatic pooling and rotation (default: 2-minute handler lifetime).
+`IHttpClientFactory` solves both by managing `HttpMessageHandler` lifetimes with automatic pooling and rotation
+(default: 2-minute handler lifetime).
 
 ```csharp
 // Do not do this
@@ -102,7 +108,8 @@ public sealed class OrderService(IHttpClientFactory clientFactory)
 
 ## Typed Clients
 
-Typed clients encapsulate HTTP logic behind a strongly-typed interface. Prefer typed clients when a service consumes a single API with multiple operations:
+Typed clients encapsulate HTTP logic behind a strongly-typed interface. Prefer typed clients when a service consumes a
+single API with multiple operations:
 
 ```csharp
 // Typed client class
@@ -185,11 +192,13 @@ builder.Services.AddHttpClient<ICatalogApiClient, CatalogApiClient>(client =>
 
 ## Resilience Pipelines
 
-Apply resilience to HTTP clients using `Microsoft.Extensions.Http.Resilience`. See [skill:dotnet-resilience] for detailed pipeline configuration, strategy options, and migration guidance.
+Apply resilience to HTTP clients using `Microsoft.Extensions.Http.Resilience`. See [skill:dotnet-resilience] for
+detailed pipeline configuration, strategy options, and migration guidance.
 
 ### Standard Resilience Handler (Recommended)
 
-The standard handler applies the full pipeline (rate limiter, total timeout, retry, circuit breaker, attempt timeout) with sensible defaults:
+The standard handler applies the full pipeline (rate limiter, total timeout, retry, circuit breaker, attempt timeout)
+with sensible defaults:
 
 ```csharp
 builder.Services
@@ -238,7 +247,8 @@ See [skill:dotnet-resilience] for when to use hedging vs standard retry.
 
 ## DelegatingHandlers
 
-`DelegatingHandler` provides a pipeline of message handlers that process outgoing requests and incoming responses. Use them for cross-cutting concerns that apply to HTTP traffic.
+`DelegatingHandler` provides a pipeline of message handlers that process outgoing requests and incoming responses. Use
+them for cross-cutting concerns that apply to HTTP traffic.
 
 ### Handler Pipeline Order
 
@@ -383,7 +393,12 @@ builder.Services
     .AddStandardResilienceHandler();                 // 4th (innermost): resilience pipeline
 ```
 
-**Note:** In `IHttpClientFactory`, handlers registered first are outermost. `.AddStandardResilienceHandler()` added last is innermost -- it wraps the actual HTTP call directly. This means retries happen inside the resilience handler without re-executing the outer DelegatingHandlers. This is typically correct: correlation IDs and auth tokens are set once by the outer handlers, and the resilience layer retries the raw HTTP call. If you need per-retry token refresh (e.g., expired bearer tokens), move the token handler inside the resilience boundary or use a custom `ResiliencePipelineBuilder` callback.
+**Note:** In `IHttpClientFactory`, handlers registered first are outermost. `.AddStandardResilienceHandler()` added last
+is innermost -- it wraps the actual HTTP call directly. This means retries happen inside the resilience handler without
+re-executing the outer DelegatingHandlers. This is typically correct: correlation IDs and auth tokens are set once by
+the outer handlers, and the resilience layer retries the raw HTTP call. If you need per-retry token refresh (e.g.,
+expired bearer tokens), move the token handler inside the resilience boundary or use a custom
+`ResiliencePipelineBuilder` callback.
 
 ---
 
@@ -421,8 +436,8 @@ builder.Services
     .SetHandlerLifetime(TimeSpan.FromMinutes(5));
 ```
 
-**Shorter lifetime** (1 min): for services behind load balancers with frequent DNS changes.
-**Longer lifetime** (5-10 min): for stable internal services where connection reuse improves performance.
+**Shorter lifetime** (1 min): for services behind load balancers with frequent DNS changes. **Longer lifetime** (5-10
+min): for stable internal services where connection reuse improves performance.
 
 ---
 
@@ -554,16 +569,17 @@ Test the full HTTP client pipeline including DI registration:
 
 ## Named vs Typed Clients -- Decision Guide
 
-| Factor | Named Client | Typed Client |
-|--------|-------------|--------------|
-| API surface | Simple (1-2 calls) | Rich (multiple operations) |
-| Type safety | Requires string name | Strongly typed |
-| Encapsulation | HTTP logic in consuming class | HTTP logic in client class |
-| Testability | Mock `IHttpClientFactory` | Mock the client interface |
-| Multiple APIs | One name per API | One class per API |
-| Recommendation | Ad-hoc or simple calls | Primary pattern for API consumption |
+| Factor         | Named Client                  | Typed Client                        |
+| -------------- | ----------------------------- | ----------------------------------- |
+| API surface    | Simple (1-2 calls)            | Rich (multiple operations)          |
+| Type safety    | Requires string name          | Strongly typed                      |
+| Encapsulation  | HTTP logic in consuming class | HTTP logic in client class          |
+| Testability    | Mock `IHttpClientFactory`     | Mock the client interface           |
+| Multiple APIs  | One name per API              | One class per API                   |
+| Recommendation | Ad-hoc or simple calls        | Primary pattern for API consumption |
 
-**Default to typed clients.** Use named clients only for simple, one-off HTTP calls where a full typed client class adds unnecessary ceremony.
+**Default to typed clients.** Use named clients only for simple, one-off HTTP calls where a full typed client class adds
+unnecessary ceremony.
 
 ---
 
@@ -571,9 +587,11 @@ Test the full HTTP client pipeline including DI registration:
 
 - **Always use IHttpClientFactory** -- never `new HttpClient()` in application code
 - **Prefer typed clients** -- encapsulate HTTP logic behind a strongly-typed interface
-- **Apply resilience via pipeline** -- use `AddStandardResilienceHandler()` (see [skill:dotnet-resilience]) rather than manual retry loops
+- **Apply resilience via pipeline** -- use `AddStandardResilienceHandler()` (see [skill:dotnet-resilience]) rather than
+  manual retry loops
 - **Keep handlers focused** -- each `DelegatingHandler` should do one thing (auth, logging, correlation)
-- **Register handlers as Transient** -- DelegatingHandlers are created per-client-instance and should not hold state across requests
+- **Register handlers as Transient** -- DelegatingHandlers are created per-client-instance and should not hold state
+  across requests
 - **Pass CancellationToken everywhere** -- from endpoint to typed client to HTTP call
 - **Use ReadFromJsonAsync / PostAsJsonAsync** -- avoid manual serialization with `StringContent`
 
@@ -581,11 +599,19 @@ Test the full HTTP client pipeline including DI registration:
 
 ## Agent Gotchas
 
-1. **Do not create HttpClient with `new`** -- always inject `IHttpClientFactory` or a typed client. Direct instantiation causes socket exhaustion.
-2. **Do not dispose typed clients** -- the factory manages handler lifetimes. Disposing the `HttpClient` instance is harmless (it does not close pooled connections), but wrapping it in `using` is misleading.
-3. **Do not set `BaseAddress` with a trailing path** -- `new Uri("https://api.example.com/v2")` will drop `/v2` when combining with relative URIs. Use `new Uri("https://api.example.com/v2/")` (trailing slash) or use absolute URIs in calls.
-4. **Understand that resilience added last is innermost** -- `AddStandardResilienceHandler()` registered after `AddHttpMessageHandler` calls wraps the HTTP call directly. Retries do not re-execute outer DelegatingHandlers. This is correct for most cases (tokens/correlation IDs set once). If you need per-retry token refresh, place the token handler after the resilience handler or use a custom pipeline callback.
-5. **Do not register DelegatingHandlers as Singleton** -- they are pooled with the `HttpMessageHandler` pipeline and must be Transient.
+1. **Do not create HttpClient with `new`** -- always inject `IHttpClientFactory` or a typed client. Direct instantiation
+   causes socket exhaustion.
+2. **Do not dispose typed clients** -- the factory manages handler lifetimes. Disposing the `HttpClient` instance is
+   harmless (it does not close pooled connections), but wrapping it in `using` is misleading.
+3. **Do not set `BaseAddress` with a trailing path** -- `new Uri("https://api.example.com/v2")` will drop `/v2` when
+   combining with relative URIs. Use `new Uri("https://api.example.com/v2/")` (trailing slash) or use absolute URIs in
+   calls.
+4. **Understand that resilience added last is innermost** -- `AddStandardResilienceHandler()` registered after
+   `AddHttpMessageHandler` calls wraps the HTTP call directly. Retries do not re-execute outer DelegatingHandlers. This
+   is correct for most cases (tokens/correlation IDs set once). If you need per-retry token refresh, place the token
+   handler after the resilience handler or use a custom pipeline callback.
+5. **Do not register DelegatingHandlers as Singleton** -- they are pooled with the `HttpMessageHandler` pipeline and
+   must be Transient.
 
 ---
 

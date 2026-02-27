@@ -2,25 +2,29 @@
 name: dotnet-aot-wasm
 description: Compiles .NET to WebAssembly AOT. Blazor/Uno WASM, size vs speed, lazy loading, Brotli.
 license: MIT
-targets: ["*"]
-tags: ["aot", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['aot', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for aot tasks"
+  short-description: '.NET skill guidance for aot tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-aot-wasm
 
-WebAssembly AOT compilation for Blazor WASM and Uno WASM applications: compilation pipeline, download size vs runtime speed tradeoffs, trimming interplay, lazy loading assemblies, and Brotli pre-compression for download optimization.
+WebAssembly AOT compilation for Blazor WASM and Uno WASM applications: compilation pipeline, download size vs runtime
+speed tradeoffs, trimming interplay, lazy loading assemblies, and Brotli pre-compression for download optimization.
 
-**Version assumptions:** .NET 8.0+ baseline. Blazor WASM AOT shipped in .NET 6 and has been refined through .NET 8-10. Uno WASM uses a similar compilation pipeline with Uno-specific tooling.
+**Version assumptions:** .NET 8.0+ baseline. Blazor WASM AOT shipped in .NET 6 and has been refined through .NET 8-10.
+Uno WASM uses a similar compilation pipeline with Uno-specific tooling.
 
-**Important tradeoff:** Trimming and AOT have **opposite effects** on WASM artifact size. Trimming reduces download size by removing unused code. AOT **increases** artifact size (native WASM code is larger than IL) but **improves** runtime execution speed. Use both together for the best balance.
+**Important tradeoff:** Trimming and AOT have **opposite effects** on WASM artifact size. Trimming reduces download size
+by removing unused code. AOT **increases** artifact size (native WASM code is larger than IL) but **improves** runtime
+execution speed. Use both together for the best balance.
 
 ## Scope
 
@@ -41,7 +45,10 @@ WebAssembly AOT compilation for Blazor WASM and Uno WASM applications: compilati
 - Blazor component lifecycle and JS interop -- see [skill:dotnet-blazor-components]
 - Uno Platform architecture -- see [skill:dotnet-uno-platform]
 
-Cross-references: [skill:dotnet-native-aot] for general AOT pipeline, [skill:dotnet-trimming] for trimming annotations, [skill:dotnet-aot-architecture] for AOT-safe design patterns, [skill:dotnet-serialization] for AOT-safe serialization, [skill:dotnet-csharp-source-generators] for source gen as AOT enabler, [skill:dotnet-blazor-patterns] for Blazor architecture (soft), [skill:dotnet-uno-platform] for Uno Platform patterns (soft).
+Cross-references: [skill:dotnet-native-aot] for general AOT pipeline, [skill:dotnet-trimming] for trimming annotations,
+[skill:dotnet-aot-architecture] for AOT-safe design patterns, [skill:dotnet-serialization] for AOT-safe serialization,
+[skill:dotnet-csharp-source-generators] for source gen as AOT enabler, [skill:dotnet-blazor-patterns] for Blazor
+architecture (soft), [skill:dotnet-uno-platform] for Uno Platform patterns (soft).
 
 ---
 
@@ -49,14 +56,16 @@ Cross-references: [skill:dotnet-native-aot] for general AOT pipeline, [skill:dot
 
 Understanding the size/speed tradeoff is critical for WASM AOT decisions:
 
-| Compilation Mode | Download Size | Runtime Speed | Startup Time |
-|-----------------|---------------|---------------|-------------|
-| IL interpreter (no AOT) | Smallest | Slowest | Fastest startup |
-| AOT (all assemblies) | **Largest** | Fastest | Slower startup |
-| AOT (selective) + trimming | Balanced | Good | Moderate |
-| Trimmed only (no AOT) | Small | Moderate (JIT interpretation) | Fast |
+| Compilation Mode           | Download Size | Runtime Speed                 | Startup Time    |
+| -------------------------- | ------------- | ----------------------------- | --------------- |
+| IL interpreter (no AOT)    | Smallest      | Slowest                       | Fastest startup |
+| AOT (all assemblies)       | **Largest**   | Fastest                       | Slower startup  |
+| AOT (selective) + trimming | Balanced      | Good                          | Moderate        |
+| Trimmed only (no AOT)      | Small         | Moderate (JIT interpretation) | Fast            |
 
-**Key insight:** Trimming reduces size by removing unused IL. AOT **increases** total artifact size because compiled native WASM code is larger than the equivalent IL bytecode. However, AOT-compiled code executes significantly faster because it skips IL interpretation at runtime.
+**Key insight:** Trimming reduces size by removing unused IL. AOT **increases** total artifact size because compiled
+native WASM code is larger than the equivalent IL bytecode. However, AOT-compiled code executes significantly faster
+because it skips IL interpretation at runtime.
 
 ### When to Use WASM AOT
 
@@ -88,11 +97,13 @@ Understanding the size/speed tradeoff is critical for WASM AOT decisions:
 dotnet publish -c Release
 ```
 
-Note: `RunAOTCompilation` is the Blazor WASM property (not `PublishAot` which is for server-side Native AOT). AOT compilation only happens during `dotnet publish`, not during `dotnet run` or `dotnet build`.
+Note: `RunAOTCompilation` is the Blazor WASM property (not `PublishAot` which is for server-side Native AOT). AOT
+compilation only happens during `dotnet publish`, not during `dotnet run` or `dotnet build`.
 
 ### Selective AOT via Lazy Loading
 
-Blazor WASM AOT compiles all non-lazy-loaded assemblies. To control which assemblies are AOT-compiled, mark non-critical assemblies as lazy-loaded -- they will use IL interpretation instead:
+Blazor WASM AOT compiles all non-lazy-loaded assemblies. To control which assemblies are AOT-compiled, mark non-critical
+assemblies as lazy-loaded -- they will use IL interpretation instead:
 
 ```xml
 <PropertyGroup>
@@ -124,7 +135,8 @@ For the best balance, use both trimming and AOT:
 </PropertyGroup>
 ```
 
-The publish pipeline runs: trim unused IL first, then AOT-compile the remaining assemblies to native WASM. This produces an artifact that is larger than trimmed-only but smaller than AOT-without-trimming, with the best runtime performance.
+The publish pipeline runs: trim unused IL first, then AOT-compile the remaining assemblies to native WASM. This produces
+an artifact that is larger than trimmed-only but smaller than AOT-without-trimming, with the best runtime performance.
 
 ---
 
@@ -141,7 +153,8 @@ Uno Platform 5+ with .NET 8+ uses the standard .NET WASM workload, so the AOT co
 </PropertyGroup>
 ```
 
-Older Uno versions using `Uno.Wasm.Bootstrap` had a separate `WasmShellMonoRuntimeExecutionMode` property with `Interpreter`, `InterpreterAndAOT`, and `FullAOT` modes. On .NET 8+, use `RunAOTCompilation` instead.
+Older Uno versions using `Uno.Wasm.Bootstrap` had a separate `WasmShellMonoRuntimeExecutionMode` property with
+`Interpreter`, `InterpreterAndAOT`, and `FullAOT` modes. On .NET 8+, use `RunAOTCompilation` instead.
 
 ### Trimming in Uno WASM
 
@@ -158,7 +171,8 @@ See [skill:dotnet-uno-platform] for Uno Platform architecture patterns.
 
 ## Lazy Loading Assemblies
 
-Lazy loading defers downloading assemblies until they are needed, reducing initial download size. This is especially effective when combined with AOT (which increases per-assembly size).
+Lazy loading defers downloading assemblies until they are needed, reducing initial download size. This is especially
+effective when combined with AOT (which increases per-assembly size).
 
 ### Blazor WASM Lazy Loading
 
@@ -230,21 +244,23 @@ Lazy loading defers downloading assemblies until they are needed, reducing initi
 
 ### Lazy Loading Strategy
 
-| Strategy | Initial Load | Feature Load | Best For |
-|----------|-------------|-------------|----------|
-| No lazy loading | All at once | Instant | Small apps (<5 MB total) |
-| Route-based lazy loading | Core only | On navigation | Multi-module apps |
-| Feature-based lazy loading | Core only | On demand | Apps with optional features |
+| Strategy                   | Initial Load | Feature Load  | Best For                    |
+| -------------------------- | ------------ | ------------- | --------------------------- |
+| No lazy loading            | All at once  | Instant       | Small apps (<5 MB total)    |
+| Route-based lazy loading   | Core only    | On navigation | Multi-module apps           |
+| Feature-based lazy loading | Core only    | On demand     | Apps with optional features |
 
 ---
 
 ## Brotli Pre-Compression
 
-Brotli pre-compression reduces WASM download size by 60-80%. Blazor WASM automatically generates Brotli-compressed files during publish.
+Brotli pre-compression reduces WASM download size by 60-80%. Blazor WASM automatically generates Brotli-compressed files
+during publish.
 
 ### How It Works
 
-During `dotnet publish`, Blazor WASM generates `.br` (Brotli) and `.gz` (gzip) compressed versions of all static files in `_framework/`. The web server serves the pre-compressed file when the browser supports it.
+During `dotnet publish`, Blazor WASM generates `.br` (Brotli) and `.gz` (gzip) compressed versions of all static files
+in `_framework/`. The web server serves the pre-compressed file when the browser supports it.
 
 ```bash
 # After publish, check compressed sizes
@@ -293,12 +309,12 @@ Pre-compressed `.br` files are served automatically when the `Accept-Encoding: b
 
 ### Compression Impact
 
-| Content | Original | Brotli (.br) | Reduction |
-|---------|----------|-------------|-----------|
-| .NET WASM runtime | ~2.5 MB | ~0.8 MB | ~68% |
-| App assemblies (IL) | varies | ~70% smaller | ~70% |
-| App assemblies (AOT) | varies | ~65% smaller | ~65% |
-| JavaScript glue code | ~100 KB | ~25 KB | ~75% |
+| Content              | Original | Brotli (.br) | Reduction |
+| -------------------- | -------- | ------------ | --------- |
+| .NET WASM runtime    | ~2.5 MB  | ~0.8 MB      | ~68%      |
+| App assemblies (IL)  | varies   | ~70% smaller | ~70%      |
+| App assemblies (AOT) | varies   | ~65% smaller | ~65%      |
+| JavaScript glue code | ~100 KB  | ~25 KB       | ~75%      |
 
 ### Disabling Compression (Rarely Needed)
 
@@ -337,12 +353,18 @@ Pre-compressed `.br` files are served automatically when the `Accept-Encoding: b
 
 ## Agent Gotchas
 
-1. **Do not confuse `RunAOTCompilation` with `PublishAot`.** Blazor WASM uses `RunAOTCompilation` for WASM AOT. `PublishAot` is for server-side Native AOT and produces a different kind of binary.
-2. **Do not assume AOT reduces WASM download size.** AOT **increases** artifact size because native WASM code is larger than IL bytecode. Use trimming to reduce size and AOT to improve runtime speed.
-3. **Do not forget to publish when testing AOT.** WASM AOT only runs during `dotnet publish`, not `dotnet run`. Debug builds always use IL interpretation.
-4. **Do not lazy-load assemblies that are needed at startup.** Only lazy-load assemblies for features accessed after initial navigation. Loading a lazy assembly triggers a network request.
-5. **Do not skip Brotli compression verification.** Ensure your web server serves `.br` files. Without compression, WASM downloads are 3-5x larger than necessary. Check browser DevTools for `content-encoding: br` header.
-6. **Do not AOT-compile all assemblies when download size matters.** Use `BlazorWebAssemblyLazyLoad` to defer non-critical assemblies -- lazy-loaded assemblies use IL interpretation instead of AOT.
+1. **Do not confuse `RunAOTCompilation` with `PublishAot`.** Blazor WASM uses `RunAOTCompilation` for WASM AOT.
+   `PublishAot` is for server-side Native AOT and produces a different kind of binary.
+2. **Do not assume AOT reduces WASM download size.** AOT **increases** artifact size because native WASM code is larger
+   than IL bytecode. Use trimming to reduce size and AOT to improve runtime speed.
+3. **Do not forget to publish when testing AOT.** WASM AOT only runs during `dotnet publish`, not `dotnet run`. Debug
+   builds always use IL interpretation.
+4. **Do not lazy-load assemblies that are needed at startup.** Only lazy-load assemblies for features accessed after
+   initial navigation. Loading a lazy assembly triggers a network request.
+5. **Do not skip Brotli compression verification.** Ensure your web server serves `.br` files. Without compression, WASM
+   downloads are 3-5x larger than necessary. Check browser DevTools for `content-encoding: br` header.
+6. **Do not AOT-compile all assemblies when download size matters.** Use `BlazorWebAssemblyLazyLoad` to defer
+   non-critical assemblies -- lazy-loaded assemblies use IL interpretation instead of AOT.
 
 ---
 

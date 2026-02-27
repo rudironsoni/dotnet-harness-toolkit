@@ -2,23 +2,27 @@
 name: dotnet-ado-build-test
 description: Configures .NET build/test in Azure DevOps. DotNetCoreCLI task, Artifacts, test results.
 license: MIT
-targets: ["*"]
-tags: ["testing", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['testing', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for testing tasks"
+  short-description: '.NET skill guidance for testing tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-ado-build-test
 
-.NET build and test pipeline patterns for Azure DevOps: `DotNetCoreCLI@2` task for build, test, and pack operations, NuGet restore with Azure Artifacts feeds using `NuGetAuthenticate@1`, test result publishing with `PublishTestResults@2` for TRX and JUnit formats, code coverage with `PublishCodeCoverageResults@2` for Cobertura and JaCoCo formats, and multi-TFM matrix strategy across net8.0 and net9.0.
+.NET build and test pipeline patterns for Azure DevOps: `DotNetCoreCLI@2` task for build, test, and pack operations,
+NuGet restore with Azure Artifacts feeds using `NuGetAuthenticate@1`, test result publishing with `PublishTestResults@2`
+for TRX and JUnit formats, code coverage with `PublishCodeCoverageResults@2` for Cobertura and JaCoCo formats, and
+multi-TFM matrix strategy across net8.0 and net9.0.
 
-**Version assumptions:** `DotNetCoreCLI@2` task (current). `UseDotNet@2` for SDK installation. `NuGetAuthenticate@1` for Azure Artifacts. `PublishTestResults@2` and `PublishCodeCoverageResults@2` for reporting.
+**Version assumptions:** `DotNetCoreCLI@2` task (current). `UseDotNet@2` for SDK installation. `NuGetAuthenticate@1` for
+Azure Artifacts. `PublishTestResults@2` and `PublishCodeCoverageResults@2` for reporting.
 
 ## Scope
 
@@ -36,7 +40,8 @@ opencode:
 - Publishing and deployment -- see [skill:dotnet-ado-publish] and [skill:dotnet-ado-unique]
 - GitHub Actions build/test workflows -- see [skill:dotnet-gha-build-test]
 
-Cross-references: [skill:dotnet-add-ci] for starter build/test templates, [skill:dotnet-testing-strategy] for test architecture guidance, [skill:dotnet-ci-benchmarking] for benchmark CI integration.
+Cross-references: [skill:dotnet-add-ci] for starter build/test templates, [skill:dotnet-testing-strategy] for test
+architecture guidance, [skill:dotnet-ci-benchmarking] for benchmark CI integration.
 
 ---
 
@@ -75,9 +80,8 @@ steps:
     command: 'test'
     projects: '**/*Tests.csproj'
     arguments: >-
-      -c Release
-      --logger "trx;LogFileName=test-results.trx"
-      --results-directory $(Build.ArtifactStagingDirectory)/test-results
+      -c Release --logger "trx;LogFileName=test-results.trx" --results-directory
+      $(Build.ArtifactStagingDirectory)/test-results
 ```
 
 ### Pack
@@ -124,7 +128,8 @@ Install multiple SDK versions for multi-TFM builds:
     version: '9.0.x'
 ```
 
-Each `UseDotNet@2` invocation adds the SDK version to PATH. The last installed version becomes the default, but all versions are available via `--framework` targeting.
+Each `UseDotNet@2` invocation adds the SDK version to PATH. The last installed version becomes the default, but all
+versions are available via `--framework` targeting.
 
 ---
 
@@ -146,7 +151,8 @@ steps:
       nugetConfigPath: 'nuget.config'
 ```
 
-The `NuGetAuthenticate@1` task configures credentials for all Azure Artifacts feeds referenced in `nuget.config`. No explicit PAT or API key is needed -- the task uses the pipeline's identity.
+The `NuGetAuthenticate@1` task configures credentials for all Azure Artifacts feeds referenced in `nuget.config`. No
+explicit PAT or API key is needed -- the task uses the pipeline's identity.
 
 ### Selecting Feeds Directly
 
@@ -165,7 +171,8 @@ For simple setups without a `nuget.config`, select feeds directly in the restore
 
 ### Upstream Sources
 
-Azure Artifacts feeds can proxy nuget.org as an upstream source. When configured, a single feed reference provides access to both private packages and public NuGet packages:
+Azure Artifacts feeds can proxy nuget.org as an upstream source. When configured, a single feed reference provides
+access to both private packages and public NuGet packages:
 
 ```xml
 <!-- nuget.config with Azure Artifacts upstream -->
@@ -178,7 +185,8 @@ Azure Artifacts feeds can proxy nuget.org as an upstream source. When configured
 </configuration>
 ```
 
-With upstream sources enabled on the feed, nuget.org packages are cached in the Azure Artifacts feed, providing a single authenticated source for all packages.
+With upstream sources enabled on the feed, nuget.org packages are cached in the Azure Artifacts feed, providing a single
+authenticated source for all packages.
 
 ### Cross-Organization Feed Access
 
@@ -212,9 +220,7 @@ For feeds in different Azure DevOps organizations, use a service connection:
     command: 'test'
     projects: '**/*Tests.csproj'
     arguments: >-
-      -c Release
-      --logger "trx;LogFileName=results.trx"
-      --results-directory $(Common.TestResultsDirectory)
+      -c Release --logger "trx;LogFileName=results.trx" --results-directory $(Common.TestResultsDirectory)
   continueOnError: true
 
 - task: PublishTestResults@2
@@ -259,9 +265,7 @@ Attach screenshots or logs to test results for debugging failed tests:
     command: 'test'
     projects: '**/*Tests.csproj'
     arguments: >-
-      -c Release
-      --logger "trx;LogFileName=results.trx"
-      --results-directory $(Common.TestResultsDirectory)
+      -c Release --logger "trx;LogFileName=results.trx" --results-directory $(Common.TestResultsDirectory)
       --collect:"XPlat Code Coverage"
   continueOnError: true
 
@@ -289,9 +293,7 @@ Attach screenshots or logs to test results for debugging failed tests:
     command: 'test'
     projects: '**/*Tests.csproj'
     arguments: >-
-      -c Release
-      --collect:"XPlat Code Coverage"
-      --results-directory $(Agent.TempDirectory)/coverage
+      -c Release --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/coverage
 
 - task: PublishCodeCoverageResults@2
   displayName: 'Publish code coverage'
@@ -299,7 +301,8 @@ Attach screenshots or logs to test results for debugging failed tests:
     summaryFileLocation: '$(Agent.TempDirectory)/coverage/**/coverage.cobertura.xml'
 ```
 
-The `PublishCodeCoverageResults@2` task (v2) auto-generates HTML coverage reports in the Azure DevOps Build Summary tab without requiring `reportgenerator`.
+The `PublishCodeCoverageResults@2` task (v2) auto-generates HTML coverage reports in the Azure DevOps Build Summary tab
+without requiring `reportgenerator`.
 
 ### Coverage with ReportGenerator for Detailed Reports
 
@@ -312,9 +315,7 @@ For custom coverage reports beyond the built-in rendering:
     command: 'test'
     projects: '**/*Tests.csproj'
     arguments: >-
-      -c Release
-      --collect:"XPlat Code Coverage"
-      --results-directory $(Agent.TempDirectory)/coverage
+      -c Release --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/coverage
 
 - script: |
     set -euo pipefail
@@ -400,10 +401,8 @@ jobs:
           command: 'test'
           projects: '**/*Tests.csproj'
           arguments: >-
-            -c Release
-            --framework $(tfm)
-            --logger "trx;LogFileName=$(tfm)-results.trx"
-            --results-directory $(Common.TestResultsDirectory)
+            -c Release --framework $(tfm) --logger "trx;LogFileName=$(tfm)-results.trx" --results-directory
+            $(Common.TestResultsDirectory)
         continueOnError: true
 
       - task: PublishTestResults@2
@@ -458,34 +457,43 @@ parameters:
 
 jobs:
   - ${{ each config in parameters.configurations }}:
-    - job: Test_${{ replace(config.tfm, '.', '_') }}
-      displayName: 'Test ${{ config.tfm }}'
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - task: UseDotNet@2
-          inputs:
-            packageType: 'sdk'
-            version: ${{ config.dotnetVersion }}
+      - job: Test_${{ replace(config.tfm, '.', '_') }}
+        displayName: 'Test ${{ config.tfm }}'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: ${{ config.dotnetVersion }}
 
-        - task: DotNetCoreCLI@2
-          displayName: 'Test ${{ config.tfm }}'
-          inputs:
-            command: 'test'
-            projects: '**/*Tests.csproj'
-            arguments: '-c Release --framework ${{ config.tfm }}'
+          - task: DotNetCoreCLI@2
+            displayName: 'Test ${{ config.tfm }}'
+            inputs:
+              command: 'test'
+              projects: '**/*Tests.csproj'
+              arguments: '-c Release --framework ${{ config.tfm }}'
 ```
 
 ---
 
 ## Agent Gotchas
 
-1. **Use `set -euo pipefail` in multi-line `script:` steps** -- ADO `script:` tasks on Linux default to `set -e` but do not set `pipefail` or `nounset`; without `pipefail`, a failure in a piped command is silently swallowed.
-2. **Use `continueOnError: true` on the test task, not on the result publisher** -- the test task must not fail the pipeline before results are published, but the publisher should reflect the actual test outcome.
-3. **Install all required SDK versions for multi-TFM builds** -- `dotnet test` without the matching SDK produces `NETSDK1045`; add a `UseDotNet@2` step for each required version.
-4. **`NuGetAuthenticate@1` must precede the restore step** -- authentication tokens are injected into the agent's NuGet config at task execution time; restoring before authentication fails with 401.
-5. **Use `feedsToUse: 'config'` with `nuget.config` for complex feed setups** -- `feedsToUse: 'select'` supports only one Azure Artifacts feed; multi-feed scenarios require a `nuget.config` file.
-6. **Coverage collection requires `--collect:"XPlat Code Coverage"`** -- the default `dotnet test` does not produce coverage files; the `XPlat Code Coverage` collector is built into the .NET SDK.
-7. **`PublishCodeCoverageResults@2` expects Cobertura XML** -- passing TRX or other formats to the coverage publisher produces no output; ensure the collector outputs Cobertura format.
-8. **ADO matrix syntax differs from GHA** -- ADO uses named matrix entries with key-value pairs, not arrays; each entry must define all variable names used in the job.
-9. **Never hardcode credentials in pipeline YAML** -- use variable groups linked to Azure Key Vault or pipeline-level secret variables; hardcoded secrets are visible in repository history.
+1. **Use `set -euo pipefail` in multi-line `script:` steps** -- ADO `script:` tasks on Linux default to `set -e` but do
+   not set `pipefail` or `nounset`; without `pipefail`, a failure in a piped command is silently swallowed.
+2. **Use `continueOnError: true` on the test task, not on the result publisher** -- the test task must not fail the
+   pipeline before results are published, but the publisher should reflect the actual test outcome.
+3. **Install all required SDK versions for multi-TFM builds** -- `dotnet test` without the matching SDK produces
+   `NETSDK1045`; add a `UseDotNet@2` step for each required version.
+4. **`NuGetAuthenticate@1` must precede the restore step** -- authentication tokens are injected into the agent's NuGet
+   config at task execution time; restoring before authentication fails with 401.
+5. **Use `feedsToUse: 'config'` with `nuget.config` for complex feed setups** -- `feedsToUse: 'select'` supports only
+   one Azure Artifacts feed; multi-feed scenarios require a `nuget.config` file.
+6. **Coverage collection requires `--collect:"XPlat Code Coverage"`** -- the default `dotnet test` does not produce
+   coverage files; the `XPlat Code Coverage` collector is built into the .NET SDK.
+7. **`PublishCodeCoverageResults@2` expects Cobertura XML** -- passing TRX or other formats to the coverage publisher
+   produces no output; ensure the collector outputs Cobertura format.
+8. **ADO matrix syntax differs from GHA** -- ADO uses named matrix entries with key-value pairs, not arrays; each entry
+   must define all variable names used in the job.
+9. **Never hardcode credentials in pipeline YAML** -- use variable groups linked to Azure Key Vault or pipeline-level
+   secret variables; hardcoded secrets are visible in repository history.

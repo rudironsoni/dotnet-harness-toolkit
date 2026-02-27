@@ -2,23 +2,27 @@
 name: dotnet-localization
 description: Localizes .NET apps. .resx resources, IStringLocalizer, source generators, pluralization, RTL.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-localization
 
-Comprehensive .NET internationalization and localization: .resx resource files and satellite assemblies, modern alternatives (JSON resources, source generators for AOT), IStringLocalizer patterns, date/number/currency formatting with CultureInfo, RTL layout support, pluralization engines, and per-framework localization integration for Blazor, MAUI, Uno Platform, and WPF.
+Comprehensive .NET internationalization and localization: .resx resource files and satellite assemblies, modern
+alternatives (JSON resources, source generators for AOT), IStringLocalizer patterns, date/number/currency formatting
+with CultureInfo, RTL layout support, pluralization engines, and per-framework localization integration for Blazor,
+MAUI, Uno Platform, and WPF.
 
-**Version assumptions:** .NET 8.0+ baseline. IStringLocalizer stable since .NET Core 1.0; localization APIs stable since .NET 5. .NET 9+ features explicitly marked.
+**Version assumptions:** .NET 8.0+ baseline. IStringLocalizer stable since .NET Core 1.0; localization APIs stable since
+.NET 5. .NET 9+ features explicitly marked.
 
 ## Scope
 
@@ -37,7 +41,9 @@ Comprehensive .NET internationalization and localization: .resx resource files a
 - WPF Host builder and MVVM patterns -- see [skill:dotnet-wpf-modern]
 - Source generator authoring (Roslyn API) -- see [skill:dotnet-csharp-source-generators]
 
-Cross-references: [skill:dotnet-blazor-components] for Blazor component lifecycle, [skill:dotnet-maui-development] for MAUI app structure, [skill:dotnet-uno-platform] for Uno Extensions and x:Uid, [skill:dotnet-wpf-modern] for WPF on modern .NET.
+Cross-references: [skill:dotnet-blazor-components] for Blazor component lifecycle, [skill:dotnet-maui-development] for
+MAUI app structure, [skill:dotnet-uno-platform] for Uno Extensions and x:Uid, [skill:dotnet-wpf-modern] for WPF on
+modern .NET.
 
 ---
 
@@ -45,7 +51,8 @@ Cross-references: [skill:dotnet-blazor-components] for Blazor component lifecycl
 
 ### Overview
 
-Resource files (`.resx`) are the standard .NET localization format. They compile into satellite assemblies resolved by `ResourceManager` with automatic culture fallback.
+Resource files (`.resx`) are the standard .NET localization format. They compile into satellite assemblies resolved by
+`ResourceManager` with automatic culture fallback.
 
 ### Culture Fallback Chain
 
@@ -55,7 +62,8 @@ Resources resolve in order of specificity, falling back until a match is found:
 sr-Cyrl-RS.resx -> sr-Cyrl.resx -> sr.resx -> Resources.resx (default/neutral)
 ```
 
-The default `.resx` file (no culture suffix) is the single source of truth. Translation files must not contain keys absent from the default file.
+The default `.resx` file (no culture suffix) is the single source of truth. Translation files must not contain keys
+absent from the default file.
 
 ### Project Setup
 
@@ -109,7 +117,8 @@ string welcome = rm.GetString("Welcome", CultureInfo.CurrentUICulture);
 
 ### JSON-Based Resources
 
-Lightweight alternative for projects already using JSON for configuration. Libraries provide `IStringLocalizer` implementations backed by JSON files.
+Lightweight alternative for projects already using JSON for configuration. Libraries provide `IStringLocalizer`
+implementations backed by JSON files.
 
 ```json
 // Resources/en-US.json
@@ -120,22 +129,25 @@ Lightweight alternative for projects already using JSON for configuration. Libra
 ```
 
 **Libraries:**
+
 - `Senlin.Mo.Localization` -- JSON-backed `IStringLocalizer`
 - `Embedded.Json.Localization` -- embedded JSON resources
 
-JSON resources are popular in ASP.NET Core but lack the built-in tooling support (Visual Studio designer, satellite assembly compilation) of `.resx`.
+JSON resources are popular in ASP.NET Core but lack the built-in tooling support (Visual Studio designer, satellite
+assembly compilation) of `.resx`.
 
 ### Source Generators for AOT Compatibility
 
-Traditional `.resx` with `ResourceManager` uses reflection at runtime, which is problematic for Native AOT and trimming. Source generators eliminate runtime reflection by generating strongly-typed accessor classes at compile time.
+Traditional `.resx` with `ResourceManager` uses reflection at runtime, which is problematic for Native AOT and trimming.
+Source generators eliminate runtime reflection by generating strongly-typed accessor classes at compile time.
 
 **Recommended source generators:**
 
-| Generator | Description | AOT-Safe |
-|-----------|-------------|----------|
-| ResXGenerator (ycanardeau) | Strongly-typed classes with `IStringLocalizer` support and DI registration | Yes |
-| VocaDb.ResXFileCodeGenerator | Original strongly-typed `.resx` source generator | Yes |
-| Built-in `ResXFileCodeGenerator` | Visual Studio custom tool (not a Roslyn source generator) | No -- generates static properties but still uses `ResourceManager` |
+| Generator                        | Description                                                                | AOT-Safe                                                           |
+| -------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| ResXGenerator (ycanardeau)       | Strongly-typed classes with `IStringLocalizer` support and DI registration | Yes                                                                |
+| VocaDb.ResXFileCodeGenerator     | Original strongly-typed `.resx` source generator                           | Yes                                                                |
+| Built-in `ResXFileCodeGenerator` | Visual Studio custom tool (not a Roslyn source generator)                  | No -- generates static properties but still uses `ResourceManager` |
 
 ```xml
 <!-- Using ResXGenerator -->
@@ -153,7 +165,8 @@ string welcome = Messages.Welcome;
 services.AddResXLocalization();
 ```
 
-**Recommendation:** Use `.resx` files as the resource format (broadest tooling support) with a source generator for AOT/trimming scenarios. Use JSON resources only for lightweight or config-heavy projects.
+**Recommendation:** Use `.resx` files as the resource format (broadest tooling support) with a source generator for
+AOT/trimming scenarios. Use JSON resources only for lightweight or config-heavy projects.
 
 ---
 
@@ -182,7 +195,8 @@ app.UseRequestLocalization(options =>
 
 ### IStringLocalizer<T>
 
-The primary localization interface. Injectable via DI. Use everywhere: services, controllers, Blazor components, middleware.
+The primary localization interface. Injectable via DI. Use everywhere: services, controllers, Blazor components,
+middleware.
 
 ```csharp
 public class OrderService
@@ -225,7 +239,8 @@ Resource file location: `Resources/Views/Home/Index.en-US.resx`
 
 ### IHtmlLocalizer (MVC Only)
 
-HTML-aware variant that HTML-encodes format arguments but preserves HTML in the resource string itself. Not supported in Blazor.
+HTML-aware variant that HTML-encodes format arguments but preserves HTML in the resource string itself. Not supported in
+Blazor.
 
 ```cshtml
 @inject IHtmlLocalizer<SharedResource> HtmlLocalizer
@@ -237,15 +252,16 @@ HTML-aware variant that HTML-encodes format arguments but preserves HTML in the 
 
 ### When to Use Each
 
-| Interface | Scope | HTML-Safe | Blazor | MVC |
-|-----------|-------|-----------|--------|-----|
-| `IStringLocalizer<T>` | Everywhere | No (plain text) | Yes | Yes |
-| `IViewLocalizer` | View-local strings | No | **No** | Yes |
-| `IHtmlLocalizer<T>` | HTML in resources | Yes | **No** | Yes |
+| Interface             | Scope              | HTML-Safe       | Blazor | MVC |
+| --------------------- | ------------------ | --------------- | ------ | --- |
+| `IStringLocalizer<T>` | Everywhere         | No (plain text) | Yes    | Yes |
+| `IViewLocalizer`      | View-local strings | No              | **No** | Yes |
+| `IHtmlLocalizer<T>`   | HTML in resources  | Yes             | **No** | Yes |
 
 ### Namespace Resolution
 
-If resource lookup fails, check namespace alignment. `IStringLocalizer<T>` resolves resources using the full type name of `T` relative to the `ResourcesPath`. Use `RootNamespaceAttribute` to fix namespace/assembly mismatches:
+If resource lookup fails, check namespace alignment. `IStringLocalizer<T>` resolves resources using the full type name
+of `T` relative to the `ResourcesPath`. Use `RootNamespaceAttribute` to fix namespace/assembly mismatches:
 
 ```csharp
 [assembly: RootNamespace("MyApp")]
@@ -288,13 +304,13 @@ CultureInfo.CurrentUICulture = culture;
 
 ### Format Specifiers
 
-| Specifier | Type | Example (en-US) | Example (de-DE) |
-|-----------|------|-----------------|-----------------|
-| `"d"` | Short date | 2/14/2026 | 14.02.2026 |
-| `"D"` | Long date | Friday, February 14, 2026 | Freitag, 14. Februar 2026 |
-| `"C"` | Currency | $1,234.56 | 1.234,56 EUR |
-| `"N2"` | Number | 1,234.57 | 1.234,57 |
-| `"P1"` | Percent | 85.5% | 85,5 % |
+| Specifier | Type       | Example (en-US)           | Example (de-DE)           |
+| --------- | ---------- | ------------------------- | ------------------------- |
+| `"d"`     | Short date | 2/14/2026                 | 14.02.2026                |
+| `"D"`     | Long date  | Friday, February 14, 2026 | Freitag, 14. Februar 2026 |
+| `"C"`     | Currency   | $1,234.56                 | 1.234,56 EUR              |
+| `"N2"`    | Number     | 1,234.57                  | 1.234,57                  |
+| `"P1"`    | Percent    | 85.5%                     | 85,5 %                    |
 
 ---
 
@@ -313,7 +329,7 @@ bool isRtl = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
 
 ```javascript
 // wwwroot/js/app.js
-window.setDocumentDirection = (dir) => document.documentElement.dir = dir;
+window.setDocumentDirection = dir => (document.documentElement.dir = dir);
 ```
 
 ```csharp
@@ -333,7 +349,8 @@ window.FlowDirection = isRtl
     : FlowDirection.LeftToRight;
 ```
 
-Android requires `android:supportsRtl="true"` in AndroidManifest.xml (set by default in MAUI). For deep MAUI patterns, see [skill:dotnet-maui-development].
+Android requires `android:supportsRtl="true"` in AndroidManifest.xml (set by default in MAUI). For deep MAUI patterns,
+see [skill:dotnet-maui-development].
 
 **Uno Platform:** Inherits WinUI `FlowDirection` model:
 
@@ -368,7 +385,8 @@ Simple string interpolation fails for pluralization across languages:
 $"You have {count} item{(count != 1 ? "s" : "")}"
 ```
 
-Languages like Arabic have six plural forms (zero, one, two, few, many, other). Polish distinguishes "few" from "many" based on number ranges.
+Languages like Arabic have six plural forms (zero, one, two, few, many, other). Polish distinguishes "few" from "many"
+based on number ranges.
 
 ### ICU MessageFormat (MessageFormat.NET)
 
@@ -406,11 +424,11 @@ Smart.Format("{count:plural:No items|# item|# items}",
 
 ### Choosing a Pluralization Engine
 
-| Engine | CLDR Compliance | API Style | Best For |
-|--------|-----------------|-----------|----------|
-| MessageFormat.NET | Full (CLDR categories) | ICU pattern strings | Multi-locale apps needing standard compliance |
-| SmartFormat.NET | Partial (extensible) | .NET format string extension | Flexible templating with pluralization |
-| Manual conditional | None | `string.Format` + branching | Simple English-only dual forms |
+| Engine             | CLDR Compliance        | API Style                    | Best For                                      |
+| ------------------ | ---------------------- | ---------------------------- | --------------------------------------------- |
+| MessageFormat.NET  | Full (CLDR categories) | ICU pattern strings          | Multi-locale apps needing standard compliance |
+| SmartFormat.NET    | Partial (extensible)   | .NET format string extension | Flexible templating with pluralization        |
+| Manual conditional | None                   | `string.Format` + branching  | Simple English-only dual forms                |
 
 ---
 
@@ -431,11 +449,11 @@ Blazor supports `IStringLocalizer` only -- `IHtmlLocalizer` and `IViewLocalizer`
 
 **Culture configuration by render mode:**
 
-| Render Mode | Culture Source |
-|-------------|---------------|
-| Server / SSR | `RequestLocalizationMiddleware` (server-side) |
-| WebAssembly | `CultureInfo.DefaultThreadCurrentCulture` + Blazor start option `applicationCulture` |
-| Auto | Both -- server middleware for initial load, WASM culture for client-side |
+| Render Mode  | Culture Source                                                                       |
+| ------------ | ------------------------------------------------------------------------------------ |
+| Server / SSR | `RequestLocalizationMiddleware` (server-side)                                        |
+| WebAssembly  | `CultureInfo.DefaultThreadCurrentCulture` + Blazor start option `applicationCulture` |
+| Auto         | Both -- server middleware for initial load, WASM culture for client-side             |
 
 **WASM globalization data:**
 
@@ -446,7 +464,8 @@ Blazor supports `IStringLocalizer` only -- `IHtmlLocalizer` and `IViewLocalizer`
 </PropertyGroup>
 ```
 
-Without this property, Blazor WASM loads only a subset of ICU data. For minimal download size, use `InvariantGlobalization=true` (disables localization entirely).
+Without this property, Blazor WASM loads only a subset of ICU data. For minimal download size, use
+`InvariantGlobalization=true` (disables localization entirely).
 
 **Dynamic culture switching:**
 
@@ -492,6 +511,7 @@ string welcome = AppResources.Welcome;
 ```
 
 **Platform requirements:**
+
 - iOS/Mac Catalyst: Add `CFBundleLocalizations` to `Info.plist`
 - Windows: Add `<Resource Language="...">` entries to `Package.appxmanifest`
 - All platforms: Set `<NeutralLanguage>en-US</NeutralLanguage>` in csproj
@@ -536,13 +556,15 @@ await localizationService.SetCurrentCultureAsync(
 // Note: XAML x:Uid bindings retain old culture until app restart
 ```
 
-**Known limitation:** `x:Uid`-based localization keeps the old culture until app restart, even after calling `SetCurrentCultureAsync`. Code-based `IStringLocalizer` updates immediately.
+**Known limitation:** `x:Uid`-based localization keeps the old culture until app restart, even after calling
+`SetCurrentCultureAsync`. Code-based `IStringLocalizer` updates immediately.
 
 For Uno Extensions ecosystem configuration and MVUX patterns, see [skill:dotnet-uno-platform].
 
 ### WPF Localization
 
-**Recommended approach for .NET 8+:** `.resx` files with `DynamicResource` binding for runtime locale switching. Avoid LocBaml (works only on .NET Framework).
+**Recommended approach for .NET 8+:** `.resx` files with `DynamicResource` binding for runtime locale switching. Avoid
+LocBaml (works only on .NET Framework).
 
 **Resource dictionary approach:**
 
@@ -587,6 +609,7 @@ string welcomeFr = Strings.Welcome; // Now returns French
 ```
 
 **Community options:**
+
 - **WPF Localization Extensions** -- RESX files with XAML markup extensions for declarative localization
 - **LocBamlCore** (h3xds1nz) -- unofficial port supporting .NET 9, for BAML localization on modern .NET
 
@@ -596,13 +619,21 @@ For WPF Host builder, MVVM Toolkit, and theming patterns, see [skill:dotnet-wpf-
 
 ## Agent Gotchas
 
-1. **Do not use `IHtmlLocalizer` or `IViewLocalizer` in Blazor.** These are MVC-only features. Use `IStringLocalizer<T>` in Blazor components.
-2. **Do not rely on `CultureInfo.CurrentCulture` thread defaults in server code.** Always pass explicit `CultureInfo` to formatting methods. Server thread culture may not match the request culture.
-3. **Do not hardcode plural forms.** English "singular/plural" does not work for Arabic (6 forms), Polish, or other languages. Use MessageFormat.NET or SmartFormat.NET for proper CLDR pluralization.
-4. **Do not use LocBaml for WPF on .NET 8+.** LocBaml is a .NET Framework-only sample tool. Use `.resx` files or resource dictionaries for modern WPF.
-5. **Do not forget `BlazorWebAssemblyLoadAllGlobalizationData` for Blazor WASM.** Without it, only partial ICU data is loaded, causing incorrect date/number formatting for many cultures.
-6. **Do not add translation keys absent from the default `.resx` file.** The default resource is the single source of truth; satellite assemblies must be a subset.
-7. **Do not use `ResourceManager` directly in AOT/trimmed apps.** It relies on reflection. Use a source generator (ResXGenerator) for compile-time resource access.
-8. **Do not forget platform-specific setup for MAUI.** iOS/Mac Catalyst need `CFBundleLocalizations` in `Info.plist`; Windows needs `Resource Language` entries.
+1. **Do not use `IHtmlLocalizer` or `IViewLocalizer` in Blazor.** These are MVC-only features. Use `IStringLocalizer<T>`
+   in Blazor components.
+2. **Do not rely on `CultureInfo.CurrentCulture` thread defaults in server code.** Always pass explicit `CultureInfo` to
+   formatting methods. Server thread culture may not match the request culture.
+3. **Do not hardcode plural forms.** English "singular/plural" does not work for Arabic (6 forms), Polish, or other
+   languages. Use MessageFormat.NET or SmartFormat.NET for proper CLDR pluralization.
+4. **Do not use LocBaml for WPF on .NET 8+.** LocBaml is a .NET Framework-only sample tool. Use `.resx` files or
+   resource dictionaries for modern WPF.
+5. **Do not forget `BlazorWebAssemblyLoadAllGlobalizationData` for Blazor WASM.** Without it, only partial ICU data is
+   loaded, causing incorrect date/number formatting for many cultures.
+6. **Do not add translation keys absent from the default `.resx` file.** The default resource is the single source of
+   truth; satellite assemblies must be a subset.
+7. **Do not use `ResourceManager` directly in AOT/trimmed apps.** It relies on reflection. Use a source generator
+   (ResXGenerator) for compile-time resource access.
+8. **Do not forget platform-specific setup for MAUI.** iOS/Mac Catalyst need `CFBundleLocalizations` in `Info.plist`;
+   Windows needs `Resource Language` entries.
 
 ---

@@ -2,21 +2,24 @@
 name: dotnet-linq-optimization
 description: Optimizes LINQ queries. IQueryable vs IEnumerable, compiled queries, deferred exec, allocations.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-linq-optimization
 
-LINQ performance patterns for .NET applications. Covers the critical distinction between `IQueryable<T>` server-side evaluation and `IEnumerable<T>` client-side materialization, compiled queries for EF Core hot paths, deferred execution pitfalls, LINQ-to-Objects allocation patterns and when to drop to manual loops, and Span-based alternatives for zero-allocation processing.
+LINQ performance patterns for .NET applications. Covers the critical distinction between `IQueryable<T>` server-side
+evaluation and `IEnumerable<T>` client-side materialization, compiled queries for EF Core hot paths, deferred execution
+pitfalls, LINQ-to-Objects allocation patterns and when to drop to manual loops, and Span-based alternatives for
+zero-allocation processing.
 
 ## Scope
 
@@ -32,13 +35,16 @@ LINQ performance patterns for .NET applications. Covers the critical distinction
 - Span<T> and Memory<T> fundamentals -- see [skill:dotnet-performance-patterns]
 - Microbenchmarking setup -- see [skill:dotnet-benchmarkdotnet]
 
-Cross-references: [skill:dotnet-efcore-patterns] for compiled queries in EF Core context and DbContext usage, [skill:dotnet-performance-patterns] for Span<T>/Memory<T> foundations and ArrayPool patterns, [skill:dotnet-benchmarkdotnet] for measuring LINQ optimization impact.
+Cross-references: [skill:dotnet-efcore-patterns] for compiled queries in EF Core context and DbContext usage,
+[skill:dotnet-performance-patterns] for Span<T>/Memory<T> foundations and ArrayPool patterns,
+[skill:dotnet-benchmarkdotnet] for measuring LINQ optimization impact.
 
 ---
 
 ## IQueryable vs IEnumerable Materialization
 
-The most impactful LINQ performance decision is where evaluation happens: on the database server (`IQueryable<T>`) or in application memory (`IEnumerable<T>`).
+The most impactful LINQ performance decision is where evaluation happens: on the database server (`IQueryable<T>`) or in
+application memory (`IEnumerable<T>`).
 
 ### The Problem
 
@@ -56,14 +62,14 @@ var recent = orders.Where(o => o.CreatedAt > cutoff).ToList();
 
 ### When Materialization Happens
 
-| Operation | Effect |
-|-----------|--------|
-| `ToList()`, `ToArray()`, `ToDictionary()` | Executes query, loads results into memory |
-| `foreach` / `await foreach` | Executes query, streams results |
-| `AsEnumerable()` | Switches from server to client evaluation |
-| `Count()`, `Any()`, `First()`, `Single()` | Executes query, returns scalar |
-| `Where()`, `Select()`, `OrderBy()` on `IQueryable` | Builds expression tree (no execution) |
-| `Where()`, `Select()`, `OrderBy()` on `IEnumerable` | Deferred in-memory evaluation |
+| Operation                                           | Effect                                    |
+| --------------------------------------------------- | ----------------------------------------- |
+| `ToList()`, `ToArray()`, `ToDictionary()`           | Executes query, loads results into memory |
+| `foreach` / `await foreach`                         | Executes query, streams results           |
+| `AsEnumerable()`                                    | Switches from server to client evaluation |
+| `Count()`, `Any()`, `First()`, `Single()`           | Executes query, returns scalar            |
+| `Where()`, `Select()`, `OrderBy()` on `IQueryable`  | Builds expression tree (no execution)     |
+| `Where()`, `Select()`, `OrderBy()` on `IEnumerable` | Deferred in-memory evaluation             |
 
 ### Common Mistakes
 
@@ -105,7 +111,8 @@ var names = dbContext.Orders.Select(o => o.CustomerName).ToList();
 
 ## Compiled Queries for EF Core Hot Paths
 
-Compiled queries eliminate the per-call expression tree compilation overhead. For queries executed thousands of times per second, this can reduce overhead significantly.
+Compiled queries eliminate the per-call expression tree compilation overhead. For queries executed thousands of times
+per second, this can reduce overhead significantly.
 
 ### Standard Compiled Query
 
@@ -135,12 +142,12 @@ public sealed class OrderRepository(AppDbContext db)
 
 ### When to Use Compiled Queries
 
-| Scenario | Use compiled query? |
-|----------|-------------------|
-| High-frequency lookups (auth, caching) | Yes |
-| Admin dashboard queries (low frequency) | No -- overhead is negligible |
-| Queries with dynamic predicates (user search) | No -- cannot parameterize shape |
-| Queries with `Include()` that varies | No -- includes change expression tree shape |
+| Scenario                                      | Use compiled query?                         |
+| --------------------------------------------- | ------------------------------------------- |
+| High-frequency lookups (auth, caching)        | Yes                                         |
+| Admin dashboard queries (low frequency)       | No -- overhead is negligible                |
+| Queries with dynamic predicates (user search) | No -- cannot parameterize shape             |
+| Queries with `Include()` that varies          | No -- includes change expression tree shape |
 
 ### Limitations
 
@@ -152,7 +159,8 @@ public sealed class OrderRepository(AppDbContext db)
 
 ## Deferred Execution Pitfalls
 
-LINQ uses deferred execution: query operators build a pipeline that executes only when results are consumed. This is powerful but creates subtle bugs.
+LINQ uses deferred execution: query operators build a pipeline that executes only when results are consumed. This is
+powerful but creates subtle bugs.
 
 ### Multiple Enumeration
 
@@ -190,7 +198,8 @@ for (int i = 0; i < statuses.Length; i++)
 }
 ```
 
-Note: C# 5+ `foreach` loop variables are scoped per iteration and do not exhibit this bug. The `for` loop index variable is shared across iterations, making this a common pitfall when building deferred LINQ queries in a loop.
+Note: C# 5+ `foreach` loop variables are scoped per iteration and do not exhibit this bug. The `for` loop index variable
+is shared across iterations, making this a common pitfall when building deferred LINQ queries in a loop.
 
 ### Deferred Execution in Method Returns
 
@@ -216,22 +225,24 @@ public async Task<List<Order>> GetActiveOrdersAsync(CancellationToken ct)
 
 ## LINQ-to-Objects Allocation Patterns
 
-LINQ operators on in-memory collections allocate iterators, delegates, and intermediate collections. For hot paths processing thousands of items per second, these allocations can cause GC pressure.
+LINQ operators on in-memory collections allocate iterators, delegates, and intermediate collections. For hot paths
+processing thousands of items per second, these allocations can cause GC pressure.
 
 ### Allocation Sources
 
-| Operation | Allocations |
-|-----------|------------|
-| `Where()`, `Select()` | Iterator object + delegate |
-| `ToList()`, `ToArray()` | New collection + possible resizing |
-| `OrderBy()` | Full copy for sorting |
-| `GroupBy()` | Dictionary + grouping objects |
-| `SelectMany()` | Iterator + inner iterators |
-| Lambda capture of local variable | Closure object per captured scope |
+| Operation                        | Allocations                        |
+| -------------------------------- | ---------------------------------- |
+| `Where()`, `Select()`            | Iterator object + delegate         |
+| `ToList()`, `ToArray()`          | New collection + possible resizing |
+| `OrderBy()`                      | Full copy for sorting              |
+| `GroupBy()`                      | Dictionary + grouping objects      |
+| `SelectMany()`                   | Iterator + inner iterators         |
+| Lambda capture of local variable | Closure object per captured scope  |
 
 ### When LINQ Allocation Matters
 
 LINQ allocations are negligible for most code. Optimize only when:
+
 - Processing is on a hot path (called thousands of times per second)
 - BenchmarkDotNet shows significant `Allocated` bytes
 - GC metrics (Gen0 collections/sec) indicate pressure
@@ -296,7 +307,8 @@ var result = items.Where(static x => x.IsActive).ToList();
 
 ## Span-Based Alternatives for Collection Processing
 
-For the highest-performance scenarios, `Span<T>` and `ReadOnlySpan<T>` enable stack-based, zero-allocation processing. These APIs are not LINQ-compatible but cover common patterns.
+For the highest-performance scenarios, `Span<T>` and `ReadOnlySpan<T>` enable stack-based, zero-allocation processing.
+These APIs are not LINQ-compatible but cover common patterns.
 
 ### Span Search and Filter
 
@@ -327,11 +339,11 @@ bool match = input.Trim().SequenceEqual("hello");
 
 ### When to Use Span Over LINQ
 
-| Scenario | Approach |
-|----------|----------|
-| Parsing CSV/log lines in a tight loop | `ReadOnlySpan<char>` + `Split` |
-| Searching sorted arrays | `Span<T>.BinarySearch` |
-| Processing byte buffers from I/O | `ReadOnlySpan<byte>` slicing |
+| Scenario                              | Approach                                   |
+| ------------------------------------- | ------------------------------------------ |
+| Parsing CSV/log lines in a tight loop | `ReadOnlySpan<char>` + `Split`             |
+| Searching sorted arrays               | `Span<T>.BinarySearch`                     |
+| Processing byte buffers from I/O      | `ReadOnlySpan<byte>` slicing               |
 | General business logic on collections | LINQ (readability over micro-optimization) |
 
 See [skill:dotnet-performance-patterns] for comprehensive Span<T>/Memory<T> patterns and ArrayPool<T> usage.
@@ -410,12 +422,22 @@ await dbContext.Orders
 
 ## Agent Gotchas
 
-1. **Do not cast IQueryable<T> to IEnumerable<T> before filtering** -- this silently switches from server-side SQL evaluation to client-side in-memory evaluation, potentially loading entire tables. Check for `AsEnumerable()`, explicit casts, or method signatures that accept `IEnumerable<T>`.
-2. **Do not return IQueryable<T> from repository methods** -- callers can compose additional operators, but the DbContext may be disposed before enumeration. Return materialized collections (`List<T>`) or use `IAsyncEnumerable<T>`.
-3. **Do not optimize LINQ allocations without benchmarks** -- LINQ iterator overhead is negligible for most business logic. Use [skill:dotnet-benchmarkdotnet] `[MemoryDiagnoser]` to prove allocations matter before replacing LINQ with manual loops.
-4. **Do not use compiled queries with dynamic predicates** -- compiled queries cache the expression tree shape. If the query shape changes per call (conditional includes, dynamic filters), the compiled query throws or produces wrong results.
-5. **Do not enumerate a deferred query multiple times** -- each enumeration re-executes the underlying source (database query, network call). Materialize with `ToList()` when the result will be consumed more than once.
-6. **Do not use `Skip()`/`Take()` for deep pagination** -- offset pagination is O(N) on the database. Use keyset (seek) pagination with a `Where` clause on the last-seen key for consistent performance regardless of page depth.
+1. **Do not cast IQueryable<T> to IEnumerable<T> before filtering** -- this silently switches from server-side SQL
+   evaluation to client-side in-memory evaluation, potentially loading entire tables. Check for `AsEnumerable()`,
+   explicit casts, or method signatures that accept `IEnumerable<T>`.
+2. **Do not return IQueryable<T> from repository methods** -- callers can compose additional operators, but the
+   DbContext may be disposed before enumeration. Return materialized collections (`List<T>`) or use
+   `IAsyncEnumerable<T>`.
+3. **Do not optimize LINQ allocations without benchmarks** -- LINQ iterator overhead is negligible for most business
+   logic. Use [skill:dotnet-benchmarkdotnet] `[MemoryDiagnoser]` to prove allocations matter before replacing LINQ with
+   manual loops.
+4. **Do not use compiled queries with dynamic predicates** -- compiled queries cache the expression tree shape. If the
+   query shape changes per call (conditional includes, dynamic filters), the compiled query throws or produces wrong
+   results.
+5. **Do not enumerate a deferred query multiple times** -- each enumeration re-executes the underlying source (database
+   query, network call). Materialize with `ToList()` when the result will be consumed more than once.
+6. **Do not use `Skip()`/`Take()` for deep pagination** -- offset pagination is O(N) on the database. Use keyset (seek)
+   pagination with a `Where` clause on the last-seen key for consistent performance regardless of page depth.
 
 ---
 

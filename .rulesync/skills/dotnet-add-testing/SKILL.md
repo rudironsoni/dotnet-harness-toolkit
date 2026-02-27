@@ -2,21 +2,22 @@
 name: dotnet-add-testing
 description: Adds test infrastructure to a .NET project. Scaffolds xUnit project, coverlet, layout.
 license: MIT
-targets: ["*"]
-tags: ["testing", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['testing', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for testing tasks"
+  short-description: '.NET skill guidance for testing tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-add-testing
 
-Add test infrastructure scaffolding to an existing .NET project. Creates test projects with xUnit, configures code coverage with coverlet, and sets up the conventional directory structure.
+Add test infrastructure scaffolding to an existing .NET project. Creates test projects with xUnit, configures code
+coverage with coverlet, and sets up the conventional directory structure.
 
 ## Scope
 
@@ -28,9 +29,12 @@ Add test infrastructure scaffolding to an existing .NET project. Creates test pr
 
 - In-depth testing patterns (xUnit v3, WebApplicationFactory, UI testing) -- see [skill:dotnet-testing-strategy]
 
-**Prerequisites:** Run [skill:dotnet-version-detection] first to determine SDK version and TFM. Run [skill:dotnet-project-analysis] to understand existing solution structure.
+**Prerequisites:** Run [skill:dotnet-version-detection] first to determine SDK version and TFM. Run
+[skill:dotnet-project-analysis] to understand existing solution structure.
 
-Cross-references: [skill:dotnet-project-structure] for overall solution layout conventions, [skill:dotnet-scaffold-project] which includes test scaffolding in new projects, [skill:dotnet-add-analyzers] for test-specific analyzer suppressions.
+Cross-references: [skill:dotnet-project-structure] for overall solution layout conventions,
+[skill:dotnet-scaffold-project] which includes test scaffolding in new projects, [skill:dotnet-add-analyzers] for
+test-specific analyzer suppressions.
 
 ---
 
@@ -52,6 +56,7 @@ MyApp/
 ```
 
 Naming conventions:
+
 - `*.UnitTests` -- isolated tests with no external dependencies
 - `*.IntegrationTests` -- tests that use real infrastructure (database, HTTP, file system)
 - `*.FunctionalTests` -- end-to-end tests through the full application stack
@@ -114,7 +119,8 @@ Create `tests/Directory.Build.props` to customize settings for all test projects
 </Project>
 ```
 
-This imports the root `Directory.Build.props` (for shared settings like `Nullable`, `ImplicitUsings`, `LangVersion`) and overrides test-specific properties.
+This imports the root `Directory.Build.props` (for shared settings like `Nullable`, `ImplicitUsings`, `LangVersion`) and
+overrides test-specific properties.
 
 ---
 
@@ -153,7 +159,8 @@ Or for assertion libraries:
 
 ### Coverlet (Collector Mode)
 
-The `coverlet.collector` package integrates with `dotnet test` via the data collector. No additional configuration is needed for basic coverage.
+The `coverlet.collector` package integrates with `dotnet test` via the data collector. No additional configuration is
+needed for basic coverage.
 
 Generate coverage reports:
 
@@ -256,6 +263,7 @@ public class SampleServiceTests
 ### Test Naming Convention
 
 Use the pattern `Method_Condition_ExpectedResult`:
+
 - `CreateUser_WithValidInput_ReturnsUser`
 - `GetById_WhenNotFound_ReturnsNull`
 - `Delete_WithoutPermission_ThrowsUnauthorized`
@@ -293,7 +301,8 @@ dotnet add tests/MyApp.Api.IntegrationTests/MyApp.Api.IntegrationTests.csproj \
   reference src/MyApp.Api/MyApp.Api.csproj
 ```
 
-Add integration test packages to CPM (match the `Microsoft.AspNetCore.Mvc.Testing` major version to the target framework -- e.g., `8.x` for `net8.0`, `9.x` for `net9.0`, `10.x` for `net10.0`):
+Add integration test packages to CPM (match the `Microsoft.AspNetCore.Mvc.Testing` major version to the target framework
+-- e.g., `8.x` for `net8.0`, `9.x` for `net9.0`, `10.x` for `net10.0`):
 
 ```xml
 <!-- Version must match the project's target framework major version -->
@@ -301,19 +310,23 @@ Add integration test packages to CPM (match the `Microsoft.AspNetCore.Mvc.Testin
 <PackageVersion Include="Testcontainers" Version="4.3.0" />
 ```
 
-Integration test depth (WebApplicationFactory patterns, test containers, database fixtures) -- see [skill:dotnet-integration-testing].
+Integration test depth (WebApplicationFactory patterns, test containers, database fixtures) -- see
+[skill:dotnet-integration-testing].
 
 ---
 
 ## What's Next
 
 This skill covers test project scaffolding. For deeper testing guidance:
+
 - **xUnit v3 features and patterns** -- [skill:dotnet-xunit]
 - **Integration testing with WebApplicationFactory** -- [skill:dotnet-integration-testing]
-- **UI testing (Blazor, MAUI, Uno)** -- [skill:dotnet-blazor-testing], [skill:dotnet-maui-testing], [skill:dotnet-uno-testing]
+- **UI testing (Blazor, MAUI, Uno)** -- [skill:dotnet-blazor-testing], [skill:dotnet-maui-testing],
+  [skill:dotnet-uno-testing]
 - **Snapshot testing** -- [skill:dotnet-snapshot-testing]
 - **Test quality and coverage enforcement** -- [skill:dotnet-test-quality]
-- **CI test reporting** -- [skill:dotnet-add-ci] for starter, [skill:dotnet-gha-build-test] and [skill:dotnet-ado-build-test] for advanced
+- **CI test reporting** -- [skill:dotnet-add-ci] for starter, [skill:dotnet-gha-build-test] and
+  [skill:dotnet-ado-build-test] for advanced
 
 ---
 

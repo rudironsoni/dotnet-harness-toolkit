@@ -2,23 +2,27 @@
 name: dotnet-cli-architecture
 description: Structures CLI app layers. Command/handler/service separation, clig.dev principles, exit codes.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-cli-architecture
 
-Layered CLI application architecture for .NET: command/handler/service separation following clig.dev principles, configuration precedence (appsettings → environment variables → CLI arguments), structured logging in CLI context, exit code conventions, stdin/stdout/stderr patterns, and testing CLI applications via in-process invocation with output capture.
+Layered CLI application architecture for .NET: command/handler/service separation following clig.dev principles,
+configuration precedence (appsettings → environment variables → CLI arguments), structured logging in CLI context, exit
+code conventions, stdin/stdout/stderr patterns, and testing CLI applications via in-process invocation with output
+capture.
 
-**Version assumptions:** .NET 8.0+ baseline. Patterns apply to CLI tools built with System.CommandLine 2.0 and generic host.
+**Version assumptions:** .NET 8.0+ baseline. Patterns apply to CLI tools built with System.CommandLine 2.0 and generic
+host.
 
 ## Scope
 
@@ -38,26 +42,29 @@ Layered CLI application architecture for .NET: command/handler/service separatio
 - DI container internals -- see [skill:dotnet-csharp-dependency-injection]
 - General testing strategies -- see [skill:dotnet-testing-strategy]
 
-Cross-references: [skill:dotnet-system-commandline] for System.CommandLine 2.0 API, [skill:dotnet-native-aot] for AOT publishing CLI tools, [skill:dotnet-csharp-dependency-injection] for DI patterns, [skill:dotnet-csharp-configuration] for configuration integration, [skill:dotnet-testing-strategy] for general testing patterns.
+Cross-references: [skill:dotnet-system-commandline] for System.CommandLine 2.0 API, [skill:dotnet-native-aot] for AOT
+publishing CLI tools, [skill:dotnet-csharp-dependency-injection] for DI patterns, [skill:dotnet-csharp-configuration]
+for configuration integration, [skill:dotnet-testing-strategy] for general testing patterns.
 
 ---
 
 ## clig.dev Principles for .NET CLI Tools
 
-The [Command Line Interface Guidelines](https://clig.dev/) provide language-agnostic principles for well-behaved CLI tools. These translate directly to .NET patterns.
+The [Command Line Interface Guidelines](https://clig.dev/) provide language-agnostic principles for well-behaved CLI
+tools. These translate directly to .NET patterns.
 
 ### Core Principles
 
-| Principle | Implementation |
-|-----------|---------------|
-| Human-first output by default | Use `Console.Out` for data, `Console.Error` for diagnostics |
-| Machine-readable output with `--json` | Add a `--json` global option that switches output format |
-| Stderr for status/diagnostics | Logging, progress bars, and prompts go to stderr |
-| Stdout for data only | Piped output (`mycli list \| jq .`) must not contain log noise |
-| Non-zero exit on failure | Return specific exit codes (see conventions below) |
-| Fail early, fail loudly | Validate inputs before doing work |
-| Respect `NO_COLOR` | Check `Environment.GetEnvironmentVariable("NO_COLOR")` |
-| Support `--verbose` and `--quiet` | Global options controlling output verbosity |
+| Principle                             | Implementation                                                 |
+| ------------------------------------- | -------------------------------------------------------------- |
+| Human-first output by default         | Use `Console.Out` for data, `Console.Error` for diagnostics    |
+| Machine-readable output with `--json` | Add a `--json` global option that switches output format       |
+| Stderr for status/diagnostics         | Logging, progress bars, and prompts go to stderr               |
+| Stdout for data only                  | Piped output (`mycli list \| jq .`) must not contain log noise |
+| Non-zero exit on failure              | Return specific exit codes (see conventions below)             |
+| Fail early, fail loudly               | Validate inputs before doing work                              |
+| Respect `NO_COLOR`                    | Check `Environment.GetEnvironmentVariable("NO_COLOR")`         |
+| Support `--verbose` and `--quiet`     | Global options controlling output verbosity                    |
 
 ### Stdout vs Stderr in .NET
 
@@ -252,13 +259,14 @@ var builder = new CommandLineBuilder(rootCommand)
 
 ### User-Level Configuration
 
-Many CLI tools support user-level config (e.g., `~/.mycli/config.json`, `~/.config/mycli/config.yaml`). Follow platform conventions:
+Many CLI tools support user-level config (e.g., `~/.mycli/config.json`, `~/.config/mycli/config.yaml`). Follow platform
+conventions:
 
-| Platform | Location |
-|----------|----------|
-| Linux/macOS | `~/.config/mycli/` or `~/.mycli/` |
-| Windows | `%APPDATA%\mycli\` |
-| XDG-compliant | `$XDG_CONFIG_HOME/mycli/` |
+| Platform      | Location                          |
+| ------------- | --------------------------------- |
+| Linux/macOS   | `~/.config/mycli/` or `~/.mycli/` |
+| Windows       | `%APPDATA%\mycli\`                |
+| XDG-compliant | `$XDG_CONFIG_HOME/mycli/`         |
 
 ---
 
@@ -554,12 +562,18 @@ public async Task List_StderrContainsLogs_StdoutContainsDataOnly()
 
 ## Agent Gotchas
 
-1. **Do not write diagnostic output to stdout.** Logs, progress, and errors go to stderr. Stdout is reserved for data output that can be piped. A CLI tool that mixes logs into stdout breaks shell pipelines.
-2. **Do not hardcode exit code 1 for all errors.** Use distinct exit codes for different failure categories (I/O, network, auth, validation). Callers and scripts rely on exit codes to determine what went wrong.
-3. **Do not put business logic in command handlers.** Handlers should orchestrate calls to injected services and format output. Business logic in handlers cannot be reused or unit-tested independently.
-4. **Do not test CLI tools only via process spawning.** Use in-process invocation with `CommandLineBuilder` and `TestConsole` for fast, reliable tests. Reserve process-level tests for smoke testing the published binary.
-5. **Do not ignore `Console.IsInputRedirected` when accepting stdin.** Without checking, the tool may hang waiting for input when invoked without piped data.
-6. **Do not use exit codes above 125.** Codes 126-255 have special meanings in Unix shells (126 = not executable, 127 = not found, 128+N = killed by signal N). Tool-specific codes should be in the 1-125 range.
+1. **Do not write diagnostic output to stdout.** Logs, progress, and errors go to stderr. Stdout is reserved for data
+   output that can be piped. A CLI tool that mixes logs into stdout breaks shell pipelines.
+2. **Do not hardcode exit code 1 for all errors.** Use distinct exit codes for different failure categories (I/O,
+   network, auth, validation). Callers and scripts rely on exit codes to determine what went wrong.
+3. **Do not put business logic in command handlers.** Handlers should orchestrate calls to injected services and format
+   output. Business logic in handlers cannot be reused or unit-tested independently.
+4. **Do not test CLI tools only via process spawning.** Use in-process invocation with `CommandLineBuilder` and
+   `TestConsole` for fast, reliable tests. Reserve process-level tests for smoke testing the published binary.
+5. **Do not ignore `Console.IsInputRedirected` when accepting stdin.** Without checking, the tool may hang waiting for
+   input when invoked without piped data.
+6. **Do not use exit codes above 125.** Codes 126-255 have special meanings in Unix shells (126 = not executable, 127 =
+   not found, 128+N = killed by signal N). Tool-specific codes should be in the 1-125 range.
 
 ---
 

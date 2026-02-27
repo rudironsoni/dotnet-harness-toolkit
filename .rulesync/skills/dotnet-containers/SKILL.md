@@ -2,21 +2,23 @@
 name: dotnet-containers
 description: Containerizes .NET apps. Multi-stage Dockerfiles, SDK container publish (.NET 8+), rootless.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-containers
 
-Best practices for containerizing .NET applications. Covers multi-stage Dockerfile patterns, the `dotnet publish` container image feature (.NET 8+), rootless container configuration, optimized layer caching, and container health checks.
+Best practices for containerizing .NET applications. Covers multi-stage Dockerfile patterns, the `dotnet publish`
+container image feature (.NET 8+), rootless container configuration, optimized layer caching, and container health
+checks.
 
 ## Scope
 
@@ -30,10 +32,13 @@ Best practices for containerizing .NET applications. Covers multi-stage Dockerfi
 
 - DI container mechanics and service lifetimes -- see [skill:dotnet-csharp-dependency-injection]
 - Kubernetes deployment manifests and Docker Compose -- see [skill:dotnet-container-deployment]
-- CI/CD pipeline integration for building and pushing images -- see [skill:dotnet-gha-publish] and [skill:dotnet-ado-publish]
+- CI/CD pipeline integration for building and pushing images -- see [skill:dotnet-gha-publish] and
+  [skill:dotnet-ado-publish]
 - Testing containerized applications -- see [skill:dotnet-integration-testing]
 
-Cross-references: [skill:dotnet-observability] for health check patterns, [skill:dotnet-container-deployment] for deploying containers to Kubernetes and local dev with Compose, [skill:dotnet-artifacts-output] for Dockerfile path adjustments when using centralized build output layout.
+Cross-references: [skill:dotnet-observability] for health check patterns, [skill:dotnet-container-deployment] for
+deploying containers to Kubernetes and local dev with Compose, [skill:dotnet-artifacts-output] for Dockerfile path
+adjustments when using centralized build output layout.
 
 ---
 
@@ -116,7 +121,8 @@ RUN dotnet publish "src/MyApi/MyApi.csproj" -c Release -o /app/publish --no-rest
 
 ## dotnet publish Container Images (.NET 8+)
 
-Starting with .NET 8, `dotnet publish` can produce OCI container images directly without a Dockerfile. This uses the `Microsoft.NET.Build.Containers` SDK (included in the .NET SDK).
+Starting with .NET 8, `dotnet publish` can produce OCI container images directly without a Dockerfile. This uses the
+`Microsoft.NET.Build.Containers` SDK (included in the .NET SDK).
 
 ### Basic Usage
 
@@ -169,13 +175,13 @@ Configure container properties in the `.csproj`:
 
 ### When to Use dotnet publish vs Dockerfile
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Simple single-project API | `dotnet publish /t:PublishContainer` -- less boilerplate |
-| Multi-stage build with native dependencies | Dockerfile -- full control over build environment |
+| Scenario                                         | Recommendation                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| Simple single-project API                        | `dotnet publish /t:PublishContainer` -- less boilerplate         |
+| Multi-stage build with native dependencies       | Dockerfile -- full control over build environment                |
 | Need to install OS packages (e.g., `libgdiplus`) | Dockerfile -- `RUN apt-get install` not available in SDK publish |
-| CI/CD with complex build steps | Dockerfile -- explicit, reproducible |
-| Quick local container testing | `dotnet publish /t:PublishContainer` -- fastest iteration |
+| CI/CD with complex build steps                   | Dockerfile -- explicit, reproducible                             |
+| Quick local container testing                    | `dotnet publish /t:PublishContainer` -- fastest iteration        |
 
 ---
 
@@ -183,14 +189,14 @@ Configure container properties in the `.csproj`:
 
 ### Official .NET Container Images
 
-| Image | Use Case | Size |
-|-------|----------|------|
-| `mcr.microsoft.com/dotnet/aspnet:10.0` | ASP.NET Core apps (Ubuntu) | ~220 MB |
-| `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` | ASP.NET Core apps (Alpine, smaller) | ~110 MB |
-| `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled` | Distroless (no shell, no package manager) | ~110 MB |
-| `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra` | Chiseled + globalization + time zones | ~130 MB |
-| `mcr.microsoft.com/dotnet/runtime:10.0` | Console apps, worker services | ~190 MB |
-| `mcr.microsoft.com/dotnet/runtime-deps:10.0` | Self-contained/AOT apps (runtime not needed) | ~30 MB |
+| Image                                                       | Use Case                                     | Size    |
+| ----------------------------------------------------------- | -------------------------------------------- | ------- |
+| `mcr.microsoft.com/dotnet/aspnet:10.0`                      | ASP.NET Core apps (Ubuntu)                   | ~220 MB |
+| `mcr.microsoft.com/dotnet/aspnet:10.0-alpine`               | ASP.NET Core apps (Alpine, smaller)          | ~110 MB |
+| `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled`       | Distroless (no shell, no package manager)    | ~110 MB |
+| `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra` | Chiseled + globalization + time zones        | ~130 MB |
+| `mcr.microsoft.com/dotnet/runtime:10.0`                     | Console apps, worker services                | ~190 MB |
+| `mcr.microsoft.com/dotnet/runtime-deps:10.0`                | Self-contained/AOT apps (runtime not needed) | ~30 MB  |
 
 ### Choosing a Base Image
 
@@ -235,7 +241,8 @@ ENTRYPOINT ["dotnet", "MyApi.dll"]
 
 ### Port Configuration
 
-Non-root users cannot bind to ports below 1024. ASP.NET Core defaults to port 8080 in containers (set via `ASPNETCORE_HTTP_PORTS`):
+Non-root users cannot bind to ports below 1024. ASP.NET Core defaults to port 8080 in containers (set via
+`ASPNETCORE_HTTP_PORTS`):
 
 ```dockerfile
 # Default in .NET 8+ container images -- no explicit config needed
@@ -250,7 +257,8 @@ EXPOSE 5000
 
 ## Container Health Checks
 
-Health checks allow container runtimes to monitor application readiness. The application-level health check endpoints (see [skill:dotnet-observability]) are consumed by Docker and Kubernetes probes.
+Health checks allow container runtimes to monitor application readiness. The application-level health check endpoints
+(see [skill:dotnet-observability]) are consumed by Docker and Kubernetes probes.
 
 ### Docker HEALTHCHECK
 
@@ -266,7 +274,8 @@ COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "MyApi.dll"]
 ```
 
-For chiseled images (no `curl`), use a dedicated health check binary or rely on orchestrator-level probes (Kubernetes `httpGet`, Docker Compose `test`):
+For chiseled images (no `curl`), use a dedicated health check binary or rely on orchestrator-level probes (Kubernetes
+`httpGet`, Docker Compose `test`):
 
 ```dockerfile
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled AS runtime
@@ -352,7 +361,8 @@ Configure .NET to respect container memory limits:
 ENV DOTNET_GCHeapHardLimit=0x10000000  # 256 MB hard limit
 ```
 
-.NET automatically reads cgroup memory limits. The GC adjusts its heap size to stay within the container memory budget. Avoid setting `DOTNET_GCHeapHardLimit` unless you have a specific reason.
+.NET automatically reads cgroup memory limits. The GC adjusts its heap size to stay within the container memory budget.
+Avoid setting `DOTNET_GCHeapHardLimit` unless you have a specific reason.
 
 ### ReadOnlyRootFilesystem
 
@@ -379,12 +389,18 @@ ENV DOTNET_EnableDiagnostics=0
 
 ## Agent Gotchas
 
-1. **Do not use `mcr.microsoft.com/dotnet/sdk` as the final image** -- SDK images are 800+ MB and include build tools. Always use `aspnet`, `runtime`, or `runtime-deps` for the final stage.
-2. **Do not hardcode image tags to a patch version** (e.g., `10.0.1`) -- use `10.0` to receive security patches. Pin to patch versions only if you have a specific compatibility requirement.
-3. **Do not use `HEALTHCHECK` with chiseled images** -- chiseled images have no `curl` or shell. Use orchestrator-level probes (Kubernetes `httpGet`, Docker Compose `test`) instead.
-4. **Do not forget `--no-restore` on `dotnet publish` after a separate `dotnet restore` step** -- without it, restore runs again and breaks layer caching.
-5. **Do not bind to ports below 1024 in non-root containers** -- .NET defaults to port 8080 in container images. If you override `ASPNETCORE_HTTP_PORTS`, ensure the port is >= 1024.
-6. **Do not omit `.dockerignore`** -- without it, the build context includes `.git`, `bin/obj`, and potentially secrets, increasing build time and image size.
+1. **Do not use `mcr.microsoft.com/dotnet/sdk` as the final image** -- SDK images are 800+ MB and include build tools.
+   Always use `aspnet`, `runtime`, or `runtime-deps` for the final stage.
+2. **Do not hardcode image tags to a patch version** (e.g., `10.0.1`) -- use `10.0` to receive security patches. Pin to
+   patch versions only if you have a specific compatibility requirement.
+3. **Do not use `HEALTHCHECK` with chiseled images** -- chiseled images have no `curl` or shell. Use orchestrator-level
+   probes (Kubernetes `httpGet`, Docker Compose `test`) instead.
+4. **Do not forget `--no-restore` on `dotnet publish` after a separate `dotnet restore` step** -- without it, restore
+   runs again and breaks layer caching.
+5. **Do not bind to ports below 1024 in non-root containers** -- .NET defaults to port 8080 in container images. If you
+   override `ASPNETCORE_HTTP_PORTS`, ensure the port is >= 1024.
+6. **Do not omit `.dockerignore`** -- without it, the build context includes `.git`, `bin/obj`, and potentially secrets,
+   increasing build time and image size.
 
 ---
 

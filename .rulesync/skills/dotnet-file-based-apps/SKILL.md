@@ -2,27 +2,32 @@
 name: dotnet-file-based-apps
 description: Builds .NET 10 file-based C# apps. Directives, CLI commands, csproj migration.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-file-based-apps
 
-.NET 10 SDK file-based apps let you build, run, and publish C# applications from a single `.cs` file without creating a `.csproj` project file. The SDK auto-generates project configuration from `#:` directives embedded in the source file. This feature targets scripts, utilities, and small applications where traditional project scaffolding is unnecessary.
+.NET 10 SDK file-based apps let you build, run, and publish C# applications from a single `.cs` file without creating a
+`.csproj` project file. The SDK auto-generates project configuration from `#:` directives embedded in the source file.
+This feature targets scripts, utilities, and small applications where traditional project scaffolding is unnecessary.
 
-**This is NOT file I/O.** For FileStream, RandomAccess, FileSystemWatcher, and path handling, see [skill:dotnet-file-io].
+**This is NOT file I/O.** For FileStream, RandomAccess, FileSystemWatcher, and path handling, see
+[skill:dotnet-file-io].
 
 **Prerequisites:** Requires .NET 10 SDK or later. Run [skill:dotnet-version-detection] to confirm SDK version.
 
-Cross-references: [skill:dotnet-version-detection] for SDK version gating, [skill:dotnet-project-analysis] for project-based analysis (file-based apps have no `.csproj`), [skill:dotnet-scaffold-project] for csproj-based project scaffolding.
+Cross-references: [skill:dotnet-version-detection] for SDK version gating, [skill:dotnet-project-analysis] for
+project-based analysis (file-based apps have no `.csproj`), [skill:dotnet-scaffold-project] for csproj-based project
+scaffolding.
 
 ## Scope
 
@@ -40,16 +45,17 @@ Cross-references: [skill:dotnet-version-detection] for SDK version gating, [skil
 
 ## Directives Overview
 
-File-based apps use `#:` directives to configure the build. Directives are **SDK-level instructions, not C# syntax**. They must appear at the top of the `.cs` file, before any C# code.
+File-based apps use `#:` directives to configure the build. Directives are **SDK-level instructions, not C# syntax**.
+They must appear at the top of the `.cs` file, before any C# code.
 
 Four directive types are supported:
 
-| Directive | Purpose | Example |
-|-----------|---------|---------|
-| `#:package` | Add a NuGet package reference | `#:package Serilog@3.1.1` |
-| `#:sdk` | Set the SDK (default: `Microsoft.NET.Sdk`) | `#:sdk Microsoft.NET.Sdk.Web` |
-| `#:property` | Set an MSBuild property | `#:property PublishAot=false` |
-| `#:project` | Reference another project file | `#:project ../Lib/Lib.csproj` |
+| Directive    | Purpose                                    | Example                       |
+| ------------ | ------------------------------------------ | ----------------------------- |
+| `#:package`  | Add a NuGet package reference              | `#:package Serilog@3.1.1`     |
+| `#:sdk`      | Set the SDK (default: `Microsoft.NET.Sdk`) | `#:sdk Microsoft.NET.Sdk.Web` |
+| `#:property` | Set an MSBuild property                    | `#:property PublishAot=false` |
+| `#:project`  | Reference another project file             | `#:project ../Lib/Lib.csproj` |
 
 ---
 
@@ -64,9 +70,11 @@ Adds a NuGet package reference. Specify the package name, optionally followed by
 ```
 
 Version behavior:
+
 - **`@version`** -- pins to a specific version
 - **`@*`** -- uses the latest stable version (NuGet floating version)
-- **No version** -- only works when Central Package Management (CPM) is configured with a `Directory.Packages.props` file; otherwise, specify a version explicitly or use `@*`
+- **No version** -- only works when Central Package Management (CPM) is configured with a `Directory.Packages.props`
+  file; otherwise, specify a version explicitly or use `@*`
 
 ---
 
@@ -82,7 +90,8 @@ Specifies which SDK to use. Defaults to `Microsoft.NET.Sdk` if omitted.
 #:sdk Aspire.AppHost.Sdk@9.2.0
 ```
 
-Use this directive to access SDK-specific features. For example, `Microsoft.NET.Sdk.Web` enables ASP.NET Core features and automatically includes `*.json` configuration files in the build.
+Use this directive to access SDK-specific features. For example, `Microsoft.NET.Sdk.Web` enables ASP.NET Core features
+and automatically includes `*.json` configuration files in the build.
 
 ---
 
@@ -115,7 +124,8 @@ Property directives support MSBuild property functions and expressions for condi
 
 ## `#:project` Directive
 
-References another project file or directory containing a project file. Use this to share code between a file-based app and a traditional project.
+References another project file or directory containing a project file. Use this to share code between a file-based app
+and a traditional project.
 
 ```csharp
 #:project ../SharedLibrary/SharedLibrary.csproj
@@ -145,7 +155,9 @@ dotnet app.cs
 dotnet run app.cs -- arg1 arg2
 ```
 
-When a `.csproj` exists in the current directory, `dotnet run app.cs` (without `--file`) runs the project and passes `app.cs` as an argument to preserve backward compatibility. Use `dotnet run --file app.cs` to force file-based execution.
+When a `.csproj` exists in the current directory, `dotnet run app.cs` (without `--file`) runs the project and passes
+`app.cs` as an argument to preserve backward compatibility. Use `dotnet run --file app.cs` to force file-based
+execution.
 
 ### Pipe from stdin
 
@@ -161,7 +173,8 @@ The `-` argument reads C# code from standard input. Useful for quick testing and
 dotnet build app.cs
 ```
 
-Build output goes to a cached location under the system temp directory by default. Override with `--output` or `#:property OutputPath=./output`.
+Build output goes to a cached location under the system temp directory by default. Override with `--output` or
+`#:property OutputPath=./output`.
 
 ### Clean
 
@@ -182,7 +195,8 @@ dotnet clean file-based-apps --days 7
 dotnet publish app.cs
 ```
 
-File-based apps enable **native AOT by default**. The output goes to an `artifacts` directory next to the `.cs` file. Disable AOT with `#:property PublishAot=false`.
+File-based apps enable **native AOT by default**. The output goes to an `artifacts` directory next to the `.cs` file.
+Disable AOT with `#:property PublishAot=false`.
 
 ### Pack as .NET Tool
 
@@ -226,7 +240,8 @@ The file must use `LF` line endings (not `CRLF`) and must not include a BOM.
 
 ## Launch Profiles
 
-File-based apps support launch profiles via a flat `[AppName].run.json` file in the same directory as the source file. For `app.cs`, create `app.run.json`:
+File-based apps support launch profiles via a flat `[AppName].run.json` file in the same directory as the source file.
+For `app.cs`, create `app.run.json`:
 
 ```json
 {
@@ -274,18 +289,22 @@ File-based apps respect MSBuild and NuGet configuration files in the same or par
 - **`nuget.config`** -- NuGet package source configuration
 - **`global.json`** -- SDK version pinning
 
-Be mindful of these files when placing file-based apps in a repository that also contains traditional projects. Inherited properties may cause unexpected build behavior.
+Be mindful of these files when placing file-based apps in a repository that also contains traditional projects.
+Inherited properties may cause unexpected build behavior.
 
 ---
 
 ## Build Caching
 
-The SDK caches build outputs based on source content, directives, SDK version, and implicit build files. Caching improves repeated `dotnet run` performance.
+The SDK caches build outputs based on source content, directives, SDK version, and implicit build files. Caching
+improves repeated `dotnet run` performance.
 
 Known caching pitfalls:
+
 - Changes to implicit build files (`Directory.Build.props`, etc.) may not trigger rebuilds
 - Moving files to different directories does not invalidate the cache
-- **Concurrent execution** of the same file-based app can cause build contention errors -- build first with `dotnet build app.cs`, then run multiple instances with `dotnet run app.cs --no-build`
+- **Concurrent execution** of the same file-based app can cause build contention errors -- build first with
+  `dotnet build app.cs`, then run multiple instances with `dotnet run app.cs --no-build`
 
 Clear the cache with `dotnet clean app.cs` or `dotnet clean file-based-apps`.
 
@@ -293,7 +312,8 @@ Clear the cache with `dotnet clean app.cs` or `dotnet clean file-based-apps`.
 
 ## Folder Layout
 
-Do not place file-based apps inside a `.csproj` project's directory tree. The project's implicit build configuration will interfere.
+Do not place file-based apps inside a `.csproj` project's directory tree. The project's implicit build configuration
+will interfere.
 
 ```
 # Recommended layout
@@ -320,6 +340,7 @@ dotnet project convert app.cs
 ```
 
 This creates a new directory named after the app, containing:
+
 - A `.csproj` with equivalent SDK, properties, and package references derived from the `#:` directives
 - A copy of the `.cs` file with `#:` directives removed
 
@@ -328,6 +349,7 @@ The original `.cs` file is left untouched.
 ### When to Convert
 
 Convert to a project-based app when:
+
 - Multiple source files are needed
 - Complex MSBuild customization is required beyond what `#:property` supports
 - The app needs `dotnet test` with a test framework
@@ -340,25 +362,37 @@ Convert to a project-based app when:
 
 File-based apps differ from project-based apps in several default settings:
 
-| Setting | File-based default | Project-based default |
-|---------|-------------------|----------------------|
-| Native AOT (`PublishAot`) | `true` | `false` |
-| Pack as tool (`PackAsTool`) | `true` | `false` |
-| Build output location | System temp directory | `bin/` in project directory |
-| Publish output location | `artifacts/` next to `.cs` file | `bin/<config>/<tfm>/publish/` |
+| Setting                     | File-based default              | Project-based default         |
+| --------------------------- | ------------------------------- | ----------------------------- |
+| Native AOT (`PublishAot`)   | `true`                          | `false`                       |
+| Pack as tool (`PackAsTool`) | `true`                          | `false`                       |
+| Build output location       | System temp directory           | `bin/` in project directory   |
+| Publish output location     | `artifacts/` next to `.cs` file | `bin/<config>/<tfm>/publish/` |
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not confuse file-based apps with file I/O** -- `dotnet-file-based-apps` covers running C# without a project file (`.NET 10 SDK feature`). For FileStream, RandomAccess, and path handling, use [skill:dotnet-file-io].
-2. **Do not use `#:` directives after C# code** -- all directives must appear at the top of the file, before any C# statements, `using` directives, or namespace declarations. The SDK ignores directives placed later in the file.
-3. **Do not omit package versions without CPM** -- `#:package SomePackage` without a version only works when Central Package Management is configured via `Directory.Packages.props`. Without CPM, use `#:package SomePackage@1.0.0` or `#:package SomePackage@*`.
-4. **Do not assume `dotnet build` and `dotnet test` work the same** -- `dotnet build app.cs` compiles via a virtual project, but `dotnet test` does not apply to file-based apps. Convert to a project for test framework support.
-5. **Do not place file-based apps inside a `.csproj` project directory** -- the project's implicit build files (`Directory.Build.props`, etc.) will affect the file-based app, causing unexpected behavior. Use a separate directory.
-6. **Do not run concurrent instances without pre-building** -- parallel execution of the same file-based app causes build output contention. Build first with `dotnet build app.cs`, then run instances with `dotnet run app.cs --no-build`.
-7. **Do not forget backward compatibility** -- when a `.csproj` exists in the current directory, `dotnet run app.cs` passes `app.cs` as an argument to the project rather than running it as a file-based app. Use `dotnet run --file app.cs` to force file-based execution.
-8. **Do not use `CRLF` line endings with shebang** -- Unix shebang execution requires `LF` line endings and no BOM. Files with `CRLF` will fail with `/usr/bin/env: 'dotnet\r': No such file or directory`.
+1. **Do not confuse file-based apps with file I/O** -- `dotnet-file-based-apps` covers running C# without a project file
+   (`.NET 10 SDK feature`). For FileStream, RandomAccess, and path handling, use [skill:dotnet-file-io].
+2. **Do not use `#:` directives after C# code** -- all directives must appear at the top of the file, before any C#
+   statements, `using` directives, or namespace declarations. The SDK ignores directives placed later in the file.
+3. **Do not omit package versions without CPM** -- `#:package SomePackage` without a version only works when Central
+   Package Management is configured via `Directory.Packages.props`. Without CPM, use `#:package SomePackage@1.0.0` or
+   `#:package SomePackage@*`.
+4. **Do not assume `dotnet build` and `dotnet test` work the same** -- `dotnet build app.cs` compiles via a virtual
+   project, but `dotnet test` does not apply to file-based apps. Convert to a project for test framework support.
+5. **Do not place file-based apps inside a `.csproj` project directory** -- the project's implicit build files
+   (`Directory.Build.props`, etc.) will affect the file-based app, causing unexpected behavior. Use a separate
+   directory.
+6. **Do not run concurrent instances without pre-building** -- parallel execution of the same file-based app causes
+   build output contention. Build first with `dotnet build app.cs`, then run instances with
+   `dotnet run app.cs --no-build`.
+7. **Do not forget backward compatibility** -- when a `.csproj` exists in the current directory, `dotnet run app.cs`
+   passes `app.cs` as an argument to the project rather than running it as a file-based app. Use
+   `dotnet run --file app.cs` to force file-based execution.
+8. **Do not use `CRLF` line endings with shebang** -- Unix shebang execution requires `LF` line endings and no BOM.
+   Files with `CRLF` will fail with `/usr/bin/env: 'dotnet\r': No such file or directory`.
 
 ---
 

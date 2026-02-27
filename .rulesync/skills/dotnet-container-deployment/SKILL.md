@@ -2,21 +2,22 @@
 name: dotnet-container-deployment
 description: Deploys .NET containers. Kubernetes probes, Docker Compose for local dev, CI/CD integration.
 license: MIT
-targets: ["*"]
-tags: ["cicd", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['cicd', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for cicd tasks"
+  short-description: '.NET skill guidance for cicd tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-container-deployment
 
-Deploying .NET containers to Kubernetes and local development environments. Covers Kubernetes Deployment + Service + probe YAML, Docker Compose for local dev workflows, and CI/CD integration for building and pushing container images.
+Deploying .NET containers to Kubernetes and local development environments. Covers Kubernetes Deployment + Service +
+probe YAML, Docker Compose for local dev workflows, and CI/CD integration for building and pushing container images.
 
 ## Scope
 
@@ -27,11 +28,13 @@ Deploying .NET containers to Kubernetes and local development environments. Cove
 ## Out of scope
 
 - Dockerfile authoring, multi-stage builds, and base image selection -- see [skill:dotnet-containers]
-- Advanced CI/CD pipeline patterns (matrix builds, deploy pipelines) -- see [skill:dotnet-gha-deploy] and [skill:dotnet-ado-patterns]
+- Advanced CI/CD pipeline patterns (matrix builds, deploy pipelines) -- see [skill:dotnet-gha-deploy] and
+  [skill:dotnet-ado-patterns]
 - DI and async patterns -- see [skill:dotnet-csharp-dependency-injection] and [skill:dotnet-csharp-async-patterns]
 - Testing container deployments -- see [skill:dotnet-integration-testing] and [skill:dotnet-playwright]
 
-Cross-references: [skill:dotnet-containers] for Dockerfile and image best practices, [skill:dotnet-observability] for health check endpoint patterns used by Kubernetes probes.
+Cross-references: [skill:dotnet-containers] for Dockerfile and image best practices, [skill:dotnet-observability] for
+health check endpoint patterns used by Kubernetes probes.
 
 ---
 
@@ -49,7 +52,7 @@ metadata:
   labels:
     app: order-api
     app.kubernetes.io/name: order-api
-    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/version: '1.0.0'
     app.kubernetes.io/component: api
 spec:
   replicas: 3
@@ -69,11 +72,11 @@ spec:
               protocol: TCP
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: "Production"
+              value: 'Production'
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://otel-collector.monitoring:4317"
+              value: 'http://otel-collector.monitoring:4317'
             - name: OTEL_SERVICE_NAME
-              value: "order-api"
+              value: 'order-api'
             - name: ConnectionStrings__DefaultConnection
               valueFrom:
                 secretKeyRef:
@@ -81,11 +84,11 @@ spec:
                   key: connection-string
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: '100m'
+              memory: '128Mi'
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: '500m'
+              memory: '512Mi'
           livenessProbe:
             httpGet:
               path: /health/live
@@ -146,9 +149,9 @@ kind: ConfigMap
 metadata:
   name: order-api-config
 data:
-  ASPNETCORE_ENVIRONMENT: "Production"
-  Logging__LogLevel__Default: "Information"
-  Logging__LogLevel__Microsoft.AspNetCore: "Warning"
+  ASPNETCORE_ENVIRONMENT: 'Production'
+  Logging__LogLevel__Default: 'Information'
+  Logging__LogLevel__Microsoft.AspNetCore: 'Warning'
 ```
 
 Reference in the Deployment:
@@ -168,24 +171,26 @@ metadata:
   name: order-api-secrets
 type: Opaque
 stringData:
-  connection-string: "Host=postgres;Database=orders;Username=app;Password=secret"
+  connection-string: 'Host=postgres;Database=orders;Username=app;Password=secret'
 ```
 
-In production, use an external secrets operator (e.g., External Secrets Operator, Sealed Secrets) rather than plain Kubernetes Secrets stored in source control.
+In production, use an external secrets operator (e.g., External Secrets Operator, Sealed Secrets) rather than plain
+Kubernetes Secrets stored in source control.
 
 ---
 
 ## Kubernetes Probes
 
-Probes tell Kubernetes how to check application health. They map to the health check endpoints defined in your .NET application (see [skill:dotnet-observability]).
+Probes tell Kubernetes how to check application health. They map to the health check endpoints defined in your .NET
+application (see [skill:dotnet-observability]).
 
 ### Probe Types
 
-| Probe | Purpose | Endpoint | Failure Action |
-|-------|---------|----------|---------------|
-| **Startup** | Has the app finished initializing? | `/health/live` | Keep waiting (up to `failureThreshold * periodSeconds`) |
-| **Liveness** | Is the process healthy? | `/health/live` | Restart the pod |
-| **Readiness** | Can the process serve traffic? | `/health/ready` | Remove from Service endpoints |
+| Probe         | Purpose                            | Endpoint        | Failure Action                                          |
+| ------------- | ---------------------------------- | --------------- | ------------------------------------------------------- |
+| **Startup**   | Has the app finished initializing? | `/health/live`  | Keep waiting (up to `failureThreshold * periodSeconds`) |
+| **Liveness**  | Is the process healthy?            | `/health/live`  | Restart the pod                                         |
+| **Readiness** | Can the process serve traffic?     | `/health/ready` | Remove from Service endpoints                           |
 
 ### Probe Configuration Guidelines
 
@@ -222,7 +227,8 @@ readinessProbe:
 
 ### Graceful Shutdown
 
-.NET responds to `SIGTERM` and begins graceful shutdown. Configure `terminationGracePeriodSeconds` to allow in-flight requests to complete:
+.NET responds to `SIGTERM` and begins graceful shutdown. Configure `terminationGracePeriodSeconds` to allow in-flight
+requests to complete:
 
 ```yaml
 spec:
@@ -248,7 +254,8 @@ builder.Host.ConfigureHostOptions(options =>
 });
 ```
 
-Set `ShutdownTimeout` to a value less than `terminationGracePeriodSeconds` to ensure the app shuts down before Kubernetes sends `SIGKILL`.
+Set `ShutdownTimeout` to a value less than `terminationGracePeriodSeconds` to ensure the app shuts down before
+Kubernetes sends `SIGKILL`.
 
 ---
 
@@ -266,7 +273,7 @@ services:
       context: .
       dockerfile: src/OrderApi/Dockerfile
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=orders;Username=app;Password=devpassword
@@ -281,7 +288,7 @@ services:
     # non-chiseled dev target in the Dockerfile or omit the healthcheck and rely
     # on depends_on ordering (acceptable for local dev).
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/live || exit 1"]
+      test: ['CMD-SHELL', 'curl -f http://localhost:8080/health/live || exit 1']
       interval: 10s
       timeout: 3s
       retries: 3
@@ -294,11 +301,11 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: devpassword
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d orders"]
+      test: ['CMD-SHELL', 'pg_isready -U app -d orders']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -306,9 +313,9 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -326,13 +333,13 @@ Use a separate override file for development-specific settings:
 services:
   order-api:
     build:
-      target: build  # Stop at build stage for faster rebuilds
+      target: build # Stop at build stage for faster rebuilds
     volumes:
-      - .:/src       # Mount source for hot reload
+      - .:/src # Mount source for hot reload
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_USE_POLLING_FILE_WATCHER=true
-    command: ["dotnet", "watch", "run", "--project", "src/OrderApi/OrderApi.csproj"]
+    command: ['dotnet', 'watch', 'run', '--project', 'src/OrderApi/OrderApi.csproj']
 ```
 
 ### Observability Stack
@@ -344,17 +351,17 @@ Add an OpenTelemetry collector and Grafana for local observability:
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    command: ["--config=/etc/otelcol-config.yaml"]
+    command: ['--config=/etc/otelcol-config.yaml']
     volumes:
       - ./infra/otelcol-config.yaml:/etc/otelcol-config.yaml
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
 
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - grafana-data:/var/lib/grafana
 
@@ -372,7 +379,9 @@ docker compose -f docker-compose.yml -f docker-compose.observability.yml up
 
 ## CI/CD Integration
 
-Basic CI/CD patterns for building and pushing .NET container images. Advanced CI patterns (matrix builds, environment promotion, deploy pipelines) -- see [skill:dotnet-gha-publish], [skill:dotnet-gha-deploy], and [skill:dotnet-ado-publish].
+Basic CI/CD patterns for building and pushing .NET container images. Advanced CI patterns (matrix builds, environment
+promotion, deploy pipelines) -- see [skill:dotnet-gha-publish], [skill:dotnet-gha-deploy], and
+[skill:dotnet-ado-publish].
 
 ### GitHub Actions: Build and Push
 
@@ -383,7 +392,7 @@ name: Build and Push Container
 on:
   push:
     branches: [main]
-    tags: ["v*"]
+    tags: ['v*']
 
 env:
   REGISTRY: ghcr.io
@@ -430,13 +439,13 @@ jobs:
 
 ### Image Tagging Strategy
 
-| Tag Pattern | Example | Use Case |
-|-------------|---------|----------|
-| `latest` | `myapi:latest` | Development only -- never use in production |
-| Semver | `myapi:1.2.3` | Release versions -- immutable |
-| Major.Minor | `myapi:1.2` | Floating tag for patch updates |
-| SHA | `myapi:sha-abc1234` | Unique per commit -- traceability |
-| Branch | `myapi:main` | CI builds -- latest from branch |
+| Tag Pattern | Example             | Use Case                                    |
+| ----------- | ------------------- | ------------------------------------------- |
+| `latest`    | `myapi:latest`      | Development only -- never use in production |
+| Semver      | `myapi:1.2.3`       | Release versions -- immutable               |
+| Major.Minor | `myapi:1.2`         | Floating tag for patch updates              |
+| SHA         | `myapi:sha-abc1234` | Unique per commit -- traceability           |
+| Branch      | `myapi:main`        | CI builds -- latest from branch             |
 
 ### dotnet publish Container in CI
 
@@ -448,7 +457,7 @@ steps:
 
   - uses: actions/setup-dotnet@v4
     with:
-      dotnet-version: "10.0.x"
+      dotnet-version: '10.0.x'
 
   - name: Publish container image
     run: |
@@ -464,24 +473,35 @@ steps:
 
 ## Key Principles
 
-- **Use startup probes** to decouple initialization time from liveness detection -- without a startup probe, slow-starting apps get killed before they are ready
-- **Separate liveness from readiness** -- liveness checks should not include dependency health (see [skill:dotnet-observability] for endpoint patterns)
+- **Use startup probes** to decouple initialization time from liveness detection -- without a startup probe,
+  slow-starting apps get killed before they are ready
+- **Separate liveness from readiness** -- liveness checks should not include dependency health (see
+  [skill:dotnet-observability] for endpoint patterns)
 - **Set resource requests and limits** -- without them, pods can starve other workloads or get OOM-killed unpredictably
-- **Run as non-root** -- set `runAsNonRoot: true` in the pod security context and use chiseled images (see [skill:dotnet-containers])
+- **Run as non-root** -- set `runAsNonRoot: true` in the pod security context and use chiseled images (see
+  [skill:dotnet-containers])
 - **Use `depends_on` with health checks** in Docker Compose -- prevents app startup before dependencies are ready
-- **Keep secrets out of manifests** -- use Kubernetes Secrets with external secrets operators, not plain values in source control
-- **Match ShutdownTimeout to terminationGracePeriodSeconds** -- ensure the app finishes cleanup before Kubernetes sends SIGKILL
+- **Keep secrets out of manifests** -- use Kubernetes Secrets with external secrets operators, not plain values in
+  source control
+- **Match ShutdownTimeout to terminationGracePeriodSeconds** -- ensure the app finishes cleanup before Kubernetes sends
+  SIGKILL
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not omit the startup probe** -- without it, the liveness probe runs during initialization and may restart slow-starting apps. Calculate startup budget as `failureThreshold * periodSeconds`.
-2. **Do not include dependency checks in liveness probes** -- a database outage should not restart your app. Liveness endpoints must only check the process itself. See [skill:dotnet-observability] for the liveness vs readiness pattern.
-3. **Do not use `latest` tag in Kubernetes manifests** -- `latest` is mutable and `imagePullPolicy: IfNotPresent` may serve stale images. Use immutable tags (semver or SHA).
-4. **Do not hardcode connection strings in Kubernetes manifests** -- use Secrets or ConfigMaps referenced via `secretKeyRef`/`configMapRef`.
-5. **Do not set `terminationGracePeriodSeconds` lower than `Host.ShutdownTimeout`** -- the app needs time to drain in-flight requests before Kubernetes sends SIGKILL.
-6. **Do not forget `condition: service_healthy` in Docker Compose `depends_on`** -- without the condition, Compose starts dependent services immediately without waiting for health checks.
+1. **Do not omit the startup probe** -- without it, the liveness probe runs during initialization and may restart
+   slow-starting apps. Calculate startup budget as `failureThreshold * periodSeconds`.
+2. **Do not include dependency checks in liveness probes** -- a database outage should not restart your app. Liveness
+   endpoints must only check the process itself. See [skill:dotnet-observability] for the liveness vs readiness pattern.
+3. **Do not use `latest` tag in Kubernetes manifests** -- `latest` is mutable and `imagePullPolicy: IfNotPresent` may
+   serve stale images. Use immutable tags (semver or SHA).
+4. **Do not hardcode connection strings in Kubernetes manifests** -- use Secrets or ConfigMaps referenced via
+   `secretKeyRef`/`configMapRef`.
+5. **Do not set `terminationGracePeriodSeconds` lower than `Host.ShutdownTimeout`** -- the app needs time to drain
+   in-flight requests before Kubernetes sends SIGKILL.
+6. **Do not forget `condition: service_healthy` in Docker Compose `depends_on`** -- without the condition, Compose
+   starts dependent services immediately without waiting for health checks.
 
 ---
 

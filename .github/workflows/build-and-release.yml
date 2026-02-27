@@ -3,20 +3,20 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., v1.0.0)'
+        description: "Version to release (e.g., v1.0.0)"
         required: true
-        default: 'v0.0.0'
+        default: "v0.0.0"
 
 # Restrict to read-only by default; jobs opt-in as needed
 permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel an in-progress release
+  cancel-in-progress: false # Never cancel an in-progress release
 
 jobs:
   build:
@@ -31,10 +31,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
 
       - name: Validate
         run: npm run ci:rulesync
@@ -47,7 +51,7 @@ jobs:
         with:
           name: plugin-bundles
           path: dist/*.zip
-          retention-days: 30
+          retention-days: 1
 
   release:
     needs: build
@@ -94,7 +98,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: read
-      id-token: write  # Required for npm provenance attestation
+      id-token: write # Required for npm provenance attestation
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -103,7 +107,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci

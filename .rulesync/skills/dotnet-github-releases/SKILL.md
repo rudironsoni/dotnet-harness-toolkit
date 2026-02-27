@@ -2,23 +2,27 @@
 name: dotnet-github-releases
 description: Creates GitHub Releases for .NET. Release creation, assets, notes, pre-release management.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-github-releases
 
-GitHub Releases for .NET projects: release creation via `gh release create` CLI and GitHub API, asset attachment patterns (NuGet packages, binaries, SBOMs, checksums), `softprops/action-gh-release` GitHub Actions usage, release notes generation strategies (GitHub auto-generated, changelog-based, conventional commits), pre-release management (draft releases, pre-release flag, promoting pre-release to stable), and tag-triggered vs release-triggered workflow concepts.
+GitHub Releases for .NET projects: release creation via `gh release create` CLI and GitHub API, asset attachment
+patterns (NuGet packages, binaries, SBOMs, checksums), `softprops/action-gh-release` GitHub Actions usage, release notes
+generation strategies (GitHub auto-generated, changelog-based, conventional commits), pre-release management (draft
+releases, pre-release flag, promoting pre-release to stable), and tag-triggered vs release-triggered workflow concepts.
 
-**Version assumptions:** GitHub CLI (`gh`) 2.x+. `softprops/action-gh-release@v2`. GitHub REST API v3 / GraphQL API v4. .NET 8.0+ baseline.
+**Version assumptions:** GitHub CLI (`gh`) 2.x+. `softprops/action-gh-release@v2`. GitHub REST API v3 / GraphQL API v4.
+.NET 8.0+ baseline.
 
 ## Scope
 
@@ -36,7 +40,9 @@ GitHub Releases for .NET projects: release creation via `gh release create` CLI 
 - Release lifecycle strategy (NBGV, SemVer, changelogs) -- see [skill:dotnet-release-management]
 - NuGet package authoring -- see [skill:dotnet-nuget-authoring]
 
-Cross-references: [skill:dotnet-cli-release-pipeline] for CLI-specific release pipelines with checksums, [skill:dotnet-gha-publish] for CI publish workflows, [skill:dotnet-gha-patterns] for CI pipeline structure, [skill:dotnet-nuget-authoring] for NuGet package creation.
+Cross-references: [skill:dotnet-cli-release-pipeline] for CLI-specific release pipelines with checksums,
+[skill:dotnet-gha-publish] for CI publish workflows, [skill:dotnet-gha-patterns] for CI pipeline structure,
+[skill:dotnet-nuget-authoring] for NuGet package creation.
 
 ---
 
@@ -59,7 +65,8 @@ gh release create v1.2.3 \
 
 ### Draft Release
 
-Draft releases are invisible to the public until published. Use drafts to stage releases while finalizing assets and notes.
+Draft releases are invisible to the public until published. Use drafts to stage releases while finalizing assets and
+notes.
 
 ```bash
 # Create a draft release
@@ -102,7 +109,8 @@ gh release create v1.2.0 \
 
 ## Asset Attachment
 
-Attach build artifacts to a release for direct download. Common .NET assets include NuGet packages, platform-specific binaries, SBOMs, and checksum files.
+Attach build artifacts to a release for direct download. Common .NET assets include NuGet packages, platform-specific
+binaries, SBOMs, and checksum files.
 
 ### Attaching Assets at Creation
 
@@ -134,14 +142,14 @@ gh release upload v1.2.3 \
 
 ### Common .NET Asset Types
 
-| Asset Type | Filename Pattern | Purpose |
-|------------|-----------------|---------|
-| NuGet package | `*.nupkg` | Library distribution via NuGet feeds |
-| Symbol package | `*.snupkg` | Source-level debugging symbols |
-| Platform binary | `myapp-{rid}.tar.gz` / `.zip` | Self-contained runtime |
-| SBOM | `sbom.spdx.json` / `sbom.cdx.json` | Software Bill of Materials |
-| Checksums | `SHA256SUMS.txt` | Integrity verification |
-| Release notes | `RELEASE-NOTES.md` | Detailed change description |
+| Asset Type      | Filename Pattern                   | Purpose                              |
+| --------------- | ---------------------------------- | ------------------------------------ |
+| NuGet package   | `*.nupkg`                          | Library distribution via NuGet feeds |
+| Symbol package  | `*.snupkg`                         | Source-level debugging symbols       |
+| Platform binary | `myapp-{rid}.tar.gz` / `.zip`      | Self-contained runtime               |
+| SBOM            | `sbom.spdx.json` / `sbom.cdx.json` | Software Bill of Materials           |
+| Checksums       | `SHA256SUMS.txt`                   | Integrity verification               |
+| Release notes   | `RELEASE-NOTES.md`                 | Detailed change description          |
 
 ### Generating Checksums
 
@@ -154,7 +162,8 @@ sha256sum *.nupkg *.tar.gz *.zip > SHA256SUMS.txt
 shasum -a 256 *.nupkg *.tar.gz *.zip > SHA256SUMS.txt
 ```
 
-For CLI-specific release pipelines with per-RID checksums and automated package manager PRs, see [skill:dotnet-cli-release-pipeline].
+For CLI-specific release pipelines with per-RID checksums and automated package manager PRs, see
+[skill:dotnet-cli-release-pipeline].
 
 ---
 
@@ -162,7 +171,9 @@ For CLI-specific release pipelines with per-RID checksums and automated package 
 
 ### softprops/action-gh-release
 
-The `softprops/action-gh-release` action creates GitHub Releases from CI workflows. For full CI pipeline structure (reusable workflows, matrix strategies), see [skill:dotnet-gha-patterns]. For NuGet push and container publish steps, see [skill:dotnet-gha-publish].
+The `softprops/action-gh-release` action creates GitHub Releases from CI workflows. For full CI pipeline structure
+(reusable workflows, matrix strategies), see [skill:dotnet-gha-patterns]. For NuGet push and container publish steps,
+see [skill:dotnet-gha-publish].
 
 ```yaml
 # Release job (add to your CI workflow)
@@ -206,7 +217,7 @@ Two common patterns for triggering release CI:
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'  # Matches v1.2.3, v1.2.3-beta.1
+      - 'v[0-9]+.[0-9]+.[0-9]+*' # Matches v1.2.3, v1.2.3-beta.1
 ```
 
 **Release-triggered** -- the workflow runs when a GitHub Release is published:
@@ -217,10 +228,10 @@ on:
     types: [published]
 ```
 
-| Pattern | Pros | Cons |
-|---------|------|------|
-| Tag-triggered | Simple, single event, works with NBGV | Release must be created in workflow |
-| Release-triggered | Draft-then-publish workflow, manual gating | Requires two-step process |
+| Pattern           | Pros                                       | Cons                                |
+| ----------------- | ------------------------------------------ | ----------------------------------- |
+| Tag-triggered     | Simple, single event, works with NBGV      | Release must be created in workflow |
+| Release-triggered | Draft-then-publish workflow, manual gating | Requires two-step process           |
 
 ### Pre-release Detection in CI
 
@@ -276,28 +287,29 @@ changelog:
     authors:
       - dependabot
   categories:
-    - title: "Breaking Changes"
+    - title: 'Breaking Changes'
       labels:
         - breaking-change
-    - title: "New Features"
+    - title: 'New Features'
       labels:
         - enhancement
         - feature
-    - title: "Bug Fixes"
+    - title: 'Bug Fixes'
       labels:
         - bug
         - fix
-    - title: "Dependencies"
+    - title: 'Dependencies'
       labels:
         - dependencies
-    - title: "Other Changes"
+    - title: 'Other Changes'
       labels:
-        - "*"
+        - '*'
 ```
 
 ### Changelog-Based Notes
 
-Use a maintained `CHANGELOG.md` as the release notes source. For CHANGELOG format and auto-generation tooling, see [skill:dotnet-release-management].
+Use a maintained `CHANGELOG.md` as the release notes source. For CHANGELOG format and auto-generation tooling, see
+[skill:dotnet-release-management].
 
 ```bash
 # Extract the section for this version from CHANGELOG.md
@@ -313,7 +325,8 @@ gh release create "v${VERSION}" \
 
 ### Conventional Commit Notes
 
-For projects using conventional commits (`feat:`, `fix:`, `chore:`), tools like `git-cliff` or `conventional-changelog` can generate structured release notes.
+For projects using conventional commits (`feat:`, `fix:`, `chore:`), tools like `git-cliff` or `conventional-changelog`
+can generate structured release notes.
 
 ```bash
 # Generate release notes from conventional commits using git-cliff
@@ -330,7 +343,8 @@ gh release create v1.2.3 \
 
 ### Pre-Release Flag
 
-Pre-releases are visible on the releases page but not shown as the "Latest" release. NuGet packages attached to pre-releases are still stable unless they have SemVer pre-release suffixes.
+Pre-releases are visible on the releases page but not shown as the "Latest" release. NuGet packages attached to
+pre-releases are still stable unless they have SemVer pre-release suffixes.
 
 ```bash
 # Create a pre-release
@@ -387,12 +401,12 @@ gh release edit v1.2.3 --draft=false
 
 A typical pre-release progression for a .NET library:
 
-| Stage | Tag | GitHub Pre-release | NuGet Version |
-|-------|-----|-------------------|---------------|
-| Alpha | `v2.0.0-alpha.1` | Yes | `2.0.0-alpha.1` |
-| Beta | `v2.0.0-beta.1` | Yes | `2.0.0-beta.1` |
-| Release candidate | `v2.0.0-rc.1` | Yes | `2.0.0-rc.1` |
-| Stable | `v2.0.0` | No (Latest) | `2.0.0` |
+| Stage             | Tag              | GitHub Pre-release | NuGet Version   |
+| ----------------- | ---------------- | ------------------ | --------------- |
+| Alpha             | `v2.0.0-alpha.1` | Yes                | `2.0.0-alpha.1` |
+| Beta              | `v2.0.0-beta.1`  | Yes                | `2.0.0-beta.1`  |
+| Release candidate | `v2.0.0-rc.1`    | Yes                | `2.0.0-rc.1`    |
+| Stable            | `v2.0.0`         | No (Latest)        | `2.0.0`         |
 
 ---
 
@@ -450,18 +464,26 @@ gh release list --json tagName,isPrerelease,publishedAt
 
 ## Agent Gotchas
 
-1. **Never hardcode `GITHUB_TOKEN` values in examples** -- always use `$GITHUB_TOKEN` or `${{ secrets.GITHUB_TOKEN }}` environment variable references. The `GITHUB_TOKEN` is automatically available in GitHub Actions.
+1. **Never hardcode `GITHUB_TOKEN` values in examples** -- always use `$GITHUB_TOKEN` or `${{ secrets.GITHUB_TOKEN }}`
+   environment variable references. The `GITHUB_TOKEN` is automatically available in GitHub Actions.
 
-2. **`softprops/action-gh-release` requires `permissions: contents: write`** -- without this, the action fails with a 403 error. Always include the permissions block in the workflow job.
+2. **`softprops/action-gh-release` requires `permissions: contents: write`** -- without this, the action fails with a
+   403 error. Always include the permissions block in the workflow job.
 
-3. **Pre-release detection by SemVer suffix requires checking for a hyphen** -- `v1.2.3-beta.1` is pre-release, `v1.2.3` is stable. Use `contains(github.ref_name, '-')` or shell pattern matching, not regex on the version number alone.
+3. **Pre-release detection by SemVer suffix requires checking for a hyphen** -- `v1.2.3-beta.1` is pre-release, `v1.2.3`
+   is stable. Use `contains(github.ref_name, '-')` or shell pattern matching, not regex on the version number alone.
 
-4. **`--generate-notes` and `--notes` can be combined** -- custom notes appear first, auto-generated notes are appended. Use `--notes-start-tag` to control the comparison range.
+4. **`--generate-notes` and `--notes` can be combined** -- custom notes appear first, auto-generated notes are appended.
+   Use `--notes-start-tag` to control the comparison range.
 
-5. **Draft releases do not trigger `release: published` events** -- only publishing the draft triggers the event. This is the intended behavior for draft-then-publish workflows.
+5. **Draft releases do not trigger `release: published` events** -- only publishing the draft triggers the event. This
+   is the intended behavior for draft-then-publish workflows.
 
-6. **Asset filenames must be unique within a release** -- uploading a file with the same name replaces the existing asset only with `--clobber`. Without it, the upload fails.
+6. **Asset filenames must be unique within a release** -- uploading a file with the same name replaces the existing
+   asset only with `--clobber`. Without it, the upload fails.
 
-7. **Tag-triggered workflows should validate the tag format** -- use `if: startsWith(github.ref, 'refs/tags/v')` to ensure the workflow only runs on version tags, not arbitrary tags.
+7. **Tag-triggered workflows should validate the tag format** -- use `if: startsWith(github.ref, 'refs/tags/v')` to
+   ensure the workflow only runs on version tags, not arbitrary tags.
 
-8. **`gh release create` with `--target` creates the tag if it does not exist** -- this is useful for CI but can cause confusion if the tag already exists on a different commit.
+8. **`gh release create` with `--target` creates the tag if it does not exist** -- this is useful for CI but can cause
+   confusion if the tag already exists on a different commit.

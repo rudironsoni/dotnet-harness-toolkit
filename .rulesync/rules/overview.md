@@ -1,8 +1,8 @@
 ---
 root: true
-targets: ["*"]
-description: "dotnet-agent-harness: Comprehensive .NET development skills for all AI agents"
-globs: ["**/*"]
+targets: ['*']
+description: 'dotnet-agent-harness: Comprehensive .NET development skills for all AI agents'
+globs: ['**/*']
 antigravity:
   trigger: always_on
 ---
@@ -34,9 +34,7 @@ If you use declarative sources:
 
 ```jsonc
 {
-  "sources": [
-    { "source": "rudironsoni/dotnet-agent-harness", "path": ".rulesync" }
-  ]
+  "sources": [{ "source": "rudironsoni/dotnet-agent-harness", "path": ".rulesync" }],
 }
 ```
 
@@ -52,7 +50,8 @@ rulesync install && rulesync generate --targets "*" --features "*"
 
 ## Troubleshooting
 
-If RuleSync reports `Multiple root rulesync rules found`, ensure only one root overview rule exists in `.rulesync/rules/`.
+If RuleSync reports `Multiple root rulesync rules found`, ensure only one root overview rule exists in
+`.rulesync/rules/`.
 
 ## Contributing
 

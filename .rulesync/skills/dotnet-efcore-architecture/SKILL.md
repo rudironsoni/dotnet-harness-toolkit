@@ -2,21 +2,24 @@
 name: dotnet-efcore-architecture
 description: Designs EF Core data layer architecture. Read/write split, aggregate boundaries, N+1 governance.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-efcore-architecture
 
-Strategic architectural patterns for EF Core data layers. Covers read/write model separation, aggregate boundary design, repository vs direct DbContext policy, N+1 query governance, row limit enforcement, and projection patterns. These patterns guide how to structure a data layer -- not how to write individual queries (see [skill:dotnet-efcore-patterns] for tactical usage).
+Strategic architectural patterns for EF Core data layers. Covers read/write model separation, aggregate boundary design,
+repository vs direct DbContext policy, N+1 query governance, row limit enforcement, and projection patterns. These
+patterns guide how to structure a data layer -- not how to write individual queries (see [skill:dotnet-efcore-patterns]
+for tactical usage).
 
 ## Scope
 
@@ -27,13 +30,16 @@ Strategic architectural patterns for EF Core data layers. Covers read/write mode
 
 ## Out of scope
 
-- Tactical EF Core usage (DbContext lifecycle, AsNoTracking, migrations, interceptors) -- see [skill:dotnet-efcore-patterns]
+- Tactical EF Core usage (DbContext lifecycle, AsNoTracking, migrations, interceptors) -- see
+  [skill:dotnet-efcore-patterns]
 - Data access technology selection (EF Core vs Dapper vs ADO.NET) -- see [skill:dotnet-data-access-strategy]
 - DI container mechanics -- see [skill:dotnet-csharp-dependency-injection]
 - Async patterns -- see [skill:dotnet-csharp-async-patterns]
 - Integration testing data layers -- see [skill:dotnet-integration-testing]
 
-Cross-references: [skill:dotnet-efcore-patterns] for tactical DbContext usage and migrations, [skill:dotnet-data-access-strategy] for technology selection, [skill:dotnet-csharp-dependency-injection] for service registration, [skill:dotnet-csharp-async-patterns] for async query patterns.
+Cross-references: [skill:dotnet-efcore-patterns] for tactical DbContext usage and migrations,
+[skill:dotnet-data-access-strategy] for technology selection, [skill:dotnet-csharp-dependency-injection] for service
+registration, [skill:dotnet-csharp-async-patterns] for async query patterns.
 
 ---
 
@@ -41,19 +47,21 @@ Cross-references: [skill:dotnet-efcore-patterns] for tactical DbContext usage an
 
 Examples in this skill use PostgreSQL (`UseNpgsql`). Substitute the provider package for your database:
 
-| Database | Provider Package |
-|----------|-----------------|
-| PostgreSQL | `Npgsql.EntityFrameworkCore.PostgreSQL` |
+| Database   | Provider Package                          |
+| ---------- | ----------------------------------------- |
+| PostgreSQL | `Npgsql.EntityFrameworkCore.PostgreSQL`   |
 | SQL Server | `Microsoft.EntityFrameworkCore.SqlServer` |
-| SQLite | `Microsoft.EntityFrameworkCore.Sqlite` |
+| SQLite     | `Microsoft.EntityFrameworkCore.Sqlite`    |
 
-All examples also require the core `Microsoft.EntityFrameworkCore` package (pulled in transitively by provider packages).
+All examples also require the core `Microsoft.EntityFrameworkCore` package (pulled in transitively by provider
+packages).
 
 ---
 
 ## Read/Write Model Separation
 
-Separate read models (queries) from write models (commands) to optimize each path independently. This is not full CQRS -- it is a practical separation using EF Core features.
+Separate read models (queries) from write models (commands) to optimize each path independently. This is not full CQRS
+-- it is a practical separation using EF Core features.
 
 ### Approach: Separate DbContext Types
 
@@ -104,20 +112,22 @@ builder.Services.AddDbContext<ReadDbContext>(options =>
 
 ### When to Separate
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Simple CRUD app | Single `DbContext` with per-query `AsNoTracking()` |
-| Read-heavy API with complex queries | Separate read/write contexts |
-| Read replica database | Separate contexts with different connection strings |
-| CQRS architecture | Separate contexts, possibly separate models |
+| Scenario                            | Recommendation                                      |
+| ----------------------------------- | --------------------------------------------------- |
+| Simple CRUD app                     | Single `DbContext` with per-query `AsNoTracking()`  |
+| Read-heavy API with complex queries | Separate read/write contexts                        |
+| Read replica database               | Separate contexts with different connection strings |
+| CQRS architecture                   | Separate contexts, possibly separate models         |
 
-**Start simple.** Use a single `DbContext` and per-query `AsNoTracking()` until you have a concrete reason to split (different connection strings, divergent model shapes, or query complexity that justifies dedicated read models).
+**Start simple.** Use a single `DbContext` and per-query `AsNoTracking()` until you have a concrete reason to split
+(different connection strings, divergent model shapes, or query complexity that justifies dedicated read models).
 
 ---
 
 ## Aggregate Boundaries
 
-An aggregate is a cluster of entities that are always loaded and saved together as a consistency boundary. EF Core maps well to aggregate-oriented design when navigation properties follow aggregate boundaries.
+An aggregate is a cluster of entities that are always loaded and saved together as a consistency boundary. EF Core maps
+well to aggregate-oriented design when navigation properties follow aggregate boundaries.
 
 ### Defining Aggregates
 
@@ -197,15 +207,19 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 
 1. **Load the entire aggregate** -- do not load partial aggregates. Use `Include()` for the owned collections.
 2. **Save through the aggregate root** -- call `SaveChangesAsync()` on the root, not on child entities independently.
-3. **Reference other aggregates by ID** -- do not create navigation properties between aggregate roots. Use `CustomerId` (foreign key value), not `Customer` (navigation property).
-4. **Keep aggregates small** -- large aggregates cause lock contention and slow loads. If a collection grows unbounded (e.g., audit logs), it does not belong in the aggregate.
-5. **One aggregate per transaction** -- modifying multiple aggregates in a single transaction creates coupling. Use domain events or eventual consistency for cross-aggregate operations.
+3. **Reference other aggregates by ID** -- do not create navigation properties between aggregate roots. Use `CustomerId`
+   (foreign key value), not `Customer` (navigation property).
+4. **Keep aggregates small** -- large aggregates cause lock contention and slow loads. If a collection grows unbounded
+   (e.g., audit logs), it does not belong in the aggregate.
+5. **One aggregate per transaction** -- modifying multiple aggregates in a single transaction creates coupling. Use
+   domain events or eventual consistency for cross-aggregate operations.
 
 ---
 
 ## Repository Policy
 
-Whether to use the repository pattern or access `DbContext` directly is a team decision. Both approaches are valid in .NET.
+Whether to use the repository pattern or access `DbContext` directly is a team decision. Both approaches are valid in
+.NET.
 
 ### Option A: Direct DbContext Access
 
@@ -231,8 +245,8 @@ public sealed class CreateOrderHandler(WriteDbContext db)
 }
 ```
 
-**Pros:** Simple, no abstraction overhead, full LINQ power, easy to debug.
-**Cons:** Business logic can leak into query methods, harder to unit test without a database.
+**Pros:** Simple, no abstraction overhead, full LINQ power, easy to debug. **Cons:** Business logic can leak into query
+methods, harder to unit test without a database.
 
 ### Option B: Repository per Aggregate Root
 
@@ -265,25 +279,28 @@ public sealed class OrderRepository(WriteDbContext db) : IOrderRepository
 }
 ```
 
-**Pros:** Testable without a database, encapsulates query logic, enforces aggregate loading rules.
-**Cons:** Extra abstraction layer, can become a leaky abstraction if LINQ is exposed, repository per aggregate can proliferate.
+**Pros:** Testable without a database, encapsulates query logic, enforces aggregate loading rules. **Cons:** Extra
+abstraction layer, can become a leaky abstraction if LINQ is exposed, repository per aggregate can proliferate.
 
 ### Decision Guide
 
-| Factor | Direct DbContext | Repository |
-|--------|-----------------|------------|
-| Team size | Small, aligned | Large, varied experience |
-| Test strategy | Integration tests with real DB | Unit tests with mocked repos |
-| Query complexity | High (reports, projections) | Low-medium (CRUD, aggregates) |
-| Aggregate discipline | Enforced by convention | Enforced by interface |
+| Factor               | Direct DbContext               | Repository                    |
+| -------------------- | ------------------------------ | ----------------------------- |
+| Team size            | Small, aligned                 | Large, varied experience      |
+| Test strategy        | Integration tests with real DB | Unit tests with mocked repos  |
+| Query complexity     | High (reports, projections)    | Low-medium (CRUD, aggregates) |
+| Aggregate discipline | Enforced by convention         | Enforced by interface         |
 
-**Do not create generic repositories** (`IRepository<T>`). They add abstraction without value -- the generic interface cannot express aggregate-specific loading rules (which Includes to use, which filters to apply). Repository interfaces should be specific to the aggregate root they serve.
+**Do not create generic repositories** (`IRepository<T>`). They add abstraction without value -- the generic interface
+cannot express aggregate-specific loading rules (which Includes to use, which filters to apply). Repository interfaces
+should be specific to the aggregate root they serve.
 
 ---
 
 ## N+1 Query Governance
 
-N+1 queries are the most common EF Core performance problem. They occur when code iterates over a collection and executes a query per element, instead of loading all data upfront.
+N+1 queries are the most common EF Core performance problem. They occur when code iterates over a collection and
+executes a query per element, instead of loading all data upfront.
 
 ### Detection
 
@@ -357,8 +374,10 @@ var dtos = await db.Orders
 
 ### Governance Checklist
 
-- **Disable lazy loading** -- do not install `Microsoft.EntityFrameworkCore.Proxies` or configure `UseLazyLoadingProxies()`. Eager loading via `Include()` or projection via `Select()` makes data access explicit.
-- **Review queries in code review** -- look for loops that access navigation properties or call `FindAsync` / `FirstOrDefaultAsync` per element.
+- **Disable lazy loading** -- do not install `Microsoft.EntityFrameworkCore.Proxies` or configure
+  `UseLazyLoadingProxies()`. Eager loading via `Include()` or projection via `Select()` makes data access explicit.
+- **Review queries in code review** -- look for loops that access navigation properties or call `FindAsync` /
+  `FirstOrDefaultAsync` per element.
 - **Use query tags** -- `db.Orders.TagWith("GetOrderSummary")` makes queries identifiable in logs and profiling tools.
 - **Set up EF Core logging in development** -- every lazy load or unexpected query is visible in the console output.
 
@@ -370,7 +389,8 @@ Unbounded queries are a production risk. Always limit the number of rows returne
 
 ### Keyset Pagination (Recommended)
 
-Keyset pagination (also called cursor-based or seek pagination) is more efficient than offset pagination for large datasets:
+Keyset pagination (also called cursor-based or seek pagination) is more efficient than offset pagination for large
+datasets:
 
 ```csharp
 public async Task<PagedResult<OrderSummary>> GetOrdersAsync(
@@ -431,7 +451,8 @@ var page = await db.Orders
     .ToListAsync(ct);
 ```
 
-**Warning:** Offset pagination degrades at scale -- `OFFSET 10000` forces the database to scan and discard 10,000 rows. Prefer keyset pagination for user-facing APIs.
+**Warning:** Offset pagination degrades at scale -- `OFFSET 10000` forces the database to scan and discard 10,000 rows.
+Prefer keyset pagination for user-facing APIs.
 
 ### Row Limit Enforcement
 
@@ -456,6 +477,7 @@ public sealed class RowLimitInterceptor : IQueryExpressionInterceptor
 ```
 
 **Practical approach:** Rather than a runtime interceptor, enforce row limits through:
+
 1. **Code review convention** -- every `ToListAsync()` must have `Take(N)` or be a `Select()` projection with `Take(N)`.
 2. **API-level page size caps** -- validate `pageSize` in the request pipeline before it reaches the query.
 3. **Query tags** -- annotate queries with `TagWith()` to identify unbounded queries in monitoring.
@@ -464,7 +486,8 @@ public sealed class RowLimitInterceptor : IQueryExpressionInterceptor
 
 ## Projection Patterns
 
-Projections (`Select()`) are the most effective optimization for read queries. They reduce data transfer, skip change tracking, and eliminate N+1 risks.
+Projections (`Select()`) are the most effective optimization for read queries. They reduce data transfer, skip change
+tracking, and eliminate N+1 risks.
 
 ### Typed Projections
 
@@ -494,21 +517,23 @@ var summaries = await db.Orders
 
 ### Advantages Over Entity Loading
 
-| Concern | Entity + Include | Projection (Select) |
-|---------|------------------|---------------------|
-| Change tracking | Yes (unless AsNoTracking) | No |
-| Data transferred | All columns | Only selected columns |
-| N+1 risk | Yes (lazy nav props) | No (computed in SQL) |
-| Cartesian explosion | Yes (multiple Includes) | No (single query) |
-| Type safety | Entity types | DTO/record types |
+| Concern             | Entity + Include          | Projection (Select)   |
+| ------------------- | ------------------------- | --------------------- |
+| Change tracking     | Yes (unless AsNoTracking) | No                    |
+| Data transferred    | All columns               | Only selected columns |
+| N+1 risk            | Yes (lazy nav props)      | No (computed in SQL)  |
+| Cartesian explosion | Yes (multiple Includes)   | No (single query)     |
+| Type safety         | Entity types              | DTO/record types      |
 
-**Rule:** Use projections for all read-only endpoints that return DTOs. Reserve entity loading for commands that modify data.
+**Rule:** Use projections for all read-only endpoints that return DTOs. Reserve entity loading for commands that modify
+data.
 
 ---
 
 ## Key Principles
 
-- **Separate read and write paths** when you have different optimization needs -- do not force a single model to serve both
+- **Separate read and write paths** when you have different optimization needs -- do not force a single model to serve
+  both
 - **Design aggregates around consistency boundaries** -- not around database tables
 - **Reference other aggregates by ID** -- navigation properties between aggregate roots create coupling
 - **Ban lazy loading** -- make all data access explicit through `Include()` or `Select()`
@@ -520,12 +545,20 @@ var summaries = await db.Orders
 
 ## Agent Gotchas
 
-1. **Do not create navigation properties between aggregate roots** -- use foreign key values (e.g., `CustomerId`) instead of navigation properties (e.g., `Customer`). Cross-aggregate navigation properties break the consistency boundary and encourage loading data that belongs to another aggregate.
-2. **Do not create generic repositories** (`IRepository<T>`) -- they cannot express aggregate-specific loading rules and become leaky abstractions. Create one repository interface per aggregate root with explicit methods.
-3. **Do not use `UseLazyLoadingProxies()`** -- lazy loading hides N+1 queries and makes performance unpredictable. Use `Include()` for eager loading or `Select()` for projections.
-4. **Do not return `IQueryable<T>` from repositories** -- it leaks persistence concerns to callers and makes query behavior unpredictable (e.g., multiple enumeration, client-side evaluation). Return materialized results (`List<T>`, `T?`).
-5. **Do not write `ToListAsync()` without `Take()` on unbounded queries** -- full table scans are a production incident waiting to happen. Always limit the result set.
-6. **Do not put audit logs or event streams inside aggregates** -- unbounded collections cause slow loads and lock contention. Model them as separate entities or dedicated stores.
+1. **Do not create navigation properties between aggregate roots** -- use foreign key values (e.g., `CustomerId`)
+   instead of navigation properties (e.g., `Customer`). Cross-aggregate navigation properties break the consistency
+   boundary and encourage loading data that belongs to another aggregate.
+2. **Do not create generic repositories** (`IRepository<T>`) -- they cannot express aggregate-specific loading rules and
+   become leaky abstractions. Create one repository interface per aggregate root with explicit methods.
+3. **Do not use `UseLazyLoadingProxies()`** -- lazy loading hides N+1 queries and makes performance unpredictable. Use
+   `Include()` for eager loading or `Select()` for projections.
+4. **Do not return `IQueryable<T>` from repositories** -- it leaks persistence concerns to callers and makes query
+   behavior unpredictable (e.g., multiple enumeration, client-side evaluation). Return materialized results (`List<T>`,
+   `T?`).
+5. **Do not write `ToListAsync()` without `Take()` on unbounded queries** -- full table scans are a production incident
+   waiting to happen. Always limit the result set.
+6. **Do not put audit logs or event streams inside aggregates** -- unbounded collections cause slow loads and lock
+   contention. Model them as separate entities or dedicated stores.
 
 ---
 

@@ -2,21 +2,24 @@
 name: dotnet-api-versioning
 description: Versions HTTP APIs. Asp.Versioning.Http/Mvc, URL segment, header, query string, sunset.
 license: MIT
-targets: ["*"]
-tags: ["api", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['api', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for api tasks"
+  short-description: '.NET skill guidance for api tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-api-versioning
 
-API versioning strategies for ASP.NET Core using the `Asp.Versioning` library family. URL segment versioning (`/api/v1/`) is the preferred approach for simplicity and discoverability. This skill covers URL, header, and query string versioning with configuration for both Minimal APIs and MVC controllers, sunset policy enforcement, and migration from legacy packages.
+API versioning strategies for ASP.NET Core using the `Asp.Versioning` library family. URL segment versioning
+(`/api/v1/`) is the preferred approach for simplicity and discoverability. This skill covers URL, header, and query
+string versioning with configuration for both Minimal APIs and MVC controllers, sunset policy enforcement, and migration
+from legacy packages.
 
 ## Scope
 
@@ -32,19 +35,20 @@ API versioning strategies for ASP.NET Core using the `Asp.Versioning` library fa
 - OpenAPI document generation per API version -- see [skill:dotnet-openapi]
 - Authentication and authorization per version -- see [skill:dotnet-api-security]
 
-Cross-references: [skill:dotnet-minimal-apis] for Minimal API endpoint patterns, [skill:dotnet-openapi] for versioned OpenAPI documents.
+Cross-references: [skill:dotnet-minimal-apis] for Minimal API endpoint patterns, [skill:dotnet-openapi] for versioned
+OpenAPI documents.
 
 ---
 
 ## Package Landscape
 
-| Package | Target | Status |
-|---------|--------|--------|
-| `Asp.Versioning.Http` | Minimal APIs | **Current** |
-| `Asp.Versioning.Mvc.ApiExplorer` | MVC controllers + API Explorer | **Current** |
-| `Asp.Versioning.Mvc` | MVC controllers (no API Explorer) | **Current** |
-| `Microsoft.AspNetCore.Mvc.Versioning` | MVC controllers | **Legacy** -- migrate to `Asp.Versioning.Mvc` |
-| `Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer` | MVC + API Explorer | **Legacy** -- migrate to `Asp.Versioning.Mvc.ApiExplorer` |
+| Package                                           | Target                            | Status                                                    |
+| ------------------------------------------------- | --------------------------------- | --------------------------------------------------------- |
+| `Asp.Versioning.Http`                             | Minimal APIs                      | **Current**                                               |
+| `Asp.Versioning.Mvc.ApiExplorer`                  | MVC controllers + API Explorer    | **Current**                                               |
+| `Asp.Versioning.Mvc`                              | MVC controllers (no API Explorer) | **Current**                                               |
+| `Microsoft.AspNetCore.Mvc.Versioning`             | MVC controllers                   | **Legacy** -- migrate to `Asp.Versioning.Mvc`             |
+| `Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer` | MVC + API Explorer                | **Legacy** -- migrate to `Asp.Versioning.Mvc.ApiExplorer` |
 
 Install for Minimal APIs:
 
@@ -62,7 +66,8 @@ Install for MVC controllers:
 
 ## URL Segment Versioning (Preferred)
 
-URL segment versioning embeds the version in the path (`/api/v1/products`). It is the simplest strategy, works with all HTTP clients, is cacheable, and clearly visible in logs and documentation.
+URL segment versioning embeds the version in the path (`/api/v1/products`). It is the simplest strategy, works with all
+HTTP clients, is cacheable, and clearly visible in logs and documentation.
 
 ### Minimal APIs
 
@@ -152,7 +157,8 @@ public sealed class ProductsV2Controller(AppDbContext db) : ControllerBase
 
 ## Header Versioning
 
-Header versioning reads the API version from a custom request header. Keeps URLs clean but is less discoverable and harder to test from a browser.
+Header versioning reads the API version from a custom request header. Keeps URLs clean but is less discoverable and
+harder to test from a browser.
 
 ```csharp
 builder.Services.AddApiVersioning(options =>
@@ -176,7 +182,8 @@ X-Api-Version: 2.0
 
 ## Query String Versioning
 
-Query string versioning uses a query parameter (default: `api-version`). Simple to use but pollutes URLs and may conflict with caching strategies.
+Query string versioning uses a query parameter (default: `api-version`). Simple to use but pollutes URLs and may
+conflict with caching strategies.
 
 ```csharp
 builder.Services.AddApiVersioning(options =>
@@ -199,7 +206,8 @@ Host: api.example.com
 
 ## Combining Version Readers
 
-Multiple readers can be combined. The first reader that resolves a version wins. This is useful during migration from one strategy to another:
+Multiple readers can be combined. The first reader that resolves a version wins. This is useful during migration from
+one strategy to another:
 
 ```csharp
 options.ApiVersionReader = ApiVersionReader.Combine(
@@ -212,7 +220,8 @@ options.ApiVersionReader = ApiVersionReader.Combine(
 
 ## Sunset Policies
 
-Sunset policies communicate to consumers that an API version is deprecated and will be removed. The `Sunset` HTTP response header follows [RFC 8594](https://datatracker.ietf.org/doc/html/rfc8594).
+Sunset policies communicate to consumers that an API version is deprecated and will be removed. The `Sunset` HTTP
+response header follows [RFC 8594](https://datatracker.ietf.org/doc/html/rfc8594).
 
 ```csharp
 builder.Services.AddApiVersioning(options =>
@@ -259,17 +268,20 @@ public sealed class ProductsController : ControllerBase { }
 
 ## Migration from Legacy Packages
 
-Projects using `Microsoft.AspNetCore.Mvc.Versioning` should migrate to `Asp.Versioning.Mvc` (or `Asp.Versioning.Http` for Minimal APIs). The API surface is largely compatible with namespace changes:
+Projects using `Microsoft.AspNetCore.Mvc.Versioning` should migrate to `Asp.Versioning.Mvc` (or `Asp.Versioning.Http`
+for Minimal APIs). The API surface is largely compatible with namespace changes:
 
-| Legacy namespace | Current namespace |
-|-----------------|-------------------|
-| `Microsoft.AspNetCore.Mvc.Versioning` | `Asp.Versioning` |
+| Legacy namespace                       | Current namespace            |
+| -------------------------------------- | ---------------------------- |
+| `Microsoft.AspNetCore.Mvc.Versioning`  | `Asp.Versioning`             |
 | `Microsoft.AspNetCore.Mvc.ApiExplorer` | `Asp.Versioning.ApiExplorer` |
 
 Key migration steps:
+
 1. Replace NuGet package references
 2. Update `using` directives from `Microsoft.AspNetCore.Mvc.Versioning` to `Asp.Versioning`
-3. Update service registration from `services.AddApiVersioning()` (legacy extension) to the current extension from `Asp.Versioning`
+3. Update service registration from `services.AddApiVersioning()` (legacy extension) to the current extension from
+   `Asp.Versioning`
 4. Review any custom `IApiVersionReader` implementations for breaking changes
 
 See the [migration guide](https://github.com/dotnet/aspnet-api-versioning/wiki/Migration-Guide) for detailed steps.
@@ -278,24 +290,31 @@ See the [migration guide](https://github.com/dotnet/aspnet-api-versioning/wiki/M
 
 ## Version Strategy Decision Guide
 
-| Strategy | Pros | Cons | Best for |
-|----------|------|------|----------|
-| **URL segment** (`/api/v1/`) | Simple, visible, cacheable, works everywhere | URL changes per version | Public APIs, most projects (preferred) |
-| **Header** (`X-Api-Version: 1.0`) | Clean URLs, no path changes | Less discoverable, harder to test | Internal APIs with controlled clients |
-| **Query string** (`?api-version=1.0`) | Easy to add, no path changes | Pollutes URL, cache key issues | Quick prototyping, legacy compatibility |
+| Strategy                              | Pros                                         | Cons                              | Best for                                |
+| ------------------------------------- | -------------------------------------------- | --------------------------------- | --------------------------------------- |
+| **URL segment** (`/api/v1/`)          | Simple, visible, cacheable, works everywhere | URL changes per version           | Public APIs, most projects (preferred)  |
+| **Header** (`X-Api-Version: 1.0`)     | Clean URLs, no path changes                  | Less discoverable, harder to test | Internal APIs with controlled clients   |
+| **Query string** (`?api-version=1.0`) | Easy to add, no path changes                 | Pollutes URL, cache key issues    | Quick prototyping, legacy compatibility |
 
-**Recommendation:** Start with URL segment versioning for all new projects. Add header or query string readers only when migrating from an existing strategy or when specific client constraints require it.
+**Recommendation:** Start with URL segment versioning for all new projects. Add header or query string readers only when
+migrating from an existing strategy or when specific client constraints require it.
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not use the legacy `Microsoft.AspNetCore.Mvc.Versioning` package for new projects** -- use `Asp.Versioning.Http` (Minimal APIs) or `Asp.Versioning.Mvc` (MVC controllers).
-2. **Do not hardcode version numbers in package references** -- use version ranges (e.g., `8.*`) so the package version matches the latest compatible release.
-3. **Do not forget `ReportApiVersions = true`** -- without it, clients cannot discover available versions from response headers.
-4. **Do not mix `MapToApiVersion` and route group prefixes inconsistently** -- each route group should target exactly one API version.
-5. **Do not deprecate a version without a sunset policy** -- always provide a sunset date and migration link so consumers can plan.
-6. **Do not use `AssumeDefaultVersionWhenUnspecified = true` for public APIs** -- it hides versioning requirements from consumers. Require explicit version selection instead.
+1. **Do not use the legacy `Microsoft.AspNetCore.Mvc.Versioning` package for new projects** -- use `Asp.Versioning.Http`
+   (Minimal APIs) or `Asp.Versioning.Mvc` (MVC controllers).
+2. **Do not hardcode version numbers in package references** -- use version ranges (e.g., `8.*`) so the package version
+   matches the latest compatible release.
+3. **Do not forget `ReportApiVersions = true`** -- without it, clients cannot discover available versions from response
+   headers.
+4. **Do not mix `MapToApiVersion` and route group prefixes inconsistently** -- each route group should target exactly
+   one API version.
+5. **Do not deprecate a version without a sunset policy** -- always provide a sunset date and migration link so
+   consumers can plan.
+6. **Do not use `AssumeDefaultVersionWhenUnspecified = true` for public APIs** -- it hides versioning requirements from
+   consumers. Require explicit version selection instead.
 
 ---
 

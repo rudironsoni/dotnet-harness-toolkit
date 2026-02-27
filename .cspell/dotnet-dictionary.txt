@@ -1,0 +1,156 @@
+# .NET-specific terms and technical vocabulary
+# This file is automatically updated - do not edit manually
+
+# .NET Framework/Core/5+
+netstandard
+netcoreapp
+dotnetsdk
+dotnetcli
+msbuildsdk
+runtimeconfig
+depsjson
+protosdk
+
+# C# Language Features
+nullablecontext
+nullablereference
+checkedcontext
+uncheckedcontext
+fixedstatement
+unsafecontext
+stackalloc
+sizeofexpression
+typeofexpression
+nameofexpression
+
+# ASP.NET Core
+aspnetcore
+aspnet
+kestrel
+iisintegration
+httpsredirection
+staticfiles
+routing
+endpoints
+middleware
+mvc
+razorpages
+blazor
+serverside
+webassembly
+hybrid
+minimalapis
+controllerbase
+actionresult
+iresult
+iresultimplementation
+
+# Entity Framework
+efcore
+ef6
+dbcontext
+entityentry
+changetracker
+migrations
+modelbuilder
+fluentapi
+hasone
+hasmany
+withone
+withmany
+includeexpression
+
+# Testing
+unittest
+integrationtest
+endtoendtest
+e2etest
+testfixture
+testcase
+theorydata
+memberdata
+classdata
+inlineauto
+datatheory
+factattribute
+
+# Security
+authorizationhandler
+authenticationhandler
+jwtbearer
+cookieauthentication
+oauth
+openidconnect
+claimsprincipal
+claimsidentity
+policybased
+resourcebased
+
+# Performance
+benchmarkdotnet
+memorydiagnoser
+disassemblydiagnoser
+hardwarecounters
+etrw
+speedscope
+chromiumtrace
+dotnettrace
+dotnetcounters
+dotnetdump
+sos
+
+# Cloud/Azure
+azurefunctions
+azureappinsights
+azurekeyvault
+azurestorage
+servicebus
+eventhub
+
+# Docker/Containers
+dockerfile
+dockercompose
+multistagebuild
+runtimeimage
+sdkimage
+
+# GitHub/Git
+gitflow
+githubflow
+trunkbased
+featurebranch
+pullrequest
+mergerequest
+codeowners
+codeql
+
+# AI/ML
+openai
+gpt
+llm
+promptengineering
+systemprompt
+userprompt
+assistantprompt
+contextwindow
+tokenlimit
+temperature
+
+# Build/Packaging
+nupkg
+snupkg
+symbolsnuget
+packagereference
+projectreference
+
+# Skills/Content
+skillcatalog
+subagentcatalog
+knowledgegraph
+reasoningchain
+
+# RuleSync
+rulesyncdot
+configschema
+basedirs
+rulesyncconfig

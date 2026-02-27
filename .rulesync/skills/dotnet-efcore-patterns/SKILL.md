@@ -2,21 +2,23 @@
 name: dotnet-efcore-patterns
 description: EF Core, DbContext, AsNoTracking, query splitting.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-efcore-patterns
 
-Tactical patterns for Entity Framework Core in .NET applications. Covers DbContext lifetime management, read-only query optimization, query splitting, migration workflows, interceptors, compiled queries, and connection resiliency. These patterns apply to EF Core 8+ and are compatible with SQL Server, PostgreSQL, and SQLite providers.
+Tactical patterns for Entity Framework Core in .NET applications. Covers DbContext lifetime management, read-only query
+optimization, query splitting, migration workflows, interceptors, compiled queries, and connection resiliency. These
+patterns apply to EF Core 8+ and are compatible with SQL Server, PostgreSQL, and SQLite providers.
 
 ## Scope
 
@@ -36,7 +38,9 @@ Tactical patterns for Entity Framework Core in .NET applications. Covers DbConte
 - Testing EF Core with fixtures -- see [skill:dotnet-integration-testing]
 - Domain modeling with DDD patterns -- see [skill:dotnet-domain-modeling]
 
-Cross-references: [skill:dotnet-csharp-dependency-injection] for service registration and DbContext lifetime, [skill:dotnet-csharp-async-patterns] for cancellation token propagation in queries, [skill:dotnet-efcore-architecture] for strategic data patterns, [skill:dotnet-data-access-strategy] for data access technology selection.
+Cross-references: [skill:dotnet-csharp-dependency-injection] for service registration and DbContext lifetime,
+[skill:dotnet-csharp-async-patterns] for cancellation token propagation in queries, [skill:dotnet-efcore-architecture]
+for strategic data patterns, [skill:dotnet-data-access-strategy] for data access technology selection.
 
 ---
 
@@ -51,16 +55,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 ### Lifetime Rules
 
-| Scenario | Lifetime | Registration |
-|----------|----------|-------------|
-| Web API / MVC request | Scoped (default) | `AddDbContext<T>()` |
-| Background service | Scoped via factory | `AddDbContextFactory<T>()` |
-| Blazor Server | Scoped via factory | `AddDbContextFactory<T>()` |
-| Console app | Transient or manual | `new AppDbContext(options)` |
+| Scenario              | Lifetime            | Registration                |
+| --------------------- | ------------------- | --------------------------- |
+| Web API / MVC request | Scoped (default)    | `AddDbContext<T>()`         |
+| Background service    | Scoped via factory  | `AddDbContextFactory<T>()`  |
+| Blazor Server         | Scoped via factory  | `AddDbContextFactory<T>()`  |
+| Console app           | Transient or manual | `new AppDbContext(options)` |
 
 ### DbContextFactory for Long-Lived Services
 
-Background services and Blazor Server circuits outlive a single scope. Use `IDbContextFactory<T>` to create short-lived contexts on demand:
+Background services and Blazor Server circuits outlive a single scope. Use `IDbContextFactory<T>` to create short-lived
+contexts on demand:
 
 ```csharp
 public sealed class OrderProcessor(
@@ -92,11 +97,13 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 ```
 
-**Important:** `AddDbContextFactory<T>()` also registers `AppDbContext` itself as scoped, so controllers and request-scoped services can still inject `AppDbContext` directly.
+**Important:** `AddDbContextFactory<T>()` also registers `AppDbContext` itself as scoped, so controllers and
+request-scoped services can still inject `AppDbContext` directly.
 
 ### Pooling
 
-`AddDbContextPool<T>()` and `AddPooledDbContextFactory<T>()` reuse `DbContext` instances to reduce allocation overhead. Use pooling when throughput matters and your context has no injected scoped services:
+`AddDbContextPool<T>()` and `AddPooledDbContextFactory<T>()` reuse `DbContext` instances to reduce allocation overhead.
+Use pooling when throughput matters and your context has no injected scoped services:
 
 ```csharp
 builder.Services.AddDbContextPool<AppDbContext>(options =>
@@ -104,13 +111,16 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
     poolSize: 128);  // default is 1024
 ```
 
-**Pooling constraints:** Pooled contexts are reset and reused. Do not store per-request state on the `DbContext` subclass. Do not inject scoped services into the constructor -- use `IDbContextFactory<T>` with pooling (`AddPooledDbContextFactory<T>()`) if you need factory semantics.
+**Pooling constraints:** Pooled contexts are reset and reused. Do not store per-request state on the `DbContext`
+subclass. Do not inject scoped services into the constructor -- use `IDbContextFactory<T>` with pooling
+(`AddPooledDbContextFactory<T>()`) if you need factory semantics.
 
 ---
 
 ## AsNoTracking for Read-Only Queries
 
-By default, EF Core tracks all entities returned by queries, enabling change detection on `SaveChangesAsync()`. For read-only queries, disable tracking to reduce memory and CPU overhead:
+By default, EF Core tracks all entities returned by queries, enabling change detection on `SaveChangesAsync()`. For
+read-only queries, disable tracking to reduce memory and CPU overhead:
 
 ```csharp
 // Per-query opt-out
@@ -149,7 +159,8 @@ var order = await readOnlyDb.Orders
 
 ## Query Splitting
 
-When loading collections via `Include()`, EF Core generates a single SQL query with JOINs by default. This produces a Cartesian explosion when multiple collections are included.
+When loading collections via `Include()`, EF Core generates a single SQL query with JOINs by default. This produces a
+Cartesian explosion when multiple collections are included.
 
 ### The Problem: Cartesian Explosion
 
@@ -175,12 +186,13 @@ var orders = await db.Orders
 
 ### Tradeoffs
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| Single query (default) | Atomic snapshot, one round-trip | Cartesian explosion with multiple Includes |
-| Split query | No Cartesian explosion, less data transfer | Multiple round-trips, no atomicity guarantee |
+| Approach               | Pros                                       | Cons                                         |
+| ---------------------- | ------------------------------------------ | -------------------------------------------- |
+| Single query (default) | Atomic snapshot, one round-trip            | Cartesian explosion with multiple Includes   |
+| Split query            | No Cartesian explosion, less data transfer | Multiple round-trips, no atomicity guarantee |
 
-**Rule of thumb:** Use `AsSplitQuery()` when including two or more collection navigations. Use the default single query for single-collection includes or when atomicity matters.
+**Rule of thumb:** Use `AsSplitQuery()` when including two or more collection navigations. Use the default single query
+for single-collection includes or when atomicity matters.
 
 ### Global Default
 
@@ -228,7 +240,8 @@ dotnet ef database update \
 
 ### Migration Bundles for Production
 
-Migration bundles produce a self-contained executable for CI/CD pipelines -- no `dotnet ef` tooling needed on the deployment server:
+Migration bundles produce a self-contained executable for CI/CD pipelines -- no `dotnet ef` tooling needed on the
+deployment server:
 
 ```bash
 # Build the bundle
@@ -250,10 +263,14 @@ dotnet ef migrations bundle \
 ### Migration Best Practices
 
 1. **Always generate idempotent scripts** for production deployments (`--idempotent` flag).
-2. **Never call `Database.Migrate()` at application startup** in production -- it races with horizontal scaling and lacks rollback. Use migration bundles or idempotent scripts applied from CI/CD.
-3. **Keep migrations additive** -- add columns with defaults, add tables, add indexes. Avoid destructive changes (drop column, rename table) in the same release as code changes.
-4. **Review generated code** -- EF Core migration scaffolding can produce unexpected SQL. Always review the `Up()` and `Down()` methods.
-5. **Use separate migration projects** -- keep migrations in an infrastructure project, not the API project. Specify `--project` and `--startup-project` explicitly.
+2. **Never call `Database.Migrate()` at application startup** in production -- it races with horizontal scaling and
+   lacks rollback. Use migration bundles or idempotent scripts applied from CI/CD.
+3. **Keep migrations additive** -- add columns with defaults, add tables, add indexes. Avoid destructive changes (drop
+   column, rename table) in the same release as code changes.
+4. **Review generated code** -- EF Core migration scaffolding can produce unexpected SQL. Always review the `Up()` and
+   `Down()` methods.
+5. **Use separate migration projects** -- keep migrations in an infrastructure project, not the API project. Specify
+   `--project` and `--startup-project` explicitly.
 
 ### Data Seeding
 
@@ -270,13 +287,15 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 }
 ```
 
-**Important:** `HasData()` uses primary key values for identity. Changing a seed value's PK in a later migration deletes the old row and inserts a new one -- it does not update in place.
+**Important:** `HasData()` uses primary key values for identity. Changing a seed value's PK in a later migration deletes
+the old row and inserts a new one -- it does not update in place.
 
 ---
 
 ## Interceptors
 
-EF Core interceptors allow cross-cutting concerns to be injected into the database pipeline without modifying entity logic. Interceptors run for every operation of their type.
+EF Core interceptors allow cross-cutting concerns to be injected into the database pipeline without modifying entity
+logic. Interceptors run for every operation of their type.
 
 ### SaveChanges Interceptor: Automatic Audit Timestamps
 
@@ -398,7 +417,8 @@ builder.Services.AddSingleton<SoftDeleteInterceptor>();
 
 ## Compiled Queries
 
-For queries executed very frequently with the same shape, compiled queries eliminate the overhead of expression tree translation on every call:
+For queries executed very frequently with the same shape, compiled queries eliminate the overhead of expression tree
+translation on every call:
 
 ```csharp
 public static class CompiledQueries
@@ -433,15 +453,20 @@ await foreach (var o in CompiledQueries.GetOrdersByCustomer(db, customerId)
 }
 ```
 
-**When to use:** Compiled queries provide measurable benefit for queries that execute thousands of times per second. For typical CRUD endpoints, standard LINQ is sufficient -- do not prematurely optimize.
+**When to use:** Compiled queries provide measurable benefit for queries that execute thousands of times per second. For
+typical CRUD endpoints, standard LINQ is sufficient -- do not prematurely optimize.
 
-**Cancellation limitation:** Single-result compiled query delegates (`Task<T?>`) do not accept `CancellationToken`. If per-call cancellation is required, use standard async LINQ (`FirstOrDefaultAsync(ct)`) instead of a compiled query. Multi-result compiled queries (`IAsyncEnumerable<T>`) support cancellation via `.WithCancellation(ct)` on the async enumerable.
+**Cancellation limitation:** Single-result compiled query delegates (`Task<T?>`) do not accept `CancellationToken`. If
+per-call cancellation is required, use standard async LINQ (`FirstOrDefaultAsync(ct)`) instead of a compiled query.
+Multi-result compiled queries (`IAsyncEnumerable<T>`) support cancellation via `.WithCancellation(ct)` on the async
+enumerable.
 
 ---
 
 ## Connection Resiliency
 
-Transient database failures (network blips, failovers) should be handled with automatic retry. Each provider has a built-in execution strategy:
+Transient database failures (network blips, failovers) should be handled with automatic retry. Each provider has a
+built-in execution strategy:
 
 ```csharp
 // PostgreSQL
@@ -482,13 +507,15 @@ await strategy.ExecuteAsync(async () =>
 });
 ```
 
-**Important:** The entire delegate is re-executed on retry, including the transaction. Ensure the logic is idempotent or uses database-level uniqueness constraints to prevent duplicates.
+**Important:** The entire delegate is re-executed on retry, including the transaction. Ensure the logic is idempotent or
+uses database-level uniqueness constraints to prevent duplicates.
 
 ---
 
 ## Key Principles
 
-- **Keep DbContext short-lived** -- one per request in web apps, one per unit of work in background services via `IDbContextFactory<T>`
+- **Keep DbContext short-lived** -- one per request in web apps, one per unit of work in background services via
+  `IDbContextFactory<T>`
 - **Default to AsNoTracking for reads** -- opt in to tracking only when you need change detection
 - **Use split queries for multiple collection Includes** -- avoid Cartesian explosion
 - **Never call Database.Migrate() at startup in production** -- use migration bundles or idempotent scripts
@@ -499,12 +526,20 @@ await strategy.ExecuteAsync(async () =>
 
 ## Agent Gotchas
 
-1. **Do not inject `DbContext` into singleton services** -- `DbContext` is scoped. Injecting it into a singleton captures a stale instance. Use `IDbContextFactory<T>` instead.
-2. **Do not forget `CancellationToken` propagation** -- pass `ct` to all `ToListAsync()`, `FirstOrDefaultAsync()`, `SaveChangesAsync()`, and other async EF Core methods. Omitting it prevents graceful request cancellation.
-3. **Do not use `Database.EnsureCreated()` alongside migrations** -- `EnsureCreated()` creates the schema without migration history, making subsequent migrations fail. Use it only in test scenarios without migrations.
-4. **Do not assume `SaveChangesAsync` is implicitly transactional across multiple calls** -- each `SaveChangesAsync()` is its own transaction. Wrap multiple saves in an explicit `BeginTransactionAsync()` / `CommitAsync()` block when atomicity is required.
-5. **Do not hardcode connection strings** -- read from configuration (`builder.Configuration.GetConnectionString("...")`) and inject via environment variables in production.
-6. **Do not forget to list required NuGet packages** -- EF Core provider packages (`Microsoft.EntityFrameworkCore.SqlServer`, `Npgsql.EntityFrameworkCore.PostgreSQL`) and the design-time package (`Microsoft.EntityFrameworkCore.Design`) must be referenced explicitly.
+1. **Do not inject `DbContext` into singleton services** -- `DbContext` is scoped. Injecting it into a singleton
+   captures a stale instance. Use `IDbContextFactory<T>` instead.
+2. **Do not forget `CancellationToken` propagation** -- pass `ct` to all `ToListAsync()`, `FirstOrDefaultAsync()`,
+   `SaveChangesAsync()`, and other async EF Core methods. Omitting it prevents graceful request cancellation.
+3. **Do not use `Database.EnsureCreated()` alongside migrations** -- `EnsureCreated()` creates the schema without
+   migration history, making subsequent migrations fail. Use it only in test scenarios without migrations.
+4. **Do not assume `SaveChangesAsync` is implicitly transactional across multiple calls** -- each `SaveChangesAsync()`
+   is its own transaction. Wrap multiple saves in an explicit `BeginTransactionAsync()` / `CommitAsync()` block when
+   atomicity is required.
+5. **Do not hardcode connection strings** -- read from configuration
+   (`builder.Configuration.GetConnectionString("...")`) and inject via environment variables in production.
+6. **Do not forget to list required NuGet packages** -- EF Core provider packages
+   (`Microsoft.EntityFrameworkCore.SqlServer`, `Npgsql.EntityFrameworkCore.PostgreSQL`) and the design-time package
+   (`Microsoft.EntityFrameworkCore.Design`) must be referenced explicitly.
 
 ---
 

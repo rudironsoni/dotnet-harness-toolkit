@@ -2,21 +2,24 @@
 name: dotnet-agent-gotchas
 description: Flags agent mistakes in .NET code -- async misuse, NuGet errors, deprecated APIs, DI.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-agent-gotchas
 
-Common mistakes AI agents make when generating or modifying .NET code, organized by category. Each category provides a brief warning, anti-pattern code, corrected code, and a cross-reference to the canonical skill that owns the deep guidance. This skill does NOT provide full implementation walkthroughs -- it surfaces the mistake and points to the right skill.
+Common mistakes AI agents make when generating or modifying .NET code, organized by category. Each category provides a
+brief warning, anti-pattern code, corrected code, and a cross-reference to the canonical skill that owns the deep
+guidance. This skill does NOT provide full implementation walkthroughs -- it surfaces the mistake and points to the
+right skill.
 
 ## Scope
 
@@ -37,13 +40,16 @@ Common mistakes AI agents make when generating or modifying .NET code, organized
 
 .NET 8.0+ SDK. Familiarity with SDK-style projects and C# language features.
 
-Cross-references: [skill:dotnet-csharp-async-patterns], [skill:dotnet-csharp-dependency-injection], [skill:dotnet-csharp-nullable-reference-types], [skill:dotnet-csharp-source-generators], [skill:dotnet-testing-strategy], [skill:dotnet-security-owasp].
+Cross-references: [skill:dotnet-csharp-async-patterns], [skill:dotnet-csharp-dependency-injection],
+[skill:dotnet-csharp-nullable-reference-types], [skill:dotnet-csharp-source-generators],
+[skill:dotnet-testing-strategy], [skill:dotnet-security-owasp].
 
 ---
 
 ## Category 1: Async/Await Misuse
 
-**Warning:** Agents frequently block on async methods using `.Result` or `.Wait()`, causing deadlocks in ASP.NET Core and UI contexts. Another common mistake is fire-and-forget calls that silently swallow exceptions.
+**Warning:** Agents frequently block on async methods using `.Result` or `.Wait()`, causing deadlocks in ASP.NET Core
+and UI contexts. Another common mistake is fire-and-forget calls that silently swallow exceptions.
 
 ### Anti-Pattern
 
@@ -79,13 +85,15 @@ public async Task ProcessOrderAsync(Order order, CancellationToken ct = default)
 }
 ```
 
-See [skill:dotnet-csharp-async-patterns] for full async/await guidance including `ValueTask`, `ConfigureAwait`, and cancellation propagation.
+See [skill:dotnet-csharp-async-patterns] for full async/await guidance including `ValueTask`, `ConfigureAwait`, and
+cancellation propagation.
 
 ---
 
 ## Category 2: NuGet Package Errors
 
-**Warning:** Agents generate incorrect package names, reference pre-release versions without opt-in, or add packages that have been deprecated/replaced. ASP.NET Core shared-framework packages must match the project TFM major version.
+**Warning:** Agents generate incorrect package names, reference pre-release versions without opt-in, or add packages
+that have been deprecated/replaced. ASP.NET Core shared-framework packages must match the project TFM major version.
 
 ### Anti-Pattern
 
@@ -123,7 +131,9 @@ See [skill:dotnet-csproj-reading] for project file conventions and central packa
 
 ## Category 3: Deprecated API Usage
 
-**Warning:** Agents generate code using deprecated and insecure APIs: `BinaryFormatter` (CVE-prone deserialization), `WebClient` (replaced by `HttpClient`), and older cryptography APIs (`RNGCryptoServiceProvider`, `SHA1CryptoServiceProvider`).
+**Warning:** Agents generate code using deprecated and insecure APIs: `BinaryFormatter` (CVE-prone deserialization),
+`WebClient` (replaced by `HttpClient`), and older cryptography APIs (`RNGCryptoServiceProvider`,
+`SHA1CryptoServiceProvider`).
 
 ### Anti-Pattern
 
@@ -165,7 +175,8 @@ See [skill:dotnet-security-owasp] for the full deprecated security pattern catal
 
 ## Category 4: Project Structure Mistakes
 
-**Warning:** Agents use wrong SDK types, add `PackageReference` entries for framework-included libraries, or create broken `ProjectReference` paths.
+**Warning:** Agents use wrong SDK types, add `PackageReference` entries for framework-included libraries, or create
+broken `ProjectReference` paths.
 
 ### Anti-Pattern
 
@@ -211,7 +222,8 @@ See [skill:dotnet-project-structure] for SDK types, project organization, and pr
 
 ## Category 5: Nullable Reference Type Annotation Errors
 
-**Warning:** Agents misuse the null-forgiving operator (`!`) to silence warnings instead of fixing nullability, or forget to enable the nullable context.
+**Warning:** Agents misuse the null-forgiving operator (`!`) to silence warnings instead of fixing nullability, or
+forget to enable the nullable context.
 
 ### Anti-Pattern
 
@@ -257,7 +269,8 @@ See [skill:dotnet-csharp-nullable-reference-types] for full NRT usage patterns a
 
 ## Category 6: Source Generator Misconfiguration
 
-**Warning:** Agents forget to mark classes as `partial` when source generators need to augment them, or use incorrect output types that prevent generator output from compiling.
+**Warning:** Agents forget to mark classes as `partial` when source generators need to augment them, or use incorrect
+output types that prevent generator output from compiling.
 
 ### Anti-Pattern
 
@@ -298,7 +311,8 @@ See [skill:dotnet-csharp-source-generators] for source generator configuration, 
 
 ## Category 7: Trimming/AOT Warning Suppression
 
-**Warning:** Agents suppress trimming and AOT warnings with `#pragma` or `[UnconditionalSuppressMessage]` instead of fixing the underlying reflection/dynamic usage. Suppression hides runtime failures in published apps.
+**Warning:** Agents suppress trimming and AOT warnings with `#pragma` or `[UnconditionalSuppressMessage]` instead of
+fixing the underlying reflection/dynamic usage. Suppression hides runtime failures in published apps.
 
 ### Anti-Pattern
 
@@ -347,7 +361,8 @@ See [skill:dotnet-csproj-reading] for MSBuild property guidance on trimming and 
 
 ## Category 8: Test Organization Anti-Patterns
 
-**Warning:** Agents put test classes in production projects, use wrong test SDK configurations, or mix test framework attributes incorrectly.
+**Warning:** Agents put test classes in production projects, use wrong test SDK configurations, or mix test framework
+attributes incorrectly.
 
 ### Anti-Pattern
 
@@ -402,7 +417,8 @@ See [skill:dotnet-testing-strategy] for test organization, naming conventions, a
 
 ## Category 9: DI Registration Errors
 
-**Warning:** Agents forget to register services, use wrong lifetimes (singleton capturing scoped), or create captive dependencies that cause memory leaks and concurrency bugs.
+**Warning:** Agents forget to register services, use wrong lifetimes (singleton capturing scoped), or create captive
+dependencies that cause memory leaks and concurrency bugs.
 
 ### Anti-Pattern
 
@@ -451,7 +467,8 @@ See [skill:dotnet-csharp-dependency-injection] for lifetime rules, registration 
 
 ## Slopwatch Anti-Patterns
 
-These are patterns that indicate an agent is hiding problems rather than fixing them. Every code review should check for these. See [skill:dotnet-slopwatch] for the automated quality gate that detects these patterns.
+These are patterns that indicate an agent is hiding problems rather than fixing them. Every code review should check for
+these. See [skill:dotnet-slopwatch] for the automated quality gate that detects these patterns.
 
 ### 1. Disabled or Skipped Tests
 
@@ -471,7 +488,8 @@ public void ImportantEdgeCase() { }
 #endif
 ```
 
-**Fix:** Investigate and fix the underlying issue. If a test is genuinely flaky due to timing, use `[Retry]` (xUnit v3) or fix the non-determinism. Never disable tests to achieve a green build.
+**Fix:** Investigate and fix the underlying issue. If a test is genuinely flaky due to timing, use `[Retry]` (xUnit v3)
+or fix the non-determinism. Never disable tests to achieve a green build.
 
 ### 2. Warning Suppressions
 
@@ -486,7 +504,8 @@ result.Process();
 // <NoWarn>CS8618;CS8625;IL2026</NoWarn>
 ```
 
-**Fix:** Address the underlying nullability or trim issues. Add proper null checks, use nullable annotations correctly, or apply `[DynamicallyAccessedMembers]` for trim warnings.
+**Fix:** Address the underlying nullability or trim issues. Add proper null checks, use nullable annotations correctly,
+or apply `[DynamicallyAccessedMembers]` for trim warnings.
 
 ### 3. Empty Catch Blocks
 
@@ -518,7 +537,8 @@ public void Process(string input) { }
 // dotnet_diagnostic.CA1062.severity = none
 ```
 
-**Fix:** Fix the code to satisfy the analyzer rule, or provide a documented justification in the suppression attribute: `[SuppressMessage("Design", "CA1062", Justification = "Input validated by middleware")]`.
+**Fix:** Fix the code to satisfy the analyzer rule, or provide a documented justification in the suppression attribute:
+`[SuppressMessage("Design", "CA1062", Justification = "Input validated by middleware")]`.
 
 ### 5. Removed Assertions from Tests
 
@@ -533,7 +553,8 @@ public async Task CreateOrder_Succeeds()
 }
 ```
 
-**Fix:** Every test must have at least one assertion that validates the expected behavior. If the test is for side effects, assert on the side effect (database state, published events, log output).
+**Fix:** Every test must have at least one assertion that validates the expected behavior. If the test is for side
+effects, assert on the side effect (database state, published events, log output).
 
 ---
 

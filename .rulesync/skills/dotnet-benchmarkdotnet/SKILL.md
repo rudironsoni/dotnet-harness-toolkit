@@ -2,21 +2,23 @@
 name: dotnet-benchmarkdotnet
 description: Runs BenchmarkDotNet microbenchmarks. Setup, memory diagnosers, baselines, result analysis.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-benchmarkdotnet
 
-Microbenchmarking guidance for .NET using BenchmarkDotNet v0.14+. Covers benchmark class setup, memory and disassembly diagnosers, exporters for CI artifact collection, baseline comparisons, and common pitfalls that invalidate measurements.
+Microbenchmarking guidance for .NET using BenchmarkDotNet v0.14+. Covers benchmark class setup, memory and disassembly
+diagnosers, exporters for CI artifact collection, baseline comparisons, and common pitfalls that invalidate
+measurements.
 
 **Version assumptions:** BenchmarkDotNet v0.14+ on .NET 8.0+ baseline. Examples use current stable APIs.
 
@@ -39,7 +41,10 @@ Microbenchmarking guidance for .NET using BenchmarkDotNet v0.14+. Covers benchma
 - Architecture patterns (caching, resilience) -- see [skill:dotnet-architecture-patterns]
 - GC tuning and memory management -- see [skill:dotnet-gc-memory]
 
-Cross-references: [skill:dotnet-performance-patterns] for zero-allocation patterns measured by benchmarks, [skill:dotnet-csharp-modern-patterns] for Span/Memory syntax foundation, [skill:dotnet-csharp-coding-standards] for sealed class style conventions, [skill:dotnet-native-aot] for AOT performance characteristics and benchmark considerations, [skill:dotnet-serialization] for serialization format performance tradeoffs.
+Cross-references: [skill:dotnet-performance-patterns] for zero-allocation patterns measured by benchmarks,
+[skill:dotnet-csharp-modern-patterns] for Span/Memory syntax foundation, [skill:dotnet-csharp-coding-standards] for
+sealed class style conventions, [skill:dotnet-native-aot] for AOT performance characteristics and benchmark
+considerations, [skill:dotnet-serialization] for serialization format performance tradeoffs.
 
 ---
 
@@ -173,12 +178,12 @@ public class AllocationBenchmarks
 
 Output columns:
 
-| Column | Meaning |
-|--------|---------|
-| `Allocated` | Bytes allocated per operation |
-| `Gen0` | Gen 0 GC collections per 1000 operations |
-| `Gen1` | Gen 1 GC collections per 1000 operations |
-| `Gen2` | Gen 2 GC collections per 1000 operations |
+| Column      | Meaning                                  |
+| ----------- | ---------------------------------------- |
+| `Allocated` | Bytes allocated per operation            |
+| `Gen0`      | Gen 0 GC collections per 1000 operations |
+| `Gen1`      | Gen 1 GC collections per 1000 operations |
+| `Gen2`      | Gen 2 GC collections per 1000 operations |
 
 Zero in `Allocated` column confirms zero-allocation code paths.
 
@@ -215,7 +220,8 @@ public sealed class SealedService : IService
 }
 ```
 
-Use `DisassemblyDiagnoser` to verify that `sealed` classes receive devirtualization from the JIT, confirming the performance rationale documented in [skill:dotnet-csharp-coding-standards].
+Use `DisassemblyDiagnoser` to verify that `sealed` classes receive devirtualization from the JIT, confirming the
+performance rationale documented in [skill:dotnet-csharp-coding-standards].
 
 ---
 
@@ -244,11 +250,11 @@ public class CiBenchmarks
 
 ### Exporter Output
 
-| Exporter | File | Use Case |
-|----------|------|----------|
+| Exporter                     | File                                                   | Use Case                                    |
+| ---------------------------- | ------------------------------------------------------ | ------------------------------------------- |
 | `JsonExporterAttribute.Full` | `BenchmarkDotNet.Artifacts/results/*-report-full.json` | CI regression comparison (machine-readable) |
-| `HtmlExporter` | `BenchmarkDotNet.Artifacts/results/*-report.html` | Human-readable PR review artifact |
-| `MarkdownExporter` | `BenchmarkDotNet.Artifacts/results/*-report-github.md` | Paste into PR comments |
+| `HtmlExporter`               | `BenchmarkDotNet.Artifacts/results/*-report.html`      | Human-readable PR review artifact           |
+| `MarkdownExporter`           | `BenchmarkDotNet.Artifacts/results/*-report-github.md` | Paste into PR comments                      |
 
 ### Custom Config for CI
 
@@ -321,7 +327,8 @@ public record WeatherForecast
 }
 ```
 
-The `Ratio` column in output shows performance relative to the baseline (1.00). Values below 1.00 indicate faster than baseline; above 1.00 indicate slower.
+The `Ratio` column in output shows performance relative to the baseline (1.00). Values below 1.00 indicate faster than
+baseline; above 1.00 indicate slower.
 
 ### Benchmark Categories
 
@@ -375,7 +382,8 @@ dotnet run -c Release -- --filter *StringBuilder* --job Dry
 
 ### AOT Benchmark Considerations
 
-When benchmarking Native AOT scenarios, the JIT diagnosers are not available (there is no JIT). Use wall-clock time and memory comparisons instead. See [skill:dotnet-native-aot] for AOT compilation setup:
+When benchmarking Native AOT scenarios, the JIT diagnosers are not available (there is no JIT). Use wall-clock time and
+memory comparisons instead. See [skill:dotnet-native-aot] for AOT compilation setup:
 
 ```csharp
 [MemoryDiagnoser]
@@ -422,13 +430,13 @@ public int LiveCode()
 
 ### Measurement Bias
 
-| Pitfall | Cause | Fix |
-|---------|-------|-----|
-| Running in Debug mode | No JIT optimizations applied | Always use `-c Release` |
-| Shared mutable state | Benchmarks interfere with each other | Use `[IterationSetup]` or immutable data |
-| Cold-start measurement | First run includes JIT compilation | BenchmarkDotNet handles warmup automatically -- do not add manual warmup |
-| Allocations in setup | Setup allocations inflate `Allocated` column | Use `[GlobalSetup]` (runs once) vs `[IterationSetup]` (runs per iteration) |
-| Environment noise | Background processes skew results | BenchmarkDotNet detects and warns about environment issues; use `Job.MediumRun` for noisy environments |
+| Pitfall                | Cause                                        | Fix                                                                                                    |
+| ---------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Running in Debug mode  | No JIT optimizations applied                 | Always use `-c Release`                                                                                |
+| Shared mutable state   | Benchmarks interfere with each other         | Use `[IterationSetup]` or immutable data                                                               |
+| Cold-start measurement | First run includes JIT compilation           | BenchmarkDotNet handles warmup automatically -- do not add manual warmup                               |
+| Allocations in setup   | Setup allocations inflate `Allocated` column | Use `[GlobalSetup]` (runs once) vs `[IterationSetup]` (runs per iteration)                             |
+| Environment noise      | Background processes skew results            | BenchmarkDotNet detects and warns about environment issues; use `Job.MediumRun` for noisy environments |
 
 ### Setup vs Iteration Lifecycle
 
@@ -456,16 +464,24 @@ public class LifecycleBenchmarks
 }
 ```
 
-Prefer `[GlobalSetup]` over `[IterationSetup]` unless the benchmark mutates shared state. `[IterationSetup]` adds overhead that BenchmarkDotNet excludes from timing, but it still affects GC pressure measurement.
+Prefer `[GlobalSetup]` over `[IterationSetup]` unless the benchmark mutates shared state. `[IterationSetup]` adds
+overhead that BenchmarkDotNet excludes from timing, but it still affects GC pressure measurement.
 
 ---
 
 ## Agent Gotchas
 
-1. **Always run benchmarks in Release mode** -- `dotnet run -c Release`. Debug mode disables JIT optimizations and produces meaningless results.
-2. **Never benchmark in a test project** -- xUnit/NUnit test runners interfere with BenchmarkDotNet's measurement harness. Use a standalone console project.
-3. **Return values from benchmark methods** to prevent dead code elimination. The JIT will remove computation whose result is discarded.
-4. **Do not add manual Thread.Sleep or Task.Delay in benchmarks** -- BenchmarkDotNet manages warmup and iteration timing automatically.
-5. **Use `[GlobalSetup]` not constructor** for initialization -- BenchmarkDotNet creates benchmark instances multiple times during a run; constructor code runs repeatedly.
-6. **Prefer `[Params]` over manual loops** for parameterized benchmarks. BenchmarkDotNet runs each parameter combination independently with proper statistical analysis.
-7. **Export JSON for CI** -- use `[JsonExporterAttribute.Full]` to produce machine-readable artifacts for regression detection, not just Markdown.
+1. **Always run benchmarks in Release mode** -- `dotnet run -c Release`. Debug mode disables JIT optimizations and
+   produces meaningless results.
+2. **Never benchmark in a test project** -- xUnit/NUnit test runners interfere with BenchmarkDotNet's measurement
+   harness. Use a standalone console project.
+3. **Return values from benchmark methods** to prevent dead code elimination. The JIT will remove computation whose
+   result is discarded.
+4. **Do not add manual Thread.Sleep or Task.Delay in benchmarks** -- BenchmarkDotNet manages warmup and iteration timing
+   automatically.
+5. **Use `[GlobalSetup]` not constructor** for initialization -- BenchmarkDotNet creates benchmark instances multiple
+   times during a run; constructor code runs repeatedly.
+6. **Prefer `[Params]` over manual loops** for parameterized benchmarks. BenchmarkDotNet runs each parameter combination
+   independently with proper statistical analysis.
+7. **Export JSON for CI** -- use `[JsonExporterAttribute.Full]` to produce machine-readable artifacts for regression
+   detection, not just Markdown.

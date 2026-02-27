@@ -2,21 +2,23 @@
 name: dotnet-csharp-nullable-reference-types
 description: Enables nullable reference types. Annotation strategies, migration, common agent mistakes.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-nullable-reference-types
 
-Nullable reference type (NRT) annotation strategies, migration guidance for legacy codebases, and the most common annotation mistakes AI agents make. NRT is enabled by default in all modern .NET templates (net6.0+), but many existing codebases still need migration.
+Nullable reference type (NRT) annotation strategies, migration guidance for legacy codebases, and the most common
+annotation mistakes AI agents make. NRT is enabled by default in all modern .NET templates (net6.0+), but many existing
+codebases still need migration.
 
 ## Scope
 
@@ -30,20 +32,22 @@ Nullable reference type (NRT) annotation strategies, migration guidance for lega
 - Null-handling style (pattern matching, null-conditional) -- see [skill:dotnet-csharp-coding-standards]
 - Pattern matching language features -- see [skill:dotnet-csharp-modern-patterns]
 
-Cross-references: [skill:dotnet-csharp-coding-standards] for null-handling style, [skill:dotnet-csharp-modern-patterns] for pattern matching with nulls.
+Cross-references: [skill:dotnet-csharp-coding-standards] for null-handling style, [skill:dotnet-csharp-modern-patterns]
+for pattern matching with nulls.
 
 ---
 
 ## Quick Reference: NRT Defaults by TFM
 
-| TFM | `<Nullable>` default | Notes |
-|-----|---------------------|-------|
-| net8.0+ | `enable` (in templates) | New projects have NRT enabled by default |
-| net6.0/net7.0 | `enable` (in templates) | Same as net8.0 |
-| netstandard2.0/2.1 | not set | Must opt in explicitly |
-| net48 / older | not set | Must opt in explicitly |
+| TFM                | `<Nullable>` default    | Notes                                    |
+| ------------------ | ----------------------- | ---------------------------------------- |
+| net8.0+            | `enable` (in templates) | New projects have NRT enabled by default |
+| net6.0/net7.0      | `enable` (in templates) | Same as net8.0                           |
+| netstandard2.0/2.1 | not set                 | Must opt in explicitly                   |
+| net48 / older      | not set                 | Must opt in explicitly                   |
 
-**Important:** The TFM does not enforce NRT -- the `<Nullable>enable</Nullable>` MSBuild property does. Legacy projects upgraded to net8.0 may not have it enabled.
+**Important:** The TFM does not enforce NRT -- the `<Nullable>enable</Nullable>` MSBuild property does. Legacy projects
+upgraded to net8.0 may not have it enabled.
 
 ---
 
@@ -153,19 +157,19 @@ public static void ThrowNotFound(string message)
 
 ### Common Attributes Summary
 
-| Attribute | Where | Meaning |
-|-----------|-------|---------|
-| `[NotNullWhen(true)]` | `out` parameter | Non-null when method returns `true` |
-| `[NotNullWhen(false)]` | `out` parameter | Non-null when method returns `false` |
-| `[MemberNotNull]` | method | Named member is non-null after call |
-| `[MemberNotNullWhen(true)]` | method | Named member is non-null when returns `true` |
-| `[NotNullIfNotNull]` | return | Return is non-null if named param is non-null |
-| `[NotNull]` | parameter | Parameter is non-null after call (assertion) |
-| `[DoesNotReturn]` | method | Method never returns (always throws) |
-| `[AllowNull]` | parameter/property | Caller may pass null even if type is non-nullable |
-| `[DisallowNull]` | parameter/property | Caller must not pass null even if type is nullable |
-| `[MaybeNull]` | return/out | Return may be null even if type is non-nullable |
-| `[MaybeNullWhen(false)]` | `out` parameter | May be null when method returns `false` |
+| Attribute                   | Where              | Meaning                                            |
+| --------------------------- | ------------------ | -------------------------------------------------- |
+| `[NotNullWhen(true)]`       | `out` parameter    | Non-null when method returns `true`                |
+| `[NotNullWhen(false)]`      | `out` parameter    | Non-null when method returns `false`               |
+| `[MemberNotNull]`           | method             | Named member is non-null after call                |
+| `[MemberNotNullWhen(true)]` | method             | Named member is non-null when returns `true`       |
+| `[NotNullIfNotNull]`        | return             | Return is non-null if named param is non-null      |
+| `[NotNull]`                 | parameter          | Parameter is non-null after call (assertion)       |
+| `[DoesNotReturn]`           | method             | Method never returns (always throws)               |
+| `[AllowNull]`               | parameter/property | Caller may pass null even if type is non-nullable  |
+| `[DisallowNull]`            | parameter/property | Caller must not pass null even if type is nullable |
+| `[MaybeNull]`               | return/out         | Return may be null even if type is non-nullable    |
+| `[MaybeNullWhen(false)]`    | `out` parameter    | May be null when method returns `false`            |
 
 ---
 
@@ -185,7 +189,8 @@ var user = _repo.FindByEmail(email)
     ?? throw new NotFoundException($"User with email {email} not found");
 ```
 
-The `!` operator should only be used when you have knowledge the compiler cannot verify (e.g., after a debug assertion, in test code with known data).
+The `!` operator should only be used when you have knowledge the compiler cannot verify (e.g., after a debug assertion,
+in test code with known data).
 
 ### 2. Ignoring Nullable Warnings
 
@@ -329,7 +334,8 @@ public class Order
 }
 ```
 
-**Note:** `= null!` is acceptable for EF Core navigation properties where EF guarantees initialization. This is one of the few valid uses of the null-forgiving operator.
+**Note:** `= null!` is acceptable for EF Core navigation properties where EF guarantees initialization. This is one of
+the few valid uses of the null-forgiving operator.
 
 ---
 

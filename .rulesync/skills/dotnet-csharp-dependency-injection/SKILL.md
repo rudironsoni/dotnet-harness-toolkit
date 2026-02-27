@@ -2,21 +2,22 @@
 name: dotnet-csharp-dependency-injection
 description: Registers and resolves services with MS DI. Keyed services, scopes, decoration, lifetimes.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-dependency-injection
 
-Advanced Microsoft.Extensions.DependencyInjection patterns for .NET applications. Covers service lifetimes, keyed services (net8.0+), decoration, factory delegates, scope validation, and hosted service registration.
+Advanced Microsoft.Extensions.DependencyInjection patterns for .NET applications. Covers service lifetimes, keyed
+services (net8.0+), decoration, factory delegates, scope validation, and hosted service registration.
 
 ## Scope
 
@@ -31,17 +32,18 @@ Advanced Microsoft.Extensions.DependencyInjection patterns for .NET applications
 - Options pattern binding and IOptions<T> -- see [skill:dotnet-csharp-configuration]
 - SOLID/DRY design principles -- see [skill:dotnet-solid-principles]
 
-Cross-references: [skill:dotnet-csharp-async-patterns] for `BackgroundService` async patterns, [skill:dotnet-csharp-configuration] for `IOptions<T>` binding.
+Cross-references: [skill:dotnet-csharp-async-patterns] for `BackgroundService` async patterns,
+[skill:dotnet-csharp-configuration] for `IOptions<T>` binding.
 
 ---
 
 ## Service Lifetimes
 
-| Lifetime | Registration | When to Use |
-|----------|-------------|-------------|
+| Lifetime  | Registration        | When to Use                                                  |
+| --------- | ------------------- | ------------------------------------------------------------ |
 | Transient | `AddTransient<T>()` | Lightweight, stateless services. New instance per injection. |
-| Scoped | `AddScoped<T>()` | Per-request state (EF Core `DbContext`, unit of work). |
-| Singleton | `AddSingleton<T>()` | Thread-safe, stateless, or shared state (caches, config). |
+| Scoped    | `AddScoped<T>()`    | Per-request state (EF Core `DbContext`, unit of work).       |
+| Singleton | `AddSingleton<T>()` | Thread-safe, stateless, or shared state (caches, config).    |
 
 ### Lifetime Mismatches (Captive Dependencies)
 

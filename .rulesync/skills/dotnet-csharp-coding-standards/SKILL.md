@@ -2,30 +2,33 @@
 name: dotnet-csharp-coding-standards
 description: Defines baseline C# conventions loaded first -- naming, file layout, style rules.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-coding-standards
 
-Modern .NET coding standards based on Microsoft Framework Design Guidelines and C# Coding Conventions. This skill covers naming, file organization, and code style rules that agents should follow when generating or reviewing C# code.
+Modern .NET coding standards based on Microsoft Framework Design Guidelines and C# Coding Conventions. This skill covers
+naming, file organization, and code style rules that agents should follow when generating or reviewing C# code.
 
 ## Activation Guidance
 
-Load this skill by default for any task that plans, designs, generates, modifies, or reviews C#/.NET code.
-Do not wait for explicit user wording such as "coding standards", "style", or "conventions".
-If code will be produced, this skill should be active before implementation starts.
-This skill is a baseline dependency that should be loaded before domain-specific C#/.NET skills.
+Load this skill by default for any task that plans, designs, generates, modifies, or reviews C#/.NET code. Do not wait
+for explicit user wording such as "coding standards", "style", or "conventions". If code will be produced, this skill
+should be active before implementation starts. This skill is a baseline dependency that should be loaded before
+domain-specific C#/.NET skills.
 
-Cross-references: [skill:dotnet-csharp-modern-patterns] for language feature usage, [skill:dotnet-csharp-async-patterns] for async naming conventions, [skill:dotnet-solid-principles] for SOLID, DRY, and SRP design principles at the class and interface level.
+Cross-references: [skill:dotnet-csharp-modern-patterns] for language feature usage, [skill:dotnet-csharp-async-patterns]
+for async naming conventions, [skill:dotnet-solid-principles] for SOLID, DRY, and SRP design principles at the class and
+interface level.
 
 ## Scope
 
@@ -47,19 +50,19 @@ Cross-references: [skill:dotnet-csharp-modern-patterns] for language feature usa
 
 ### General Rules
 
-| Element | Convention | Example |
-|---------|-----------|---------|
-| Namespaces | PascalCase, dot-separated | `MyCompany.MyProduct.Core` |
-| Classes, Records, Structs | PascalCase | `OrderService`, `OrderSummary` |
-| Interfaces | `I` + PascalCase | `IOrderRepository` |
-| Methods | PascalCase | `GetOrderAsync` |
-| Properties | PascalCase | `OrderDate` |
-| Events | PascalCase | `OrderCompleted` |
-| Public constants | PascalCase | `MaxRetryCount` |
-| Private fields | `_camelCase` | `_orderRepository` |
-| Parameters, locals | camelCase | `orderId`, `totalAmount` |
-| Type parameters | `T` or `T` + PascalCase | `T`, `TKey`, `TValue` |
-| Enum members | PascalCase | `OrderStatus.Pending` |
+| Element                   | Convention                | Example                        |
+| ------------------------- | ------------------------- | ------------------------------ |
+| Namespaces                | PascalCase, dot-separated | `MyCompany.MyProduct.Core`     |
+| Classes, Records, Structs | PascalCase                | `OrderService`, `OrderSummary` |
+| Interfaces                | `I` + PascalCase          | `IOrderRepository`             |
+| Methods                   | PascalCase                | `GetOrderAsync`                |
+| Properties                | PascalCase                | `OrderDate`                    |
+| Events                    | PascalCase                | `OrderCompleted`               |
+| Public constants          | PascalCase                | `MaxRetryCount`                |
+| Private fields            | `_camelCase`              | `_orderRepository`             |
+| Parameters, locals        | camelCase                 | `orderId`, `totalAmount`       |
+| Type parameters           | `T` or `T` + PascalCase   | `T`, `TKey`, `TValue`          |
+| Enum members              | PascalCase                | `OrderStatus.Pending`          |
 
 ### Async Method Naming
 
@@ -75,7 +78,8 @@ public Task<Order> GetOrder(int id);      // missing Async suffix
 public Task<Order> GetOrderTask(int id);  // wrong suffix
 ```
 
-Exception: Event handlers and interface implementations where the framework does not use the `Async` suffix (e.g., ASP.NET Core middleware `InvokeAsync` is already named by the framework).
+Exception: Event handlers and interface implementations where the framework does not use the `Async` suffix (e.g.,
+ASP.NET Core middleware `InvokeAsync` is already named by the framework).
 
 ### Boolean Naming
 
@@ -102,7 +106,8 @@ public Dictionary<string, int> CountsByName { get; } // descriptive
 
 ### One Type Per File
 
-Each top-level type (class, record, struct, interface, enum) should be in its own file, named exactly as the type. Nested types stay in the containing type's file.
+Each top-level type (class, record, struct, interface, enum) should be in its own file, named exactly as the type.
+Nested types stay in the containing type's file.
 
 ```
 OrderService.cs        -> public class OrderService
@@ -130,9 +135,12 @@ namespace MyApp.Services
 
 ### Using Directives
 
-Place `using` directives at the top of the file, outside the namespace. With `<ImplicitUsings>enable</ImplicitUsings>` (default in modern .NET), common namespaces are already imported. Only add explicit `using` statements for namespaces not covered by implicit usings.
+Place `using` directives at the top of the file, outside the namespace. With `<ImplicitUsings>enable</ImplicitUsings>`
+(default in modern .NET), common namespaces are already imported. Only add explicit `using` statements for namespaces
+not covered by implicit usings.
 
 Order of `using` directives:
+
 1. `System.*` namespaces
 2. Third-party namespaces
 3. Project namespaces
@@ -290,11 +298,13 @@ public sealed override string ToString() => Name;
 
 ## Type Design
 
-These conventions implement SOLID and DRY principles at the code level. For comprehensive coverage with anti-patterns and fixes, see [skill:dotnet-solid-principles].
+These conventions implement SOLID and DRY principles at the code level. For comprehensive coverage with anti-patterns
+and fixes, see [skill:dotnet-solid-principles].
 
 ### Seal Classes by Default
 
-Seal classes that are not designed for inheritance. This improves performance (devirtualization) and communicates intent:
+Seal classes that are not designed for inheritance. This improves performance (devirtualization) and communicates
+intent:
 
 ```csharp
 public sealed class OrderService(IOrderRepository repo)
@@ -350,7 +360,8 @@ public interface IOrderRepository : IOrderReader, IOrderWriter { }
 
 ## CancellationToken Conventions
 
-Accept `CancellationToken` as the last parameter in async methods. Use `default` as the default value for optional tokens:
+Accept `CancellationToken` as the last parameter in async methods. Use `default` as the default value for optional
+tokens:
 
 ```csharp
 public async Task<Order> GetOrderAsync(int id, CancellationToken ct = default)
@@ -378,6 +389,7 @@ public Task<Order?> GetByIdAsync(int id, CancellationToken ct = default);
 ```
 
 Do not add XML docs to:
+
 - Private or internal members (unless it's a library's `InternalsVisibleTo` API)
 - Self-evident members (e.g., `public string Name { get; }`)
 - Test methods
@@ -397,6 +409,7 @@ Configure these analyzers in `Directory.Build.props` or `.editorconfig` to enfor
 ```
 
 Key `.editorconfig` rules for C# style:
+
 ```ini
 [*.cs]
 csharp_style_namespace_declarations = file_scoped:warning
@@ -415,10 +428,16 @@ See [skill:dotnet-add-analyzers] for full analyzer configuration.
 
 Conventions in this skill are grounded in publicly available content from:
 
-- **Microsoft Framework Design Guidelines** -- The canonical reference for .NET naming, type design, and API surface conventions. Source: https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/
-- **C# Language Design Notes (Mads Torgersen et al.)** -- Design rationale behind C# language features that affect coding standards. Key decisions relevant to this skill: file-scoped namespaces (reducing nesting for readability), pattern matching over type checks (expressiveness), `required` members (compile-time initialization safety), and `var` usage guidelines (readability-first). The language design team explicitly chose these features to reduce ceremony while maintaining safety. Source: https://github.com/dotnet/csharplang/tree/main/meetings
+- **Microsoft Framework Design Guidelines** -- The canonical reference for .NET naming, type design, and API surface
+  conventions. Source: https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/
+- **C# Language Design Notes (Mads Torgersen et al.)** -- Design rationale behind C# language features that affect
+  coding standards. Key decisions relevant to this skill: file-scoped namespaces (reducing nesting for readability),
+  pattern matching over type checks (expressiveness), `required` members (compile-time initialization safety), and `var`
+  usage guidelines (readability-first). The language design team explicitly chose these features to reduce ceremony
+  while maintaining safety. Source: https://github.com/dotnet/csharplang/tree/main/meetings
 
-> **Note:** This skill applies publicly documented design rationale. It does not represent or speak for the named sources.
+> **Note:** This skill applies publicly documented design rationale. It does not represent or speak for the named
+> sources.
 
 ## References
 

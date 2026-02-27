@@ -2,23 +2,27 @@
 name: dotnet-cli-release-pipeline
 description: Releases CLI tools. GitHub Actions build matrix, artifact staging, Releases, checksums.
 license: MIT
-targets: ["*"]
-tags: ["cicd", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['cicd', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for cicd tasks"
+  short-description: '.NET skill guidance for cicd tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-cli-release-pipeline
 
-Unified release CI/CD pipeline for .NET CLI tools: GitHub Actions workflow producing all distribution formats from a single version tag trigger, build matrix per Runtime Identifier (RID), artifact staging between jobs, GitHub Releases with SHA-256 checksums, automated Homebrew formula and winget manifest PR creation, and SemVer versioning strategy with git tags.
+Unified release CI/CD pipeline for .NET CLI tools: GitHub Actions workflow producing all distribution formats from a
+single version tag trigger, build matrix per Runtime Identifier (RID), artifact staging between jobs, GitHub Releases
+with SHA-256 checksums, automated Homebrew formula and winget manifest PR creation, and SemVer versioning strategy with
+git tags.
 
-**Version assumptions:** .NET 8.0+ baseline. GitHub Actions workflow syntax v2. Patterns apply to any CI system but examples use GitHub Actions.
+**Version assumptions:** .NET 8.0+ baseline. GitHub Actions workflow syntax v2. Patterns apply to any CI system but
+examples use GitHub Actions.
 
 ## Scope
 
@@ -31,13 +35,16 @@ Unified release CI/CD pipeline for .NET CLI tools: GitHub Actions workflow produ
 
 ## Out of scope
 
-- General CI/CD patterns (branch strategies, matrix testing) -- see [skill:dotnet-gha-patterns] and [skill:dotnet-ado-patterns]
+- General CI/CD patterns (branch strategies, matrix testing) -- see [skill:dotnet-gha-patterns] and
+  [skill:dotnet-ado-patterns]
 - Native AOT compilation configuration -- see [skill:dotnet-native-aot]
 - Distribution strategy decisions -- see [skill:dotnet-cli-distribution]
 - Package format details -- see [skill:dotnet-cli-packaging]
 - Container image publishing -- see [skill:dotnet-containers]
 
-Cross-references: [skill:dotnet-cli-distribution] for RID matrix and publish strategy, [skill:dotnet-cli-packaging] for package format authoring, [skill:dotnet-native-aot] for AOT publish configuration, [skill:dotnet-containers] for container-based distribution.
+Cross-references: [skill:dotnet-cli-distribution] for RID matrix and publish strategy, [skill:dotnet-cli-packaging] for
+package format authoring, [skill:dotnet-native-aot] for AOT publish configuration, [skill:dotnet-containers] for
+container-based distribution.
 
 ---
 
@@ -107,10 +114,10 @@ name: Release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+*"  # v1.2.3, v1.2.3-rc.1
+      - 'v[0-9]+.[0-9]+.[0-9]+*' # v1.2.3, v1.2.3-rc.1
 
 permissions:
-  contents: write  # Create GitHub Releases
+  contents: write # Create GitHub Releases
 
 defaults:
   run:
@@ -118,7 +125,7 @@ defaults:
 
 env:
   PROJECT: src/MyCli/MyCli.csproj
-  DOTNET_VERSION: "8.0.x"
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   build:
@@ -148,11 +155,8 @@ jobs:
 
       - name: Publish
         run: >-
-          dotnet publish ${{ env.PROJECT }}
-          -c Release
-          -r ${{ matrix.rid }}
-          -o ./publish
-          /p:Version=${{ steps.version.outputs.version }}
+          dotnet publish ${{ env.PROJECT }} -c Release -r ${{ matrix.rid }} -o ./publish /p:Version=${{
+          steps.version.outputs.version }}
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
@@ -221,7 +225,7 @@ jobs:
 
   publish-nuget:
     needs: release
-    if: ${{ !contains(github.ref_name, '-') }}  # Skip pre-releases
+    if: ${{ !contains(github.ref_name, '-') }} # Skip pre-releases
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -236,16 +240,12 @@ jobs:
 
       - name: Pack
         run: >-
-          dotnet pack ${{ env.PROJECT }}
-          -c Release
-          /p:Version=${{ steps.version.outputs.version }}
-          -o ./nupkgs
+          dotnet pack ${{ env.PROJECT }} -c Release /p:Version=${{ steps.version.outputs.version }} -o ./nupkgs
 
       - name: Push to NuGet
         run: >-
-          dotnet nuget push ./nupkgs/*.nupkg
-          --source https://api.nuget.org/v3/index.json
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{
+          secrets.NUGET_API_KEY }}
 ```
 
 ---
@@ -263,17 +263,21 @@ strategy:
       - rid: linux-x64
         os: ubuntu-latest
       - rid: linux-arm64
-        os: ubuntu-latest        # Cross-compile ARM64 on x64 runner
+        os: ubuntu-latest # Cross-compile ARM64 on x64 runner
       - rid: osx-arm64
-        os: macos-latest         # Native ARM64 runner
+        os: macos-latest # Native ARM64 runner
       - rid: win-x64
         os: windows-latest
 ```
 
 ### Cross-Compilation Notes
 
-- **linux-arm64 on ubuntu-latest:** .NET supports cross-compilation for managed (non-AOT) builds. `dotnet publish -r linux-arm64` on an x64 runner produces a valid ARM64 binary without QEMU. For Native AOT, cross-compiling ARM64 on an x64 runner requires the ARM64 cross-compilation toolchain (`gcc-aarch64-linux-gnu` or equivalent). See [skill:dotnet-native-aot] for cross-compile prerequisites.
-- **osx-arm64:** Use `macos-latest` (which provides ARM64 runners) for native compilation. Cross-compiling macOS ARM64 from Linux is not supported.
+- **linux-arm64 on ubuntu-latest:** .NET supports cross-compilation for managed (non-AOT) builds.
+  `dotnet publish -r linux-arm64` on an x64 runner produces a valid ARM64 binary without QEMU. For Native AOT,
+  cross-compiling ARM64 on an x64 runner requires the ARM64 cross-compilation toolchain (`gcc-aarch64-linux-gnu` or
+  equivalent). See [skill:dotnet-native-aot] for cross-compile prerequisites.
+- **osx-arm64:** Use `macos-latest` (which provides ARM64 runners) for native compilation. Cross-compiling macOS ARM64
+  from Linux is not supported.
 - **win-x64 on windows-latest:** Native compilation on Windows runner.
 
 ### Extended Matrix (Optional)
@@ -293,9 +297,9 @@ strategy:
         os: windows-latest
       # Extended targets
       - rid: osx-x64
-        os: macos-13           # Intel macOS runner
+        os: macos-13 # Intel macOS runner
       - rid: linux-musl-x64
-        os: ubuntu-latest      # Alpine musl cross-compile
+        os: ubuntu-latest # Alpine musl cross-compile
 ```
 
 ---
@@ -314,7 +318,7 @@ Each matrix job uploads its artifact with a RID-specific name:
     path: |
       *.tar.gz
       *.zip
-    retention-days: 1  # Short retention -- artifacts are published to GitHub Releases
+    retention-days: 1 # Short retention -- artifacts are published to GitHub Releases
 ```
 
 ### Download in Release Job
@@ -326,7 +330,7 @@ The release job downloads all artifacts from the build matrix:
   uses: actions/download-artifact@v4
   with:
     path: artifacts
-    merge-multiple: true  # Merge all release-* artifacts into one directory
+    merge-multiple: true # Merge all release-* artifacts into one directory
 ```
 
 After download, `artifacts/` contains:
@@ -389,116 +393,116 @@ jkl012...  mytool-1.2.3-win-x64.zip
 After the GitHub Release is published, update the Homebrew tap automatically:
 
 ```yaml
-  update-homebrew:
-    needs: release
-    if: ${{ !contains(github.ref_name, '-') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+update-homebrew:
+  needs: release
+  if: ${{ !contains(github.ref_name, '-') }}
+  runs-on: ubuntu-latest
+  steps:
+    - name: Extract version
+      id: version
+      run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
-        with:
-          repository: myorg/homebrew-tap
-          token: ${{ secrets.TAP_GITHUB_TOKEN }}
+    - uses: actions/checkout@v4
+      with:
+        repository: myorg/homebrew-tap
+        token: ${{ secrets.TAP_GITHUB_TOKEN }}
 
-      - name: Download checksums
-        run: |
-          set -euo pipefail
-          curl -sL "https://github.com/myorg/mytool/releases/download/v${{ steps.version.outputs.version }}/checksums-sha256.txt" \
-            -o checksums.txt
+    - name: Download checksums
+      run: |
+        set -euo pipefail
+        curl -sL "https://github.com/myorg/mytool/releases/download/v${{ steps.version.outputs.version }}/checksums-sha256.txt" \
+          -o checksums.txt
 
-      - name: Update formula
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          LINUX_X64_SHA=$(grep "linux-x64" checksums.txt | awk '{print $1}')
-          LINUX_ARM64_SHA=$(grep "linux-arm64" checksums.txt | awk '{print $1}')
-          OSX_ARM64_SHA=$(grep "osx-arm64" checksums.txt | awk '{print $1}')
+    - name: Update formula
+      run: |
+        set -euo pipefail
+        VERSION="${{ steps.version.outputs.version }}"
+        LINUX_X64_SHA=$(grep "linux-x64" checksums.txt | awk '{print $1}')
+        LINUX_ARM64_SHA=$(grep "linux-arm64" checksums.txt | awk '{print $1}')
+        OSX_ARM64_SHA=$(grep "osx-arm64" checksums.txt | awk '{print $1}')
 
-          # Use sed or a templating script to update Formula/mytool.rb
-          # with new version and SHA-256 values
-          python3 scripts/update-formula.py \
-            --version "$VERSION" \
-            --linux-x64-sha "$LINUX_X64_SHA" \
-            --linux-arm64-sha "$LINUX_ARM64_SHA" \
-            --osx-arm64-sha "$OSX_ARM64_SHA"
+        # Use sed or a templating script to update Formula/mytool.rb
+        # with new version and SHA-256 values
+        python3 scripts/update-formula.py \
+          --version "$VERSION" \
+          --linux-x64-sha "$LINUX_X64_SHA" \
+          --linux-arm64-sha "$LINUX_ARM64_SHA" \
+          --osx-arm64-sha "$OSX_ARM64_SHA"
 
-      - name: Create PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "mytool ${{ steps.version.outputs.version }}"
-          commit-message: "Update mytool to ${{ steps.version.outputs.version }}"
-          branch: "update-mytool-${{ steps.version.outputs.version }}"
-          body: |
-            Automated update for mytool v${{ steps.version.outputs.version }}
-            Release: https://github.com/myorg/mytool/releases/tag/v${{ steps.version.outputs.version }}
+    - name: Create PR
+      uses: peter-evans/create-pull-request@v6
+      with:
+        title: 'mytool ${{ steps.version.outputs.version }}'
+        commit-message: 'Update mytool to ${{ steps.version.outputs.version }}'
+        branch: 'update-mytool-${{ steps.version.outputs.version }}'
+        body: |
+          Automated update for mytool v${{ steps.version.outputs.version }}
+          Release: https://github.com/myorg/mytool/releases/tag/v${{ steps.version.outputs.version }}
 ```
 
 ### winget Manifest Update
 
 ```yaml
-  update-winget:
-    needs: release
-    if: ${{ !contains(github.ref_name, '-') }}
-    runs-on: windows-latest
-    steps:
-      - name: Extract version
-        id: version
-        shell: bash
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+update-winget:
+  needs: release
+  if: ${{ !contains(github.ref_name, '-') }}
+  runs-on: windows-latest
+  steps:
+    - name: Extract version
+      id: version
+      shell: bash
+      run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Submit to winget-pkgs
-        uses: vedantmgoyal9/winget-releaser@main
-        with:
-          identifier: MyOrg.MyTool
-          version: ${{ steps.version.outputs.version }}
-          installers-regex: '\.zip$'
-          token: ${{ secrets.WINGET_GITHUB_TOKEN }}
+    - name: Submit to winget-pkgs
+      uses: vedantmgoyal9/winget-releaser@main
+      with:
+        identifier: MyOrg.MyTool
+        version: ${{ steps.version.outputs.version }}
+        installers-regex: '\.zip$'
+        token: ${{ secrets.WINGET_GITHUB_TOKEN }}
 ```
 
 ### Scoop Manifest Update
 
 ```yaml
-  update-scoop:
-    needs: release
-    if: ${{ !contains(github.ref_name, '-') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+update-scoop:
+  needs: release
+  if: ${{ !contains(github.ref_name, '-') }}
+  runs-on: ubuntu-latest
+  steps:
+    - name: Extract version
+      id: version
+      run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
-        with:
-          repository: myorg/scoop-mytool
-          token: ${{ secrets.SCOOP_GITHUB_TOKEN }}
+    - uses: actions/checkout@v4
+      with:
+        repository: myorg/scoop-mytool
+        token: ${{ secrets.SCOOP_GITHUB_TOKEN }}
 
-      - name: Download checksums
-        run: |
-          set -euo pipefail
-          curl -sL "https://github.com/myorg/mytool/releases/download/v${{ steps.version.outputs.version }}/checksums-sha256.txt" \
-            -o checksums.txt
+    - name: Download checksums
+      run: |
+        set -euo pipefail
+        curl -sL "https://github.com/myorg/mytool/releases/download/v${{ steps.version.outputs.version }}/checksums-sha256.txt" \
+          -o checksums.txt
 
-      - name: Update manifest
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          WIN_X64_SHA=$(grep "win-x64" checksums.txt | awk '{print $1}')
+    - name: Update manifest
+      run: |
+        set -euo pipefail
+        VERSION="${{ steps.version.outputs.version }}"
+        WIN_X64_SHA=$(grep "win-x64" checksums.txt | awk '{print $1}')
 
-          # Update bucket/mytool.json with new version and hash
-          jq --arg v "$VERSION" --arg h "$WIN_X64_SHA" \
-            '.version = $v | .architecture."64bit".hash = $h |
-             .architecture."64bit".url = "https://github.com/myorg/mytool/releases/download/v\($v)/mytool-\($v)-win-x64.zip"' \
-            bucket/mytool.json > tmp.json && mv tmp.json bucket/mytool.json
+        # Update bucket/mytool.json with new version and hash
+        jq --arg v "$VERSION" --arg h "$WIN_X64_SHA" \
+          '.version = $v | .architecture."64bit".hash = $h |
+           .architecture."64bit".url = "https://github.com/myorg/mytool/releases/download/v\($v)/mytool-\($v)-win-x64.zip"' \
+          bucket/mytool.json > tmp.json && mv tmp.json bucket/mytool.json
 
-      - name: Create PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "mytool ${{ steps.version.outputs.version }}"
-          commit-message: "Update mytool to ${{ steps.version.outputs.version }}"
-          branch: "update-mytool-${{ steps.version.outputs.version }}"
+    - name: Create PR
+      uses: peter-evans/create-pull-request@v6
+      with:
+        title: 'mytool ${{ steps.version.outputs.version }}'
+        commit-message: 'Update mytool to ${{ steps.version.outputs.version }}'
+        branch: 'update-mytool-${{ steps.version.outputs.version }}'
 ```
 
 ---
@@ -507,12 +511,12 @@ After the GitHub Release is published, update the Homebrew tap automatically:
 
 ### SemVer for CLI Tools
 
-| Change Type | Version Bump | Example |
-|-------------|-------------|---------|
-| Breaking CLI flag rename/removal | Major | 1.x.x -> 2.0.0 |
-| New command or option | Minor | x.1.x -> x.2.0 |
-| Bug fix, performance improvement | Patch | x.x.1 -> x.x.2 |
-| Release candidate | Pre-release suffix | x.x.x-rc.1 |
+| Change Type                      | Version Bump       | Example        |
+| -------------------------------- | ------------------ | -------------- |
+| Breaking CLI flag rename/removal | Major              | 1.x.x -> 2.0.0 |
+| New command or option            | Minor              | x.1.x -> x.2.0 |
+| Bug fix, performance improvement | Patch              | x.x.1 -> x.x.2 |
+| Release candidate                | Pre-release suffix | x.x.x-rc.1     |
 
 ### Version Embedding
 
@@ -565,7 +569,7 @@ git push origin v1.2.3
 
 ```yaml
 permissions:
-  contents: write  # Minimum: create GitHub Releases and upload assets
+  contents: write # Minimum: create GitHub Releases and upload assets
 ```
 
 Use job-level permissions when different jobs need different scopes. Never grant `write-all`.
@@ -574,12 +578,19 @@ Use job-level permissions when different jobs need different scopes. Never grant
 
 ## Agent Gotchas
 
-1. **Do not use `set -e` without `set -o pipefail` in GitHub Actions bash steps.** Without `pipefail`, a failing command piped to `tee` or another utility exits 0, masking the failure. Always use `set -euo pipefail`.
-2. **Do not hardcode the .NET version in the publish path.** Use `dotnet publish -o ./publish` to control the output directory explicitly. Hardcoding `net8.0` in artifact paths breaks when upgrading to .NET 9+.
-3. **Do not skip the pre-release detection step.** Package manager submissions (Homebrew, winget, Scoop, Chocolatey, NuGet) must be gated on stable versions. Publishing a `-rc.1` to winget-pkgs or NuGet as stable causes user confusion.
-4. **Do not use `actions/upload-artifact` v3 with `merge-multiple`.** The `merge-multiple` parameter requires `actions/download-artifact@v4`. Using v3 silently ignores the flag and creates nested directories.
-5. **Do not forget `retention-days: 1` on intermediate build artifacts.** Release artifacts are published to GitHub Releases (permanent). Workflow artifacts are temporary and should expire quickly to save storage.
-6. **Do not create GitHub Releases with `gh release create` in a matrix job.** Only the release job (after all builds complete) should create the release. Matrix jobs upload artifacts; the release job assembles them.
+1. **Do not use `set -e` without `set -o pipefail` in GitHub Actions bash steps.** Without `pipefail`, a failing command
+   piped to `tee` or another utility exits 0, masking the failure. Always use `set -euo pipefail`.
+2. **Do not hardcode the .NET version in the publish path.** Use `dotnet publish -o ./publish` to control the output
+   directory explicitly. Hardcoding `net8.0` in artifact paths breaks when upgrading to .NET 9+.
+3. **Do not skip the pre-release detection step.** Package manager submissions (Homebrew, winget, Scoop, Chocolatey,
+   NuGet) must be gated on stable versions. Publishing a `-rc.1` to winget-pkgs or NuGet as stable causes user
+   confusion.
+4. **Do not use `actions/upload-artifact` v3 with `merge-multiple`.** The `merge-multiple` parameter requires
+   `actions/download-artifact@v4`. Using v3 silently ignores the flag and creates nested directories.
+5. **Do not forget `retention-days: 1` on intermediate build artifacts.** Release artifacts are published to GitHub
+   Releases (permanent). Workflow artifacts are temporary and should expire quickly to save storage.
+6. **Do not create GitHub Releases with `gh release create` in a matrix job.** Only the release job (after all builds
+   complete) should create the release. Matrix jobs upload artifacts; the release job assembles them.
 
 ---
 

@@ -2,23 +2,28 @@
 name: dotnet-ado-unique
 description: Configures ADO-exclusive features. Environments, approvals, service connections, pipelines.
 license: MIT
-targets: ["*"]
-tags: ["cicd", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['cicd', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for cicd tasks"
+  short-description: '.NET skill guidance for cicd tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-ado-unique
 
-Azure DevOps-exclusive features not available in GitHub Actions: Environments with approvals and gates (pre-deployment checks, business hours restrictions), deployment groups vs environments (when to use each), service connections (Azure Resource Manager, Docker Registry, NuGet), classic release pipelines (legacy migration guidance to YAML), variable groups and library (linked to Azure Key Vault), pipeline decorators for organization-wide policy, and Azure Artifacts universal packages.
+Azure DevOps-exclusive features not available in GitHub Actions: Environments with approvals and gates (pre-deployment
+checks, business hours restrictions), deployment groups vs environments (when to use each), service connections (Azure
+Resource Manager, Docker Registry, NuGet), classic release pipelines (legacy migration guidance to YAML), variable
+groups and library (linked to Azure Key Vault), pipeline decorators for organization-wide policy, and Azure Artifacts
+universal packages.
 
-**Version assumptions:** Azure DevOps Services (cloud). YAML pipelines with multi-stage support. Classic release pipelines for legacy migration context only.
+**Version assumptions:** Azure DevOps Services (cloud). YAML pipelines with multi-stage support. Classic release
+pipelines for legacy migration context only.
 
 ## Scope
 
@@ -35,10 +40,12 @@ Azure DevOps-exclusive features not available in GitHub Actions: Environments wi
 - Build/test pipeline configuration -- see [skill:dotnet-ado-build-test]
 - Publishing pipelines -- see [skill:dotnet-ado-publish]
 - Starter CI templates -- see [skill:dotnet-add-ci]
-- GitHub Actions equivalents -- see [skill:dotnet-gha-patterns], [skill:dotnet-gha-build-test], [skill:dotnet-gha-publish], [skill:dotnet-gha-deploy]
+- GitHub Actions equivalents -- see [skill:dotnet-gha-patterns], [skill:dotnet-gha-build-test],
+  [skill:dotnet-gha-publish], [skill:dotnet-gha-deploy]
 - CLI release pipelines -- see [skill:dotnet-cli-release-pipeline]
 
-Cross-references: [skill:dotnet-add-ci] for starter CI templates, [skill:dotnet-cli-release-pipeline] for CLI-specific release automation.
+Cross-references: [skill:dotnet-add-ci] for starter CI templates, [skill:dotnet-cli-release-pipeline] for CLI-specific
+release automation.
 
 ---
 
@@ -46,7 +53,8 @@ Cross-references: [skill:dotnet-add-ci] for starter CI templates, [skill:dotnet-
 
 ### Defining Environments in YAML
 
-Environments are first-class Azure DevOps resources that provide deployment targeting, approval gates, and deployment history:
+Environments are first-class Azure DevOps resources that provide deployment targeting, approval gates, and deployment
+history:
 
 ```yaml
 stages:
@@ -80,28 +88,30 @@ stages:
                 - script: echo "Deploying to production"
 ```
 
-Environments are created automatically on first reference. Configure approvals and gates in Azure DevOps > Pipelines > Environments > (select environment) > Approvals and checks.
+Environments are created automatically on first reference. Configure approvals and gates in Azure DevOps > Pipelines >
+Environments > (select environment) > Approvals and checks.
 
 ### Approval Checks
 
-| Check Type | Purpose | Configuration |
-|-----------|---------|---------------|
-| Approvals | Manual sign-off before deployment | Assign approver users/groups |
-| Branch control | Restrict deployments to specific branches | Allow only `main`, `release/*` |
-| Business hours | Deploy only during allowed time windows | Define hours and timezone |
-| Template validation | Require pipeline to extend a specific template | Specify required template path |
-| Invoke Azure Function | Custom validation via Azure Function | Provide function URL and key |
-| Invoke REST API | Custom validation via HTTP endpoint | Provide URL and success criteria |
-| Required template | Enforce pipeline structure | Specify required extends template |
+| Check Type            | Purpose                                        | Configuration                     |
+| --------------------- | ---------------------------------------------- | --------------------------------- |
+| Approvals             | Manual sign-off before deployment              | Assign approver users/groups      |
+| Branch control        | Restrict deployments to specific branches      | Allow only `main`, `release/*`    |
+| Business hours        | Deploy only during allowed time windows        | Define hours and timezone         |
+| Template validation   | Require pipeline to extend a specific template | Specify required template path    |
+| Invoke Azure Function | Custom validation via Azure Function           | Provide function URL and key      |
+| Invoke REST API       | Custom validation via HTTP endpoint            | Provide URL and success criteria  |
+| Required template     | Enforce pipeline structure                     | Specify required extends template |
 
 ### Configuring Approval Checks
 
-Approval checks are configured in the Azure DevOps UI, not in YAML. The YAML pipeline references the environment, and the checks are applied:
+Approval checks are configured in the Azure DevOps UI, not in YAML. The YAML pipeline references the environment, and
+the checks are applied:
 
 ```yaml
 # Pipeline YAML -- environment reference triggers checks
 - deployment: DeployToProduction
-  environment: 'production'  # checks configured in UI
+  environment: 'production' # checks configured in UI
   strategy:
     runOnce:
       deploy:
@@ -110,6 +120,7 @@ Approval checks are configured in the Azure DevOps UI, not in YAML. The YAML pip
 ```
 
 **Approval configuration (UI):**
+
 - Navigate to Pipelines > Environments > production > Approvals and checks
 - Add "Approvals" check: assign individuals or groups
 - Set minimum number of approvers (e.g., 2 for production)
@@ -133,7 +144,7 @@ Restrict deployments to specific time windows to reduce risk:
 # Returns 200 to approve, non-200 to reject.
 
 - deployment: DeployToProduction
-  environment: 'production'  # Azure Function check configured in UI
+  environment: 'production' # Azure Function check configured in UI
   strategy:
     runOnce:
       preDeploy:
@@ -150,7 +161,8 @@ Restrict deployments to specific time windows to reduce risk:
           - script: echo "Post-route validation"
 ```
 
-The `preDeploy`, `routeTraffic`, and `postRouteTraffic` lifecycle hooks execute within the pipeline. Environment checks (approvals, Azure Function gates) execute before the deployment job starts.
+The `preDeploy`, `routeTraffic`, and `postRouteTraffic` lifecycle hooks execute within the pipeline. Environment checks
+(approvals, Azure Function gates) execute before the deployment job starts.
 
 ---
 
@@ -158,14 +170,14 @@ The `preDeploy`, `routeTraffic`, and `postRouteTraffic` lifecycle hooks execute 
 
 ### When to Use Each
 
-| Feature | Deployment Groups | Environments |
-|---------|------------------|--------------|
-| Target | Physical/virtual machines with agents | Any target (VMs, Kubernetes, cloud services) |
-| Agent model | Self-hosted agents on target machines | Pool agents or target-specific resources |
-| Pipeline type | Classic release pipelines (legacy) | YAML multi-stage pipelines (modern) |
-| Approvals | Per-stage in classic UI | Checks and approvals on environment |
-| Rolling deployment | Built-in rolling strategy | `strategy: rolling` in YAML |
-| Recommendation | Legacy workloads only | All new projects |
+| Feature            | Deployment Groups                     | Environments                                 |
+| ------------------ | ------------------------------------- | -------------------------------------------- |
+| Target             | Physical/virtual machines with agents | Any target (VMs, Kubernetes, cloud services) |
+| Agent model        | Self-hosted agents on target machines | Pool agents or target-specific resources     |
+| Pipeline type      | Classic release pipelines (legacy)    | YAML multi-stage pipelines (modern)          |
+| Approvals          | Per-stage in classic UI               | Checks and approvals on environment          |
+| Rolling deployment | Built-in rolling strategy             | `strategy: rolling` in YAML                  |
+| Recommendation     | Legacy workloads only                 | All new projects                             |
 
 ### Deployment Group Example (Legacy)
 
@@ -193,7 +205,8 @@ Deployment groups install an agent on each target machine. Use only for existing
               containers: '$(ACR_LOGIN_SERVER)/myapp:$(Build.BuildId)'
 ```
 
-Environments can target Kubernetes clusters and namespaces. Register the cluster as a resource under the environment in the Azure DevOps UI.
+Environments can target Kubernetes clusters and namespaces. Register the cluster as a resource under the environment in
+the Azure DevOps UI.
 
 ### Migration from Deployment Groups to Environments
 
@@ -208,7 +221,8 @@ Environments can target Kubernetes clusters and namespaces. Register the cluster
 
 ### Azure Resource Manager (ARM)
 
-Service connections provide authenticated access to external services. ARM connections enable Azure resource deployments:
+Service connections provide authenticated access to external services. ARM connections enable Azure resource
+deployments:
 
 ```yaml
 - task: AzureWebApp@1
@@ -221,6 +235,7 @@ Service connections provide authenticated access to external services. ARM conne
 ```
 
 **Creating an ARM service connection:**
+
 - Navigate to Project Settings > Service Connections > New service connection > Azure Resource Manager
 - Choose "Service principal (automatic)" for automatic credential management
 - Select the subscription and resource group scope
@@ -254,6 +269,7 @@ Use workload identity federation for passwordless Azure authentication (no clien
 ```
 
 **Creating a Docker registry connection:**
+
 - Project Settings > Service Connections > New service connection > Docker Registry
 - For ACR: select "Azure Container Registry" and choose the registry
 - For DockerHub: provide username and access token
@@ -273,6 +289,7 @@ For pushing to external NuGet feeds (e.g., nuget.org):
 ```
 
 **Creating a NuGet connection:**
+
 - Project Settings > Service Connections > New service connection > NuGet
 - Provide the feed URL (`https://api.nuget.org/v3/index.json`) and API key
 
@@ -282,7 +299,8 @@ For pushing to external NuGet feeds (e.g., nuget.org):
 
 ### Why Migrate to YAML
 
-Classic release pipelines use a visual designer and are not stored in source control. Migrate to YAML multi-stage pipelines for:
+Classic release pipelines use a visual designer and are not stored in source control. Migrate to YAML multi-stage
+pipelines for:
 
 - **Source control:** Pipeline definitions live alongside code
 - **Code review:** Pipeline changes go through PR review
@@ -293,6 +311,7 @@ Classic release pipelines use a visual designer and are not stored in source con
 ### Migration Pattern
 
 **Classic release structure:**
+
 ```
 Build Pipeline -> Release Pipeline
                     Stage 1: Dev (auto-deploy)
@@ -342,7 +361,7 @@ stages:
     dependsOn: DeployDev
     jobs:
       - deployment: DeployStaging
-        environment: 'staging'  # approvals configured in UI
+        environment: 'staging' # approvals configured in UI
         strategy:
           runOnce:
             deploy:
@@ -356,7 +375,7 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: DeployProduction
-        environment: 'production'  # approvals + business hours in UI
+        environment: 'production' # approvals + business hours in UI
         strategy:
           runOnce:
             deploy:
@@ -395,11 +414,12 @@ steps:
       echo "Building with configuration $(buildConfiguration)"
     displayName: 'Build'
     env:
-      SQL_CONNECTION: $(sql-connection-string)  # from Key Vault
-      API_KEY: $(api-key)                        # from Key Vault
+      SQL_CONNECTION: $(sql-connection-string) # from Key Vault
+      API_KEY: $(api-key) # from Key Vault
 ```
 
 **Setting up Key Vault-linked variable groups:**
+
 1. Navigate to Pipelines > Library > Variable Groups > New variable group
 2. Enable "Link secrets from an Azure key vault as variables"
 3. Select the Azure subscription (service connection) and Key Vault
@@ -466,16 +486,17 @@ Store certificates, SSH keys, and other binary secrets in the Pipelines Library:
 
 ## Pipeline Decorators
 
-Pipeline decorators inject steps into every pipeline in an organization or project without modifying individual pipeline files. They enforce organizational policies:
+Pipeline decorators inject steps into every pipeline in an organization or project without modifying individual pipeline
+files. They enforce organizational policies:
 
 ### Decorator Use Cases
 
-| Use Case | Implementation |
-|----------|---------------|
-| Mandatory security scanning | Inject credential scanner before every job |
-| Compliance audit logging | Inject telemetry step after every job |
-| Required code analysis | Inject SonarQube analysis on main branch builds |
-| License compliance | Inject dependency license scanner |
+| Use Case                    | Implementation                                  |
+| --------------------------- | ----------------------------------------------- |
+| Mandatory security scanning | Inject credential scanner before every job      |
+| Compliance audit logging    | Inject telemetry step after every job           |
+| Required code analysis      | Inject SonarQube analysis on main branch builds |
+| License compliance          | Inject dependency license scanner               |
 
 ### Decorator Definition
 
@@ -484,17 +505,15 @@ Decorators are packaged as Azure DevOps extensions:
 ```yaml
 # vss-extension.json (extension manifest)
 {
-  "contributions": [
-    {
-      "id": "required-security-scan",
-      "type": "ms.azure-pipelines.pipeline-decorator",
-      "targets": ["ms.azure-pipelines-agent-job"],
-      "properties": {
-        "template": "decorator.yml",
-        "targetsExecutionOrder": "PreJob"
-      }
-    }
-  ]
+  'contributions':
+    [
+      {
+        'id': 'required-security-scan',
+        'type': 'ms.azure-pipelines.pipeline-decorator',
+        'targets': ['ms.azure-pipelines-agent-job'],
+        'properties': { 'template': 'decorator.yml', 'targetsExecutionOrder': 'PreJob' },
+      },
+    ],
 }
 ```
 
@@ -517,7 +536,8 @@ steps:
 
 ## Azure Artifacts Universal Packages
 
-Universal packages store arbitrary files (binaries, tools, datasets) in Azure Artifacts feeds, not limited to NuGet/npm/Maven formats:
+Universal packages store arbitrary files (binaries, tools, datasets) in Azure Artifacts feeds, not limited to
+NuGet/npm/Maven formats:
 
 ### Publish a Universal Package
 
@@ -560,11 +580,19 @@ Universal packages store arbitrary files (binaries, tools, datasets) in Azure Ar
 
 ## Agent Gotchas
 
-1. **Environment checks (approvals, gates) are configured in the UI, not YAML** -- the YAML pipeline references the environment name; all checks are managed through the Azure DevOps web UI.
-2. **Deployment groups are legacy** -- use environments for all new projects; deployment groups exist only for backward compatibility with classic release pipelines.
-3. **Service connection scope matters** -- ARM connections scoped to a resource group cannot deploy to resources outside that group; use subscription-level scope for cross-resource-group deployments.
-4. **Workload identity federation is preferred over service principal secrets** -- federated credentials eliminate secret rotation; use automatic federation for new connections.
-5. **Key Vault-linked variable groups fetch secrets at runtime** -- template expressions (`${{ }}`) cannot access Key Vault secrets because they resolve at compile time; use runtime expressions (`$()`) instead.
-6. **Classic release pipelines are not stored in source control** -- this is a primary motivation for migration; YAML pipelines enable PR review and branch-specific definitions.
-7. **Pipeline decorators cannot be bypassed by pipeline authors** -- this is intentional for policy enforcement; test decorator changes in a separate organization or project to avoid breaking all pipelines.
-8. **Universal packages have a 4 GiB size limit per file** -- for larger artifacts, split files or use Azure Blob Storage with a SAS token instead.
+1. **Environment checks (approvals, gates) are configured in the UI, not YAML** -- the YAML pipeline references the
+   environment name; all checks are managed through the Azure DevOps web UI.
+2. **Deployment groups are legacy** -- use environments for all new projects; deployment groups exist only for backward
+   compatibility with classic release pipelines.
+3. **Service connection scope matters** -- ARM connections scoped to a resource group cannot deploy to resources outside
+   that group; use subscription-level scope for cross-resource-group deployments.
+4. **Workload identity federation is preferred over service principal secrets** -- federated credentials eliminate
+   secret rotation; use automatic federation for new connections.
+5. **Key Vault-linked variable groups fetch secrets at runtime** -- template expressions (`${{ }}`) cannot access Key
+   Vault secrets because they resolve at compile time; use runtime expressions (`$()`) instead.
+6. **Classic release pipelines are not stored in source control** -- this is a primary motivation for migration; YAML
+   pipelines enable PR review and branch-specific definitions.
+7. **Pipeline decorators cannot be bypassed by pipeline authors** -- this is intentional for policy enforcement; test
+   decorator changes in a separate organization or project to avoid breaking all pipelines.
+8. **Universal packages have a 4 GiB size limit per file** -- for larger artifacts, split files or use Azure Blob
+   Storage with a SAS token instead.

@@ -2,21 +2,22 @@
 name: dotnet-blazor-components
 description: Implements Blazor components. Lifecycle, state management, JS interop, EditForm, QuickGrid.
 license: MIT
-targets: ["*"]
-tags: ["ui", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['ui', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for ui tasks"
+  short-description: '.NET skill guidance for ui tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-blazor-components
 
-Blazor component architecture: lifecycle methods, state management (cascading values, DI, browser storage), JavaScript interop (AOT-safe), EditForm validation, and QuickGrid. Covers per-render-mode behavior differences where relevant.
+Blazor component architecture: lifecycle methods, state management (cascading values, DI, browser storage), JavaScript
+interop (AOT-safe), EditForm validation, and QuickGrid. Covers per-render-mode behavior differences where relevant.
 
 ## Scope
 
@@ -37,7 +38,10 @@ Blazor component architecture: lifecycle methods, state management (cascading va
 - UI framework selection -- see [skill:dotnet-ui-chooser]
 - Accessibility patterns (ARIA, keyboard navigation) -- see [skill:dotnet-accessibility]
 
-Cross-references: [skill:dotnet-blazor-patterns] for hosting models and render modes, [skill:dotnet-blazor-auth] for authentication, [skill:dotnet-blazor-testing] for bUnit testing, [skill:dotnet-realtime-communication] for standalone SignalR, [skill:dotnet-playwright] for E2E testing, [skill:dotnet-ui-chooser] for framework selection, [skill:dotnet-accessibility] for accessibility patterns (ARIA, keyboard nav, screen readers).
+Cross-references: [skill:dotnet-blazor-patterns] for hosting models and render modes, [skill:dotnet-blazor-auth] for
+authentication, [skill:dotnet-blazor-testing] for bUnit testing, [skill:dotnet-realtime-communication] for standalone
+SignalR, [skill:dotnet-playwright] for E2E testing, [skill:dotnet-ui-chooser] for framework selection,
+[skill:dotnet-accessibility] for accessibility patterns (ARIA, keyboard nav, screen readers).
 
 ---
 
@@ -111,13 +115,14 @@ Cross-references: [skill:dotnet-blazor-patterns] for hosting models and render m
 
 ### Lifecycle Behavior per Render Mode
 
-| Lifecycle Event | Static SSR | InteractiveServer | InteractiveWebAssembly | InteractiveAuto | Hybrid |
-|---|---|---|---|---|---|
-| `OnInitialized(Async)` | Runs on server | Runs on server | Runs in browser | Server on first load, browser after WASM cached | Runs in-process |
-| `OnAfterRender(Async)` | Never called | Runs on server after SignalR confirms render | Runs in browser after DOM update | Server-side then browser-side (matches active runtime) | Runs after WebView render |
-| `Dispose(Async)` | Called after response | Called when circuit ends | Called on component removal | Called when circuit ends (Server phase) or on removal (WASM phase) | Called on component removal |
+| Lifecycle Event        | Static SSR            | InteractiveServer                            | InteractiveWebAssembly           | InteractiveAuto                                                    | Hybrid                      |
+| ---------------------- | --------------------- | -------------------------------------------- | -------------------------------- | ------------------------------------------------------------------ | --------------------------- |
+| `OnInitialized(Async)` | Runs on server        | Runs on server                               | Runs in browser                  | Server on first load, browser after WASM cached                    | Runs in-process             |
+| `OnAfterRender(Async)` | Never called          | Runs on server after SignalR confirms render | Runs in browser after DOM update | Server-side then browser-side (matches active runtime)             | Runs after WebView render   |
+| `Dispose(Async)`       | Called after response | Called when circuit ends                     | Called on component removal      | Called when circuit ends (Server phase) or on removal (WASM phase) | Called on component removal |
 
-**Gotcha:** In Static SSR, `OnAfterRender` never executes because there is no persistent connection. Do not place critical logic in `OnAfterRender` for Static SSR pages.
+**Gotcha:** In Static SSR, `OnAfterRender` never executes because there is no persistent connection. Do not place
+critical logic in `OnAfterRender` for Static SSR pages.
 
 ---
 
@@ -148,7 +153,8 @@ Cascading values flow data down the component tree without explicit parameter pa
 }
 ```
 
-**Fixed cascading values (.NET 8+):** For values that never change after initial render, use `IsFixed="true"` to avoid re-render overhead:
+**Fixed cascading values (.NET 8+):** For values that never change after initial render, use `IsFixed="true"` to avoid
+re-render overhead:
 
 ```razor
 <CascadingValue Value="@config" IsFixed="true">
@@ -170,13 +176,15 @@ builder.Services.AddSingleton<AppState>();
 
 **DI lifetime behavior per render mode:**
 
-| Lifetime | InteractiveServer | InteractiveWebAssembly | InteractiveAuto | Hybrid |
-|---|---|---|---|---|
-| Singleton | Shared across all circuits on the server | One per browser tab | Server-shared during Server phase; per-tab after WASM switch | One per app instance |
-| Scoped | One per circuit (acts like per-user) | One per browser tab (same as Singleton) | Per-circuit (Server phase), per-tab (WASM phase) -- state does not transfer between phases | One per app instance (same as Singleton) |
-| Transient | New instance each injection | New instance each injection | New instance each injection | New instance each injection |
+| Lifetime  | InteractiveServer                        | InteractiveWebAssembly                  | InteractiveAuto                                                                            | Hybrid                                   |
+| --------- | ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Singleton | Shared across all circuits on the server | One per browser tab                     | Server-shared during Server phase; per-tab after WASM switch                               | One per app instance                     |
+| Scoped    | One per circuit (acts like per-user)     | One per browser tab (same as Singleton) | Per-circuit (Server phase), per-tab (WASM phase) -- state does not transfer between phases | One per app instance (same as Singleton) |
+| Transient | New instance each injection              | New instance each injection             | New instance each injection                                                                | New instance each injection              |
 
-**Gotcha:** In Blazor Server, `Scoped` services live for the entire circuit duration (not per-request like in MVC). A circuit persists until the user navigates away or the connection drops. Long-lived scoped services may accumulate state -- use `OwningComponentBase<T>` for component-scoped DI.
+**Gotcha:** In Blazor Server, `Scoped` services live for the entire circuit duration (not per-request like in MVC). A
+circuit persists until the user navigates away or the connection drops. Long-lived scoped services may accumulate state
+-- use `OwningComponentBase<T>` for component-scoped DI.
 
 ### Browser Storage
 
@@ -215,7 +223,8 @@ if (json is not null)
 }
 ```
 
-**Gotcha:** `ProtectedBrowserStorage` is not available during prerendering. Always access it in `OnAfterRenderAsync(firstRender: true)`, never in `OnInitializedAsync`.
+**Gotcha:** `ProtectedBrowserStorage` is not available during prerendering. Always access it in
+`OnAfterRenderAsync(firstRender: true)`, never in `OnInitializedAsync`.
 
 ---
 
@@ -268,11 +277,11 @@ public async ValueTask DisposeAsync()
 ```javascript
 // wwwroot/js/interop.js
 export function initialize(element) {
-    // Set up the element
+  // Set up the element
 }
 
 export function getValue(element) {
-    return element.value;
+  return element.value;
 }
 ```
 
@@ -303,22 +312,23 @@ public void Dispose()
 ```javascript
 // Call .NET from JS
 export function registerCallback(dotNetRef) {
-    document.addEventListener('custom-event', (e) => {
-        dotNetRef.invokeMethodAsync('OnJsEvent', e.detail);
-    });
+  document.addEventListener('custom-event', e => {
+    dotNetRef.invokeMethodAsync('OnJsEvent', e.detail);
+  });
 }
 ```
 
 ### JS Interop per Render Mode
 
-| Concern | InteractiveServer | InteractiveWebAssembly | InteractiveAuto | Hybrid |
-|---|---|---|---|---|
-| JS call timing | After SignalR confirms render | After WASM runtime loads | SignalR initially, then direct after WASM switch | After WebView loads |
-| `OnAfterRender` available | Yes | Yes | Yes | Yes |
-| IJSRuntime sync calls | Not supported (async only) | `IJSInProcessRuntime` available | Async-only during Server phase; `IJSInProcessRuntime` after WASM switch | `IJSInProcessRuntime` available |
-| Module imports | Via SignalR (latency) | Direct (fast) | SignalR (Server phase), direct (WASM phase) | Direct (fast) |
+| Concern                   | InteractiveServer             | InteractiveWebAssembly          | InteractiveAuto                                                         | Hybrid                          |
+| ------------------------- | ----------------------------- | ------------------------------- | ----------------------------------------------------------------------- | ------------------------------- |
+| JS call timing            | After SignalR confirms render | After WASM runtime loads        | SignalR initially, then direct after WASM switch                        | After WebView loads             |
+| `OnAfterRender` available | Yes                           | Yes                             | Yes                                                                     | Yes                             |
+| IJSRuntime sync calls     | Not supported (async only)    | `IJSInProcessRuntime` available | Async-only during Server phase; `IJSInProcessRuntime` after WASM switch | `IJSInProcessRuntime` available |
+| Module imports            | Via SignalR (latency)         | Direct (fast)                   | SignalR (Server phase), direct (WASM phase)                             | Direct (fast)                   |
 
-**Gotcha:** In InteractiveServer, all JS interop calls travel over SignalR, adding network latency. Minimize round trips by batching operations into a single JS function call.
+**Gotcha:** In InteractiveServer, all JS interop calls travel over SignalR, adding network latency. Minimize round trips
+by batching operations into a single JS function call.
 
 ---
 
@@ -409,15 +419,18 @@ Static SSR forms require `FormName` and use `[SupplyParameterFromForm]`:
 }
 ```
 
-The `Enhance` attribute enables enhanced form handling -- the form submits via fetch and patches the DOM without a full page reload.
+The `Enhance` attribute enables enhanced form handling -- the form submits via fetch and patches the DOM without a full
+page reload.
 
-**Gotcha:** `FormName` must be unique across all forms on the page. Duplicate `FormName` values cause ambiguous form submission errors.
+**Gotcha:** `FormName` must be unique across all forms on the page. Duplicate `FormName` values cause ambiguous form
+submission errors.
 
 ---
 
 ## QuickGrid
 
-QuickGrid is a high-performance grid component built into Blazor (.NET 8+). It supports sorting, filtering, pagination, and virtualization.
+QuickGrid is a high-performance grid component built into Blazor (.NET 8+). It supports sorting, filtering, pagination,
+and virtualization.
 
 ### Basic QuickGrid
 
@@ -474,6 +487,7 @@ For large datasets, virtualization renders only visible rows:
 ```
 
 <!-- net11-preview -->
+
 ### QuickGrid OnRowClick (.NET 11 Preview)
 
 .NET 11 adds `OnRowClick` to QuickGrid for row-level click handling without template columns:
@@ -494,11 +508,13 @@ For large datasets, virtualization renders only visible rows:
 
 **Fallback (net10.0):** Use a `TemplateColumn` with a click handler or wrap each row in a clickable element.
 
-Source: [ASP.NET Core .NET 11 Preview - QuickGrid enhancements](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
+Source:
+[ASP.NET Core .NET 11 Preview - QuickGrid enhancements](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
 
 ---
 
 <!-- net11-preview -->
+
 ## .NET 11 Preview Features
 
 ### EnvironmentBoundary Component
@@ -518,7 +534,8 @@ Source: [ASP.NET Core .NET 11 Preview - QuickGrid enhancements](https://learn.mi
 
 **Fallback (net10.0):** Inject `IWebHostEnvironment` and use conditional rendering in `@code`.
 
-Source: [ASP.NET Core .NET 11 Preview - EnvironmentBoundary](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
+Source:
+[ASP.NET Core .NET 11 Preview - EnvironmentBoundary](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
 
 ### Label and DisplayName Support
 
@@ -550,7 +567,8 @@ public sealed class ContactModel
 
 **Fallback (net10.0):** Add explicit `<label for="...">` elements manually.
 
-Source: [ASP.NET Core .NET 11 Preview - Label/DisplayName](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
+Source:
+[ASP.NET Core .NET 11 Preview - Label/DisplayName](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
 
 ### IHostedService in WebAssembly
 
@@ -573,14 +591,18 @@ public sealed class DataSyncService : BackgroundService
 }
 ```
 
-**Fallback (net10.0):** Use a `Timer` in a component or inject a singleton service that starts background work on first use.
+**Fallback (net10.0):** Use a `Timer` in a component or inject a singleton service that starts background work on first
+use.
 
-Source: [ASP.NET Core .NET 11 Preview - IHostedService in WASM](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
+Source:
+[ASP.NET Core .NET 11 Preview - IHostedService in WASM](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
 
 <!-- net11-preview -->
+
 ### SignalR ConfigureConnection
 
-.NET 11 adds `ConfigureConnection` to the Blazor Server circuit hub, allowing customization of the SignalR connection (e.g., adding custom headers, configuring reconnection):
+.NET 11 adds `ConfigureConnection` to the Blazor Server circuit hub, allowing customization of the SignalR connection
+(e.g., adding custom headers, configuring reconnection):
 
 ```csharp
 // Program.cs
@@ -595,18 +617,25 @@ app.MapBlazorHub(options =>
 
 **Fallback (net10.0):** Use `IHubFilter` or middleware to inspect/modify connections at the hub level.
 
-Source: [ASP.NET Core .NET 11 Preview - SignalR ConfigureConnection](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
+Source:
+[ASP.NET Core .NET 11 Preview - SignalR ConfigureConnection](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11.0)
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not call JS interop in `OnInitializedAsync`.** The DOM is not available yet. Use `OnAfterRenderAsync(firstRender: true)` for JS calls that need DOM elements.
-2. **Do not forget `StateHasChanged()` after external state changes.** When state changes from a non-Blazor context (timer, event handler, JS callback), call `StateHasChanged()` or `InvokeAsync(StateHasChanged)` to trigger re-render.
-3. **Do not use `ProtectedBrowserStorage` during prerendering.** It throws because no interactive circuit exists yet. Access it only in `OnAfterRenderAsync`.
-4. **Do not forget `FormName` on Static SSR forms.** Without it, form submissions in Static SSR mode are not routed to the correct handler.
-5. **Do not dispose `DotNetObjectReference` before JS is done with it.** Premature disposal causes `JSException` when JavaScript tries to invoke the callback. Dispose in `Dispose()` or `DisposeAsync()`.
-6. **Do not assume Scoped services are per-request in Blazor Server.** Scoped services live for the entire circuit. Use `OwningComponentBase<T>` when you need component-scoped service lifetimes.
+1. **Do not call JS interop in `OnInitializedAsync`.** The DOM is not available yet. Use
+   `OnAfterRenderAsync(firstRender: true)` for JS calls that need DOM elements.
+2. **Do not forget `StateHasChanged()` after external state changes.** When state changes from a non-Blazor context
+   (timer, event handler, JS callback), call `StateHasChanged()` or `InvokeAsync(StateHasChanged)` to trigger re-render.
+3. **Do not use `ProtectedBrowserStorage` during prerendering.** It throws because no interactive circuit exists yet.
+   Access it only in `OnAfterRenderAsync`.
+4. **Do not forget `FormName` on Static SSR forms.** Without it, form submissions in Static SSR mode are not routed to
+   the correct handler.
+5. **Do not dispose `DotNetObjectReference` before JS is done with it.** Premature disposal causes `JSException` when
+   JavaScript tries to invoke the callback. Dispose in `Dispose()` or `DisposeAsync()`.
+6. **Do not assume Scoped services are per-request in Blazor Server.** Scoped services live for the entire circuit. Use
+   `OwningComponentBase<T>` when you need component-scoped service lifetimes.
 
 ---
 
@@ -622,9 +651,11 @@ Source: [ASP.NET Core .NET 11 Preview - SignalR ConfigureConnection](https://lea
 
 Blazor component patterns in this skill are grounded in guidance from:
 
-- **Damian Edwards** -- Razor and Blazor component design patterns, render mode architecture, and performance best practices. Principal architect on the ASP.NET team.
+- **Damian Edwards** -- Razor and Blazor component design patterns, render mode architecture, and performance best
+  practices. Principal architect on the ASP.NET team.
 
-> These sources inform the patterns and rationale presented above. This skill does not claim to represent or speak for any individual.
+> These sources inform the patterns and rationale presented above. This skill does not claim to represent or speak for
+> any individual.
 
 ---
 

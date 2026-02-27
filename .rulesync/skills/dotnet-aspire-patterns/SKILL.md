@@ -2,21 +2,24 @@
 name: dotnet-aspire-patterns
 description: Orchestrates .NET Aspire apps. AppHost, service discovery, components, dashboard, health checks.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-aspire-patterns
 
-.NET Aspire orchestration patterns for building cloud-ready distributed applications. Covers AppHost configuration, service discovery, the component model for integrating backing services (databases, caches, message brokers), the Aspire dashboard for local observability, distributed health checks, and when to choose Aspire vs manual container orchestration.
+.NET Aspire orchestration patterns for building cloud-ready distributed applications. Covers AppHost configuration,
+service discovery, the component model for integrating backing services (databases, caches, message brokers), the Aspire
+dashboard for local observability, distributed health checks, and when to choose Aspire vs manual container
+orchestration.
 
 ## Scope
 
@@ -34,7 +37,10 @@ opencode:
 - DI service lifetime mechanics -- see [skill:dotnet-csharp-dependency-injection]
 - Background service hosting -- see [skill:dotnet-background-services]
 
-Cross-references: [skill:dotnet-containers] for container image optimization and base image selection, [skill:dotnet-container-deployment] for production Kubernetes/Compose deployment, [skill:dotnet-observability] for OpenTelemetry details beyond Aspire defaults, [skill:dotnet-csharp-dependency-injection] for DI fundamentals, [skill:dotnet-background-services] for hosted service lifecycle patterns.
+Cross-references: [skill:dotnet-containers] for container image optimization and base image selection,
+[skill:dotnet-container-deployment] for production Kubernetes/Compose deployment, [skill:dotnet-observability] for
+OpenTelemetry details beyond Aspire defaults, [skill:dotnet-csharp-dependency-injection] for DI fundamentals,
+[skill:dotnet-background-services] for hosted service lifecycle patterns.
 
 ---
 
@@ -47,23 +53,25 @@ Cross-references: [skill:dotnet-containers] for container image optimization and
 - **Service Defaults** -- shared configuration for OpenTelemetry, health checks, resilience
 - **Dashboard** -- local development UI for traces, logs, metrics, and resource status
 
-Aspire is not a deployment target. It orchestrates the local development and testing experience. For production, it generates manifests consumed by deployment tools (Azure Developer CLI, Kubernetes, etc.).
+Aspire is not a deployment target. It orchestrates the local development and testing experience. For production, it
+generates manifests consumed by deployment tools (Azure Developer CLI, Kubernetes, etc.).
 
 ### When to Use Aspire
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Multiple .NET services + backing infrastructure | Aspire AppHost -- simplifies local dev and service wiring |
-| Single API with a database | Optional -- Aspire adds overhead for simple topologies |
-| Non-.NET services only (Node, Python) | Aspire can reference container images, but the tooling benefit is reduced |
-| Need Kubernetes/Compose for local dev already | Evaluate migration cost; Aspire replaces docker-compose for dev scenarios |
-| Team needs consistent observability defaults | Aspire ServiceDefaults standardize OTel across all projects |
+| Scenario                                        | Recommendation                                                            |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| Multiple .NET services + backing infrastructure | Aspire AppHost -- simplifies local dev and service wiring                 |
+| Single API with a database                      | Optional -- Aspire adds overhead for simple topologies                    |
+| Non-.NET services only (Node, Python)           | Aspire can reference container images, but the tooling benefit is reduced |
+| Need Kubernetes/Compose for local dev already   | Evaluate migration cost; Aspire replaces docker-compose for dev scenarios |
+| Team needs consistent observability defaults    | Aspire ServiceDefaults standardize OTel across all projects               |
 
 ---
 
 ## AppHost Configuration
 
-The AppHost is a .NET project (`Aspire.Hosting.AppHost` SDK) that defines the distributed application topology. It references other projects and backing services, wiring them together with service discovery.
+The AppHost is a .NET project (`Aspire.Hosting.AppHost` SDK) that defines the distributed application topology. It
+references other projects and backing services, wiring them together with service discovery.
 
 ### AppHost Project Setup
 
@@ -137,13 +145,15 @@ builder.AddProject<Projects.MyWorker>("worker")
     .WaitFor(api);              // Wait for API health endpoint
 ```
 
-Without `WaitFor`, resources start in parallel. Use it only when startup order matters (e.g., a worker that requires the database schema to exist).
+Without `WaitFor`, resources start in parallel. Use it only when startup order matters (e.g., a worker that requires the
+database schema to exist).
 
 ---
 
 ## Service Discovery
 
-Aspire automatically configures service discovery so projects can resolve each other by resource name rather than hardcoded URLs.
+Aspire automatically configures service discovery so projects can resolve each other by resource name rather than
+hardcoded URLs.
 
 ### How It Works
 
@@ -167,11 +177,13 @@ builder.Services.AddHttpClient("worker-client", client =>
 });
 ```
 
-The `https+http://` scheme prefix tells the service discovery provider to try HTTPS first, falling back to HTTP. This is the recommended pattern for inter-service communication in Aspire.
+The `https+http://` scheme prefix tells the service discovery provider to try HTTPS first, falling back to HTTP. This is
+the recommended pattern for inter-service communication in Aspire.
 
 ### Connection Strings
 
-For backing services (databases, caches), Aspire injects connection strings via the standard `ConnectionStrings` configuration section:
+For backing services (databases, caches), Aspire injects connection strings via the standard `ConnectionStrings`
+configuration section:
 
 ```csharp
 // AppHost: .WithReference(postgres) on the API project
@@ -186,14 +198,15 @@ builder.AddNpgsqlDbContext<OrdersDbContext>("ordersdb");
 
 ## Component Model
 
-Aspire components are NuGet packages that provide pre-configured client integrations for backing services. They handle connection management, health checks, telemetry, and resilience.
+Aspire components are NuGet packages that provide pre-configured client integrations for backing services. They handle
+connection management, health checks, telemetry, and resilience.
 
 ### Hosting Packages vs Client Packages
 
-| Package Type | Installed In | Purpose |
-|---|---|---|
-| `Aspire.Hosting.*` | AppHost project | Define and configure the resource (container, connection) |
-| `Aspire.* (client)` | Service projects | Consume the resource with health checks and telemetry |
+| Package Type        | Installed In     | Purpose                                                   |
+| ------------------- | ---------------- | --------------------------------------------------------- |
+| `Aspire.Hosting.*`  | AppHost project  | Define and configure the resource (container, connection) |
+| `Aspire.* (client)` | Service projects | Consume the resource with health checks and telemetry     |
 
 ```xml
 <!-- AppHost project -->
@@ -205,16 +218,16 @@ Aspire components are NuGet packages that provide pre-configured client integrat
 
 ### Common Components
 
-| Component | Hosting Package | Client Package |
-|-----------|----------------|----------------|
-| PostgreSQL (EF Core) | `Aspire.Hosting.PostgreSQL` | `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL` |
-| PostgreSQL (Npgsql) | `Aspire.Hosting.PostgreSQL` | `Aspire.Npgsql` |
-| Redis (caching) | `Aspire.Hosting.Redis` | `Aspire.StackExchange.Redis` |
-| Redis (output cache) | `Aspire.Hosting.Redis` | `Aspire.StackExchange.Redis.OutputCaching` |
-| RabbitMQ | `Aspire.Hosting.RabbitMQ` | `Aspire.RabbitMQ.Client` |
-| Azure Service Bus | `Aspire.Hosting.Azure.ServiceBus` | `Aspire.Azure.Messaging.ServiceBus` |
-| SQL Server (EF Core) | `Aspire.Hosting.SqlServer` | `Aspire.Microsoft.EntityFrameworkCore.SqlServer` |
-| MongoDB | `Aspire.Hosting.MongoDB` | `Aspire.MongoDB.Driver` |
+| Component            | Hosting Package                   | Client Package                                   |
+| -------------------- | --------------------------------- | ------------------------------------------------ |
+| PostgreSQL (EF Core) | `Aspire.Hosting.PostgreSQL`       | `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL`   |
+| PostgreSQL (Npgsql)  | `Aspire.Hosting.PostgreSQL`       | `Aspire.Npgsql`                                  |
+| Redis (caching)      | `Aspire.Hosting.Redis`            | `Aspire.StackExchange.Redis`                     |
+| Redis (output cache) | `Aspire.Hosting.Redis`            | `Aspire.StackExchange.Redis.OutputCaching`       |
+| RabbitMQ             | `Aspire.Hosting.RabbitMQ`         | `Aspire.RabbitMQ.Client`                         |
+| Azure Service Bus    | `Aspire.Hosting.Azure.ServiceBus` | `Aspire.Azure.Messaging.ServiceBus`              |
+| SQL Server (EF Core) | `Aspire.Hosting.SqlServer`        | `Aspire.Microsoft.EntityFrameworkCore.SqlServer` |
+| MongoDB              | `Aspire.Hosting.MongoDB`          | `Aspire.MongoDB.Driver`                          |
 
 ### Client Registration
 
@@ -229,6 +242,7 @@ builder.AddRabbitMQClient("messaging");
 ```
 
 Component `Add*` methods:
+
 1. Register the client/DbContext in DI
 2. Add a health check for the resource
 3. Configure OpenTelemetry instrumentation for the client
@@ -238,7 +252,8 @@ Component `Add*` methods:
 
 ## Service Defaults
 
-The `ServiceDefaults` project is a shared library referenced by all service projects. It standardizes cross-cutting concerns.
+The `ServiceDefaults` project is a shared library referenced by all service projects. It standardizes cross-cutting
+concerns.
 
 ### What ServiceDefaults Configures
 
@@ -386,11 +401,13 @@ builder.Services.AddHealthChecks()
         tags: ["ready"]);
 ```
 
-See [skill:dotnet-observability] for detailed health check patterns (liveness vs readiness, custom checks, health check publishing).
+See [skill:dotnet-observability] for detailed health check patterns (liveness vs readiness, custom checks, health check
+publishing).
 
 ### Distributed Tracing Integration
 
-Aspire configures OpenTelemetry tracing through ServiceDefaults. Traces propagate automatically across HTTP boundaries. For custom spans:
+Aspire configures OpenTelemetry tracing through ServiceDefaults. Traces propagate automatically across HTTP boundaries.
+For custom spans:
 
 ```csharp
 private static readonly ActivitySource s_activitySource = new("MyApp.Orders");
@@ -409,7 +426,8 @@ public async Task<Order> ProcessOrderAsync(CreateOrderRequest request, Cancellat
 }
 ```
 
-See [skill:dotnet-observability] for comprehensive distributed tracing guidance (custom ActivitySource, trace context propagation, span events).
+See [skill:dotnet-observability] for comprehensive distributed tracing guidance (custom ActivitySource, trace context
+propagation, span events).
 
 ---
 
@@ -455,39 +473,51 @@ builder.AddProject<Projects.MyApi>("api")
 
 ## Aspire vs Manual Container Orchestration
 
-| Concern | Aspire | Docker Compose / Manual |
-|---------|--------|------------------------|
-| Configuration language | C# (strongly typed) | YAML |
-| Service discovery | Automatic (env var injection) | Manual DNS/env config |
-| Health checks | Automatic per component | Manual HEALTHCHECK per service |
-| Observability | Pre-configured OTel + dashboard | Manual OTel collector setup |
-| IDE integration | Hot reload, F5 debugging | Attach debugger manually |
-| Production deployment | Generates manifests (AZD, K8s) | Write manifests directly |
-| Non-.NET services | Container references (less integrated) | Equal support for all languages |
-| Learning curve | .NET-specific abstractions | Industry-standard tooling |
+| Concern                | Aspire                                 | Docker Compose / Manual         |
+| ---------------------- | -------------------------------------- | ------------------------------- |
+| Configuration language | C# (strongly typed)                    | YAML                            |
+| Service discovery      | Automatic (env var injection)          | Manual DNS/env config           |
+| Health checks          | Automatic per component                | Manual HEALTHCHECK per service  |
+| Observability          | Pre-configured OTel + dashboard        | Manual OTel collector setup     |
+| IDE integration        | Hot reload, F5 debugging               | Attach debugger manually        |
+| Production deployment  | Generates manifests (AZD, K8s)         | Write manifests directly        |
+| Non-.NET services      | Container references (less integrated) | Equal support for all languages |
+| Learning curve         | .NET-specific abstractions             | Industry-standard tooling       |
 
-Choose Aspire when your stack is primarily .NET and you want standardized observability, service discovery, and a simplified local dev experience. Choose manual orchestration when you need fine-grained control, polyglot services, or your team is already proficient with Compose/Kubernetes.
+Choose Aspire when your stack is primarily .NET and you want standardized observability, service discovery, and a
+simplified local dev experience. Choose manual orchestration when you need fine-grained control, polyglot services, or
+your team is already proficient with Compose/Kubernetes.
 
 ---
 
 ## Key Principles
 
 - **AppHost is dev-time only** -- it orchestrates local development, not production deployment
-- **Use components over raw connection strings** -- components add health checks, telemetry, and resilience automatically
+- **Use components over raw connection strings** -- components add health checks, telemetry, and resilience
+  automatically
 - **ServiceDefaults is non-negotiable** -- every Aspire service project must reference it for consistent observability
 - **WaitFor for ordered startup** -- use it for real dependencies (schema migrations, seed data), not for every resource
-- **Do not duplicate OTel config** -- Aspire ServiceDefaults configure OpenTelemetry; manual configuration causes double-collection
+- **Do not duplicate OTel config** -- Aspire ServiceDefaults configure OpenTelemetry; manual configuration causes
+  double-collection
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not manually configure OpenTelemetry in Aspire service projects** -- ServiceDefaults already registers OTel providers. Adding manual `.AddOpenTelemetry()` calls causes duplicate trace/metric collection and inflated telemetry costs.
-2. **Do not hardcode connection strings in Aspire service projects** -- use `builder.AddNpgsqlDbContext<T>("name")` or `builder.Configuration.GetConnectionString("name")`. Aspire injects connection strings via environment variables; hardcoded values bypass service discovery.
-3. **Do not use `WaitFor` on every resource** -- it serializes startup and increases launch time. Use it only when a service genuinely cannot start without the dependency (e.g., database migration on startup).
-4. **Do not reference `Aspire.Hosting.*` packages from service projects** -- hosting packages belong in the AppHost only. Service projects use client packages (`Aspire.Npgsql`, `Aspire.StackExchange.Redis`, etc.).
-5. **Do not confuse the AppHost with a production host** -- the AppHost runs locally (or in CI) to orchestrate resources. Production deployment uses generated manifests or infrastructure-as-code.
-6. **Do not omit `AddServiceDefaults()` in new service projects** -- without it, the project lacks service discovery, health checks, and telemetry, breaking Aspire integration silently.
+1. **Do not manually configure OpenTelemetry in Aspire service projects** -- ServiceDefaults already registers OTel
+   providers. Adding manual `.AddOpenTelemetry()` calls causes duplicate trace/metric collection and inflated telemetry
+   costs.
+2. **Do not hardcode connection strings in Aspire service projects** -- use `builder.AddNpgsqlDbContext<T>("name")` or
+   `builder.Configuration.GetConnectionString("name")`. Aspire injects connection strings via environment variables;
+   hardcoded values bypass service discovery.
+3. **Do not use `WaitFor` on every resource** -- it serializes startup and increases launch time. Use it only when a
+   service genuinely cannot start without the dependency (e.g., database migration on startup).
+4. **Do not reference `Aspire.Hosting.*` packages from service projects** -- hosting packages belong in the AppHost
+   only. Service projects use client packages (`Aspire.Npgsql`, `Aspire.StackExchange.Redis`, etc.).
+5. **Do not confuse the AppHost with a production host** -- the AppHost runs locally (or in CI) to orchestrate
+   resources. Production deployment uses generated manifests or infrastructure-as-code.
+6. **Do not omit `AddServiceDefaults()` in new service projects** -- without it, the project lacks service discovery,
+   health checks, and telemetry, breaking Aspire integration silently.
 
 ---
 

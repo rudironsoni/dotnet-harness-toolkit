@@ -2,21 +2,23 @@
 name: dotnet-io-pipelines
 description: Builds high-perf network I/O. PipeReader/PipeWriter, backpressure, protocol parsers, Kestrel.
 license: MIT
-targets: ["*"]
-tags: ["cicd", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['cicd', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for cicd tasks"
+  short-description: '.NET skill guidance for cicd tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-io-pipelines
 
-High-performance I/O patterns using `System.IO.Pipelines`. Covers `PipeReader`, `PipeWriter`, backpressure management, protocol parser implementation, and Kestrel integration. Pipelines solve the classic problems of buffer management, incomplete reads, and memory copying that plague traditional stream-based network code.
+High-performance I/O patterns using `System.IO.Pipelines`. Covers `PipeReader`, `PipeWriter`, backpressure management,
+protocol parser implementation, and Kestrel integration. Pipelines solve the classic problems of buffer management,
+incomplete reads, and memory copying that plague traditional stream-based network code.
 
 ## Scope
 
@@ -31,23 +33,27 @@ High-performance I/O patterns using `System.IO.Pipelines`. Covers `PipeReader`, 
 - Benchmarking methodology and Span<T> micro-optimization -- see [skill:dotnet-performance-patterns]
 - File-based I/O (FileStream, RandomAccess, MemoryMappedFile) -- see [skill:dotnet-file-io]
 
-Cross-references: [skill:dotnet-csharp-async-patterns] for async patterns used in pipeline loops, [skill:dotnet-performance-patterns] for Span/Memory optimization techniques, [skill:dotnet-file-io] for file-based I/O patterns (FileStream, RandomAccess, MemoryMappedFile).
+Cross-references: [skill:dotnet-csharp-async-patterns] for async patterns used in pipeline loops,
+[skill:dotnet-performance-patterns] for Span/Memory optimization techniques, [skill:dotnet-file-io] for file-based I/O
+patterns (FileStream, RandomAccess, MemoryMappedFile).
 
 ---
 
 ## Why Pipelines Over Streams
 
-Traditional `Stream`-based I/O forces developers to manage buffers manually, handle partial reads, and copy data between buffers. `System.IO.Pipelines` solves these problems:
+Traditional `Stream`-based I/O forces developers to manage buffers manually, handle partial reads, and copy data between
+buffers. `System.IO.Pipelines` solves these problems:
 
-| Problem | Stream Approach | Pipeline Approach |
-|---------|----------------|-------------------|
-| Buffer management | Allocate `byte[]`, resize manually | Automatic pooled buffer management |
-| Partial reads | Track position, concatenate fragments | `ReadResult` with `SequencePosition` bookmarks |
-| Backpressure | None -- writer can outpace reader | Built-in pause/resume thresholds |
-| Memory copies | Copy between buffers at each layer | Zero-copy slicing with `ReadOnlySequence<byte>` |
-| Lifetime management | Manual `byte[]` lifecycle | Pooled memory returned on `AdvanceTo` |
+| Problem             | Stream Approach                       | Pipeline Approach                               |
+| ------------------- | ------------------------------------- | ----------------------------------------------- |
+| Buffer management   | Allocate `byte[]`, resize manually    | Automatic pooled buffer management              |
+| Partial reads       | Track position, concatenate fragments | `ReadResult` with `SequencePosition` bookmarks  |
+| Backpressure        | None -- writer can outpace reader     | Built-in pause/resume thresholds                |
+| Memory copies       | Copy between buffers at each layer    | Zero-copy slicing with `ReadOnlySequence<byte>` |
+| Lifetime management | Manual `byte[]` lifecycle             | Pooled memory returned on `AdvanceTo`           |
 
-The `Pipe` class connects a `PipeWriter` (producer) and a `PipeReader` (consumer) with an internal buffer pool, flow control, and completion signaling.
+The `Pipe` class connects a `PipeWriter` (producer) and a `PipeReader` (consumer) with an internal buffer pool, flow
+control, and completion signaling.
 
 ---
 
@@ -96,6 +102,7 @@ async Task FillPipeAsync(Stream source, PipeWriter writer,
 ```
 
 **Critical rules:**
+
 - Call `GetMemory` or `GetSpan` before writing -- never write to a previously obtained buffer after `Advance`
 - Call `Advance` with the exact number of bytes written
 - Call `FlushAsync` to make data available to the reader and to respect backpressure
@@ -131,15 +138,18 @@ async Task ReadPipeAsync(PipeReader reader, CancellationToken ct)
 ```
 
 **Critical rules:**
+
 - Always call `AdvanceTo` after `ReadAsync` -- failing to do so leaks memory
-- Pass both `consumed` and `examined` positions: `consumed` frees memory, `examined` prevents busy-wait when the buffer has been scanned but does not contain a complete message
+- Pass both `consumed` and `examined` positions: `consumed` frees memory, `examined` prevents busy-wait when the buffer
+  has been scanned but does not contain a complete message
 - Never access `ReadResult.Buffer` after calling `AdvanceTo` -- the memory may be recycled
 
 ---
 
 ## Backpressure
 
-Backpressure prevents fast producers from overwhelming slow consumers. The pipe pauses the writer when unread data exceeds a threshold.
+Backpressure prevents fast producers from overwhelming slow consumers. The pipe pauses the writer when unread data
+exceeds a threshold.
 
 ### PipeOptions Configuration
 
@@ -151,26 +161,30 @@ var pipe = new Pipe(new PipeOptions(
     useSynchronizationContext: false));
 ```
 
-| Option | Default | Purpose |
-|--------|---------|---------|
-| `PauseWriterThreshold` | 65,536 | `FlushAsync` pauses when unread bytes exceed this |
-| `ResumeWriterThreshold` | 32,768 | `FlushAsync` resumes when unread bytes drop below this |
-| `MinimumSegmentSize` | 4,096 | Minimum buffer segment allocation size |
-| `UseSynchronizationContext` | `false` | Set `false` for server code to avoid context captures |
+| Option                      | Default | Purpose                                                |
+| --------------------------- | ------- | ------------------------------------------------------ |
+| `PauseWriterThreshold`      | 65,536  | `FlushAsync` pauses when unread bytes exceed this      |
+| `ResumeWriterThreshold`     | 32,768  | `FlushAsync` resumes when unread bytes drop below this |
+| `MinimumSegmentSize`        | 4,096   | Minimum buffer segment allocation size                 |
+| `UseSynchronizationContext` | `false` | Set `false` for server code to avoid context captures  |
 
 ### How Backpressure Works
 
 1. Writer calls `FlushAsync` after `Advance`
-2. If buffered (unread) data exceeds `PauseWriterThreshold`, `FlushAsync` does not complete until the reader consumes enough data to drop below `ResumeWriterThreshold`
-3. The writer is effectively paused -- no busy-waiting, no exceptions, just an awaitable that completes when the reader catches up
+2. If buffered (unread) data exceeds `PauseWriterThreshold`, `FlushAsync` does not complete until the reader consumes
+   enough data to drop below `ResumeWriterThreshold`
+3. The writer is effectively paused -- no busy-waiting, no exceptions, just an awaitable that completes when the reader
+   catches up
 
-This prevents unbounded memory growth when a producer (network socket, file) is faster than the consumer (parser, business logic).
+This prevents unbounded memory growth when a producer (network socket, file) is faster than the consumer (parser,
+business logic).
 
 ---
 
 ## Protocol Parsing
 
-Pipelines excel at parsing binary protocols because `ReadOnlySequence<byte>` handles fragmented data across multiple buffer segments without copying.
+Pipelines excel at parsing binary protocols because `ReadOnlySequence<byte>` handles fragmented data across multiple
+buffer segments without copying.
 
 ### Length-Prefixed Protocol Parser
 
@@ -316,7 +330,8 @@ finally
 
 ## Kestrel Integration
 
-ASP.NET Core's Kestrel web server uses `System.IO.Pipelines` internally for HTTP request/response processing. Custom connection middleware can access the transport-level pipe directly.
+ASP.NET Core's Kestrel web server uses `System.IO.Pipelines` internally for HTTP request/response processing. Custom
+connection middleware can access the transport-level pipe directly.
 
 ### Connection Middleware
 
@@ -381,7 +396,8 @@ public sealed class MyProtocolHandler : ConnectionHandler
 
 ### IDuplexPipe
 
-Kestrel exposes connections as `IDuplexPipe`, combining `PipeReader` and `PipeWriter` into a single transport abstraction. This pattern also works for custom TCP servers, WebSocket handlers, and named-pipe protocols.
+Kestrel exposes connections as `IDuplexPipe`, combining `PipeReader` and `PipeWriter` into a single transport
+abstraction. This pattern also works for custom TCP servers, WebSocket handlers, and named-pipe protocols.
 
 ```csharp
 public interface IDuplexPipe
@@ -395,11 +411,16 @@ public interface IDuplexPipe
 
 ## Performance Tips
 
-1. **Minimize copies** -- use `ReadOnlySequence<byte>` slicing instead of copying to `byte[]`. Parse directly from the sequence when possible.
-2. **Use `GetSpan`/`GetMemory` correctly** -- request the minimum size you need. The pipe may return a larger buffer, which is fine. Do not cache the returned `Span`/`Memory` across `Advance`/`FlushAsync` calls.
-3. **Set `useSynchronizationContext: false`** -- server code should never capture the synchronization context. This is the default for `PipeOptions` but explicit is clearer.
-4. **Tune pause/resume thresholds** -- the defaults (64 KB / 32 KB) work for most scenarios. Increase for high-throughput bulk transfer; decrease for low-latency interactive protocols.
-5. **Prefer `SequenceReader<byte>`** -- for complex parsing, `SequenceReader<byte>` provides `TryRead`, `TryReadBigEndian`, `AdvancePast`, and `IsNext` methods that handle multi-segment sequences transparently.
+1. **Minimize copies** -- use `ReadOnlySequence<byte>` slicing instead of copying to `byte[]`. Parse directly from the
+   sequence when possible.
+2. **Use `GetSpan`/`GetMemory` correctly** -- request the minimum size you need. The pipe may return a larger buffer,
+   which is fine. Do not cache the returned `Span`/`Memory` across `Advance`/`FlushAsync` calls.
+3. **Set `useSynchronizationContext: false`** -- server code should never capture the synchronization context. This is
+   the default for `PipeOptions` but explicit is clearer.
+4. **Tune pause/resume thresholds** -- the defaults (64 KB / 32 KB) work for most scenarios. Increase for
+   high-throughput bulk transfer; decrease for low-latency interactive protocols.
+5. **Prefer `SequenceReader<byte>`** -- for complex parsing, `SequenceReader<byte>` provides `TryRead`,
+   `TryReadBigEndian`, `AdvancePast`, and `IsNext` methods that handle multi-segment sequences transparently.
 
 ```csharp
 static bool TryParseHeader(
@@ -428,18 +449,27 @@ static bool TryParseHeader(
 
 ## Agent Gotchas
 
-1. **Do not forget to call `AdvanceTo` after `ReadAsync`** -- skipping `AdvanceTo` leaks pooled memory and eventually causes `OutOfMemoryException`. Every `ReadAsync` must be paired with an `AdvanceTo`.
-2. **Do not access `ReadResult.Buffer` after calling `AdvanceTo`** -- the underlying memory segments may be returned to the pool. Copy or parse all needed data before advancing.
-3. **Do not set `consumed` equal to `examined` when no complete message was found** -- this creates a busy-wait loop. Set `consumed` to `buffer.Start` (nothing consumed) and `examined` to `buffer.End` (everything examined) so the pipe waits for new data.
-4. **Do not ignore `FlushResult.IsCompleted`** -- it means the reader has stopped consuming. Continue writing after this and data will be silently discarded.
-5. **Do not use `Pipe` for simple stream-to-stream copying** -- `Stream.CopyToAsync` is simpler and equally efficient. Use pipelines when you need parsing, backpressure, or zero-copy slicing.
-6. **Do not use `BinaryPrimitives` methods on spans shorter than required** -- always check `buffer.Length` before reading fixed-width values to avoid `ArgumentOutOfRangeException`.
+1. **Do not forget to call `AdvanceTo` after `ReadAsync`** -- skipping `AdvanceTo` leaks pooled memory and eventually
+   causes `OutOfMemoryException`. Every `ReadAsync` must be paired with an `AdvanceTo`.
+2. **Do not access `ReadResult.Buffer` after calling `AdvanceTo`** -- the underlying memory segments may be returned to
+   the pool. Copy or parse all needed data before advancing.
+3. **Do not set `consumed` equal to `examined` when no complete message was found** -- this creates a busy-wait loop.
+   Set `consumed` to `buffer.Start` (nothing consumed) and `examined` to `buffer.End` (everything examined) so the pipe
+   waits for new data.
+4. **Do not ignore `FlushResult.IsCompleted`** -- it means the reader has stopped consuming. Continue writing after this
+   and data will be silently discarded.
+5. **Do not use `Pipe` for simple stream-to-stream copying** -- `Stream.CopyToAsync` is simpler and equally efficient.
+   Use pipelines when you need parsing, backpressure, or zero-copy slicing.
+6. **Do not use `BinaryPrimitives` methods on spans shorter than required** -- always check `buffer.Length` before
+   reading fixed-width values to avoid `ArgumentOutOfRangeException`.
 
 ---
 
 ## Knowledge Sources
 
-- Stephen Toub, [System.IO.Pipelines: High performance IO in .NET](https://devblogs.microsoft.com/dotnet/system-io-pipelines-high-performance-io-in-net/) -- canonical deep dive on pipeline design, motivation, and usage patterns
+- Stephen Toub,
+  [System.IO.Pipelines: High performance IO in .NET](https://devblogs.microsoft.com/dotnet/system-io-pipelines-high-performance-io-in-net/)
+  -- canonical deep dive on pipeline design, motivation, and usage patterns
 
 ## References
 

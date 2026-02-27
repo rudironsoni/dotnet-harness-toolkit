@@ -2,21 +2,24 @@
 name: dotnet-domain-modeling
 description: Models business domains. Aggregates, value objects, domain events, rich models, repositories.
 license: MIT
-targets: ["*"]
-tags: ["architecture", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['architecture', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for architecture tasks"
+  short-description: '.NET skill guidance for architecture tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-domain-modeling
 
-Domain-Driven Design tactical patterns in C#. Covers aggregate roots, entities, value objects, domain events, integration events, domain services, repository contract design, and the distinction between rich and anemic domain models. These patterns apply to the domain layer itself -- the pure C# model that encapsulates business rules -- independent of any persistence technology.
+Domain-Driven Design tactical patterns in C#. Covers aggregate roots, entities, value objects, domain events,
+integration events, domain services, repository contract design, and the distinction between rich and anemic domain
+models. These patterns apply to the domain layer itself -- the pure C# model that encapsulates business rules --
+independent of any persistence technology.
 
 ## Scope
 
@@ -34,13 +37,17 @@ Domain-Driven Design tactical patterns in C#. Covers aggregate roots, entities, 
 - Vertical slice architecture and request pipelines -- see [skill:dotnet-architecture-patterns]
 - Messaging infrastructure and saga orchestration -- see [skill:dotnet-messaging-patterns]
 
-Cross-references: [skill:dotnet-efcore-architecture] for aggregate persistence and repository implementation with EF Core, [skill:dotnet-efcore-patterns] for DbContext configuration and migrations, [skill:dotnet-architecture-patterns] for vertical slices and request pipeline design, [skill:dotnet-validation-patterns] for input validation patterns, [skill:dotnet-messaging-patterns] for integration event infrastructure.
+Cross-references: [skill:dotnet-efcore-architecture] for aggregate persistence and repository implementation with EF
+Core, [skill:dotnet-efcore-patterns] for DbContext configuration and migrations, [skill:dotnet-architecture-patterns]
+for vertical slices and request pipeline design, [skill:dotnet-validation-patterns] for input validation patterns,
+[skill:dotnet-messaging-patterns] for integration event infrastructure.
 
 ---
 
 ## Aggregate Roots and Entities
 
-An aggregate is a cluster of domain objects treated as a single unit for data changes. The aggregate root is the entry point -- all modifications to the aggregate pass through it.
+An aggregate is a cluster of domain objects treated as a single unit for data changes. The aggregate root is the entry
+point -- all modifications to the aggregate pass through it.
 
 ### Entity Base Class
 
@@ -159,21 +166,23 @@ public sealed class Order : AggregateRoot<Guid>
 
 ### Aggregate Design Rules
 
-| Rule | Rationale |
-|------|-----------|
-| All mutations go through the aggregate root | Enforces invariants in one place |
-| Reference other aggregates by ID only | Prevents cross-aggregate coupling; use `CustomerId` not `Customer` |
-| Keep aggregates small | Large aggregates cause lock contention and slow loads |
-| One aggregate per transaction | Cross-aggregate changes use domain events and eventual consistency |
-| Expose collections as `IReadOnlyList<T>` | Prevents external code from bypassing root methods to mutate children |
+| Rule                                        | Rationale                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| All mutations go through the aggregate root | Enforces invariants in one place                                      |
+| Reference other aggregates by ID only       | Prevents cross-aggregate coupling; use `CustomerId` not `Customer`    |
+| Keep aggregates small                       | Large aggregates cause lock contention and slow loads                 |
+| One aggregate per transaction               | Cross-aggregate changes use domain events and eventual consistency    |
+| Expose collections as `IReadOnlyList<T>`    | Prevents external code from bypassing root methods to mutate children |
 
-For the EF Core persistence implications of these rules (navigation properties, owned types, cascade behavior), see [skill:dotnet-efcore-architecture].
+For the EF Core persistence implications of these rules (navigation properties, owned types, cascade behavior), see
+[skill:dotnet-efcore-architecture].
 
 ---
 
 ## Value Objects
 
-Value objects have no identity -- they are defined by their attribute values. Two value objects with the same attributes are equal. In C#, `record` and `record struct` provide natural value semantics.
+Value objects have no identity -- they are defined by their attribute values. Two value objects with the same attributes
+are equal. In C#, `record` and `record struct` provide natural value semantics.
 
 ### Record-Based Value Objects
 
@@ -295,17 +304,18 @@ builder.Property(o => o.CustomerId)
 
 ### When to Use Value Objects
 
-| Use value object | Use primitive |
-|-----------------|--------------|
-| Domain concept with constraints (email, money, quantity) | Infrastructure IDs with no domain rules (correlation IDs, trace IDs) |
-| Multiple properties that form a unit (address, date range) | Single value with no validation needed |
-| Need to prevent primitive obsession in domain methods | Simple DTO fields at API boundary |
+| Use value object                                           | Use primitive                                                        |
+| ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| Domain concept with constraints (email, money, quantity)   | Infrastructure IDs with no domain rules (correlation IDs, trace IDs) |
+| Multiple properties that form a unit (address, date range) | Single value with no validation needed                               |
+| Need to prevent primitive obsession in domain methods      | Simple DTO fields at API boundary                                    |
 
 ---
 
 ## Domain Events
 
-Domain events represent something meaningful that happened in the domain. They enable loose coupling between aggregates and trigger side effects (sending emails, updating read models, publishing integration events).
+Domain events represent something meaningful that happened in the domain. They enable loose coupling between aggregates
+and trigger side effects (sending emails, updating read models, publishing integration events).
 
 ### Event Contracts
 
@@ -337,7 +347,8 @@ public sealed record OrderCancelled(
 
 ### Dispatching Domain Events
 
-Dispatch events after `SaveChangesAsync` succeeds to ensure the aggregate state is persisted before side effects execute:
+Dispatch events after `SaveChangesAsync` succeeds to ensure the aggregate state is persisted before side effects
+execute:
 
 ```csharp
 public sealed class DomainEventDispatcher(
@@ -416,15 +427,16 @@ public sealed class EventDispatchingSaveChangesInterceptor(
 
 ### Domain Events vs Integration Events
 
-| Aspect | Domain Event | Integration Event |
-|--------|-------------|-------------------|
-| Scope | Within a bounded context | Across bounded contexts / services |
-| Transport | In-process (dispatcher) | Message broker (Service Bus, RabbitMQ) |
-| Coupling | References domain types | Uses primitive/DTO types only |
-| Reliability | Same transaction scope | At-least-once with idempotent consumers |
-| Example | `OrderSubmitted` (triggers email handler) | `OrderSubmittedIntegration` (notifies shipping service) |
+| Aspect      | Domain Event                              | Integration Event                                       |
+| ----------- | ----------------------------------------- | ------------------------------------------------------- |
+| Scope       | Within a bounded context                  | Across bounded contexts / services                      |
+| Transport   | In-process (dispatcher)                   | Message broker (Service Bus, RabbitMQ)                  |
+| Coupling    | References domain types                   | Uses primitive/DTO types only                           |
+| Reliability | Same transaction scope                    | At-least-once with idempotent consumers                 |
+| Example     | `OrderSubmitted` (triggers email handler) | `OrderSubmittedIntegration` (notifies shipping service) |
 
-A domain event handler may publish an integration event to a message broker. See [skill:dotnet-messaging-patterns] for integration event infrastructure.
+A domain event handler may publish an integration event to a message broker. See [skill:dotnet-messaging-patterns] for
+integration event infrastructure.
 
 ```csharp
 // Domain event handler that publishes an integration event
@@ -519,21 +531,23 @@ public class ShoppingCartService
 
 ### Decision Guide
 
-| Factor | Rich model | Anemic model |
-|--------|-----------|--------------|
-| Complex invariants | Enforced in entity | Scattered across services |
-| Testability | Test entity behavior directly | Test service + entity together |
-| Discoverability | Methods on entity show capabilities | Must find the right service class |
-| Persistence coupling | Requires ORM-friendly private setters | Simple property mapping |
-| Team familiarity | DDD experience required | Familiar to most developers |
+| Factor               | Rich model                            | Anemic model                      |
+| -------------------- | ------------------------------------- | --------------------------------- |
+| Complex invariants   | Enforced in entity                    | Scattered across services         |
+| Testability          | Test entity behavior directly         | Test service + entity together    |
+| Discoverability      | Methods on entity show capabilities   | Must find the right service class |
+| Persistence coupling | Requires ORM-friendly private setters | Simple property mapping           |
+| Team familiarity     | DDD experience required               | Familiar to most developers       |
 
-**Recommendation:** Start with a rich model for aggregates with complex business rules. Anemic models are acceptable for simple CRUD entities where the domain logic is minimal (e.g., reference data, configuration records).
+**Recommendation:** Start with a rich model for aggregates with complex business rules. Anemic models are acceptable for
+simple CRUD entities where the domain logic is minimal (e.g., reference data, configuration records).
 
 ---
 
 ## Domain Services
 
-Domain services encapsulate business logic that does not naturally belong to a single entity or value object. They operate on domain types and enforce cross-aggregate rules.
+Domain services encapsulate business logic that does not naturally belong to a single entity or value object. They
+operate on domain types and enforce cross-aggregate rules.
 
 ```csharp
 public sealed class PricingService
@@ -575,13 +589,15 @@ public sealed class PricingService
 - A business rule does not belong to any single entity (e.g., pricing across products and customer tiers)
 - External policy or configuration drives the logic (e.g., tax calculation rules)
 
-Domain services should remain **pure** -- no infrastructure dependencies. If the logic needs a database or external API, place it in an application service that calls the domain service with pre-loaded data.
+Domain services should remain **pure** -- no infrastructure dependencies. If the logic needs a database or external API,
+place it in an application service that calls the domain service with pre-loaded data.
 
 ---
 
 ## Repository Contracts
 
-Repository interfaces belong in the **domain layer** and express aggregate loading and saving semantics. Implementation details (EF Core, Dapper) live in the infrastructure layer.
+Repository interfaces belong in the **domain layer** and express aggregate loading and saving semantics. Implementation
+details (EF Core, Dapper) live in the infrastructure layer.
 
 ```csharp
 // Domain layer -- defines the contract
@@ -603,13 +619,13 @@ For EF Core repository implementations, see [skill:dotnet-efcore-architecture].
 
 ### Repository Design Rules
 
-| Rule | Rationale |
-|------|-----------|
-| One repository per aggregate root | Child entities are accessed through the root |
-| No `IQueryable<T>` return types | Prevents persistence concerns from leaking into domain |
-| No generic `IRepository<T>` | Cannot express aggregate-specific loading rules |
-| Return domain types, not DTOs | Repositories serve the domain; read models use projections |
-| Include `CancellationToken` on all async methods | Required for proper cancellation propagation |
+| Rule                                             | Rationale                                                  |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| One repository per aggregate root                | Child entities are accessed through the root               |
+| No `IQueryable<T>` return types                  | Prevents persistence concerns from leaking into domain     |
+| No generic `IRepository<T>`                      | Cannot express aggregate-specific loading rules            |
+| Return domain types, not DTOs                    | Repositories serve the domain; read models use projections |
+| Include `CancellationToken` on all async methods | Required for proper cancellation propagation               |
 
 ---
 
@@ -638,19 +654,27 @@ public sealed class InsufficientStockException(
 }
 ```
 
-Map domain exceptions to HTTP responses at the API boundary (e.g., `DomainException` to 422 Unprocessable Entity). Do not let infrastructure concerns like HTTP status codes leak into the domain layer.
+Map domain exceptions to HTTP responses at the API boundary (e.g., `DomainException` to 422 Unprocessable Entity). Do
+not let infrastructure concerns like HTTP status codes leak into the domain layer.
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not expose public setters on aggregate properties** -- all state changes must go through methods on the aggregate root that enforce invariants. Use `private set` or `init` for properties.
-2. **Do not create navigation properties between aggregate roots** -- reference other aggregates by ID value objects (e.g., `CustomerId`) not by entity navigation. Cross-aggregate navigation breaks bounded context isolation.
-3. **Do not dispatch domain events inside the transaction** -- dispatch after `SaveChangesAsync` succeeds. Dispatching before save means side effects fire even if the save fails.
-4. **Do not use domain types in integration events** -- integration events cross bounded context boundaries and must use primitives or DTOs. Domain type changes would break other services.
-5. **Do not put validation logic only in the API layer** -- domain invariants belong in the domain model. API validation ([skill:dotnet-validation-patterns]) catches malformed input; domain validation enforces business rules.
-6. **Do not create anemic entities with public `List<T>` properties** -- expose collections as `IReadOnlyList<T>` and provide mutation methods on the aggregate root that enforce business rules.
-7. **Do not inject infrastructure services into domain entities** -- entities should be pure C# objects. Use domain services for logic that needs external data, and application services for infrastructure orchestration.
+1. **Do not expose public setters on aggregate properties** -- all state changes must go through methods on the
+   aggregate root that enforce invariants. Use `private set` or `init` for properties.
+2. **Do not create navigation properties between aggregate roots** -- reference other aggregates by ID value objects
+   (e.g., `CustomerId`) not by entity navigation. Cross-aggregate navigation breaks bounded context isolation.
+3. **Do not dispatch domain events inside the transaction** -- dispatch after `SaveChangesAsync` succeeds. Dispatching
+   before save means side effects fire even if the save fails.
+4. **Do not use domain types in integration events** -- integration events cross bounded context boundaries and must use
+   primitives or DTOs. Domain type changes would break other services.
+5. **Do not put validation logic only in the API layer** -- domain invariants belong in the domain model. API validation
+   ([skill:dotnet-validation-patterns]) catches malformed input; domain validation enforces business rules.
+6. **Do not create anemic entities with public `List<T>` properties** -- expose collections as `IReadOnlyList<T>` and
+   provide mutation methods on the aggregate root that enforce business rules.
+7. **Do not inject infrastructure services into domain entities** -- entities should be pure C# objects. Use domain
+   services for logic that needs external data, and application services for infrastructure orchestration.
 
 ---
 

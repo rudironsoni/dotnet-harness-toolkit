@@ -2,21 +2,23 @@
 name: dotnet-cli-packaging
 description: Publishes to package managers. Homebrew, apt/deb, winget, Scoop, Chocolatey manifests.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-cli-packaging
 
-Multi-platform packaging for .NET CLI tools: Homebrew formula authoring (binary tap and cask), apt/deb packaging with `dpkg-deb`, winget manifest YAML schema and PR submission to `winget-pkgs`, Scoop manifest JSON, Chocolatey package creation, `dotnet tool` global/local packaging, and NuGet distribution.
+Multi-platform packaging for .NET CLI tools: Homebrew formula authoring (binary tap and cask), apt/deb packaging with
+`dpkg-deb`, winget manifest YAML schema and PR submission to `winget-pkgs`, Scoop manifest JSON, Chocolatey package
+creation, `dotnet tool` global/local packaging, and NuGet distribution.
 
 **Version assumptions:** .NET 8.0+ baseline. Package manager formats are stable across .NET versions.
 
@@ -37,13 +39,17 @@ Multi-platform packaging for .NET CLI tools: Homebrew formula authoring (binary 
 - Container-based distribution -- see [skill:dotnet-containers]
 - General CI/CD patterns -- see [skill:dotnet-gha-patterns] and [skill:dotnet-ado-patterns]
 
-Cross-references: [skill:dotnet-cli-distribution] for distribution strategy and RID matrix, [skill:dotnet-cli-release-pipeline] for automated package publishing, [skill:dotnet-native-aot] for AOT binary production, [skill:dotnet-containers] for container-based distribution, [skill:dotnet-tool-management] for consumer-side tool installation and manifest management.
+Cross-references: [skill:dotnet-cli-distribution] for distribution strategy and RID matrix,
+[skill:dotnet-cli-release-pipeline] for automated package publishing, [skill:dotnet-native-aot] for AOT binary
+production, [skill:dotnet-containers] for container-based distribution, [skill:dotnet-tool-management] for consumer-side
+tool installation and manifest management.
 
 ---
 
 ## Homebrew (macOS / Linux)
 
-Homebrew is the primary package manager for macOS and widely used on Linux. Two distribution formats exist for CLI tools.
+Homebrew is the primary package manager for macOS and widely used on Linux. Two distribution formats exist for CLI
+tools.
 
 ### Binary Tap (Formula)
 
@@ -193,10 +199,10 @@ echo "Built: ${PKG_DIR}.deb"
 
 **RID to Debian architecture mapping:**
 
-| .NET RID | Debian Architecture |
-|----------|-------------------|
-| `linux-x64` | `amd64` |
-| `linux-arm64` | `arm64` |
+| .NET RID      | Debian Architecture |
+| ------------- | ------------------- |
+| `linux-x64`   | `amd64`             |
+| `linux-arm64` | `arm64`             |
 
 ### Installing the .deb
 
@@ -210,7 +216,8 @@ sudo dpkg -i mytool_1.2.3_amd64.deb
 
 ### Manifest YAML Schema
 
-winget manifests consist of multiple YAML files in a versioned directory structure within the `microsoft/winget-pkgs` repository.
+winget manifests consist of multiple YAML files in a versioned directory structure within the `microsoft/winget-pkgs`
+repository.
 
 **Directory structure:**
 
@@ -467,13 +474,13 @@ dotnet mytool
 
 ### Global vs Local Tools
 
-| Aspect | Global Tool | Local Tool |
-|--------|------------|------------|
-| Scope | System-wide (per user) | Per-project directory |
-| Install location | `~/.dotnet/tools` | `.config/dotnet-tools.json` |
-| Version management | Manual update | Tracked in source control |
-| CI/CD | Must install before use | `dotnet tool restore` restores all |
-| Best for | Personal productivity tools | Project-specific build tools |
+| Aspect             | Global Tool                 | Local Tool                         |
+| ------------------ | --------------------------- | ---------------------------------- |
+| Scope              | System-wide (per user)      | Per-project directory              |
+| Install location   | `~/.dotnet/tools`           | `.config/dotnet-tools.json`        |
+| Version management | Manual update               | Tracked in source control          |
+| CI/CD              | Must install before use     | `dotnet tool restore` restores all |
+| Best for           | Personal productivity tools | Project-specific build tools       |
 
 ---
 
@@ -523,26 +530,32 @@ dotnet nuget push ./nupkgs/MyOrg.MyTool.1.2.3.nupkg \
 
 ## Package Format Comparison
 
-| Format | Platform | Requires .NET | Auto-Update | Difficulty |
-|--------|----------|--------------|-------------|------------|
-| Homebrew formula | macOS, Linux | No (binary tap) | `brew upgrade` | Medium |
-| apt/deb | Debian/Ubuntu | No (AOT binary) | Via apt repo | Medium |
-| winget | Windows 10+ | No (portable) | `winget upgrade` | Medium |
-| Scoop | Windows | No (portable) | `scoop update` | Low |
-| Chocolatey | Windows | No | `choco upgrade` | Medium |
-| dotnet tool | Cross-platform | Yes (SDK) | `dotnet tool update` | Low |
-| NuGet (library) | Cross-platform | Yes (SDK) | NuGet restore | Low |
+| Format           | Platform       | Requires .NET   | Auto-Update          | Difficulty |
+| ---------------- | -------------- | --------------- | -------------------- | ---------- |
+| Homebrew formula | macOS, Linux   | No (binary tap) | `brew upgrade`       | Medium     |
+| apt/deb          | Debian/Ubuntu  | No (AOT binary) | Via apt repo         | Medium     |
+| winget           | Windows 10+    | No (portable)   | `winget upgrade`     | Medium     |
+| Scoop            | Windows        | No (portable)   | `scoop update`       | Low        |
+| Chocolatey       | Windows        | No              | `choco upgrade`      | Medium     |
+| dotnet tool      | Cross-platform | Yes (SDK)       | `dotnet tool update` | Low        |
+| NuGet (library)  | Cross-platform | Yes (SDK)       | NuGet restore        | Low        |
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not hardcode SHA-256 hashes in package manifests.** Generate checksums from actual release artifacts, not placeholder values. All package managers validate checksums against downloaded files.
-2. **Do not use `InstallerType: exe` for portable CLI tools in winget.** Use `InstallerType: zip` with `NestedInstallerType: portable` for standalone executables. The `exe` type implies an installer with silent flags.
-3. **Do not forget `PackAsTool` for dotnet tool projects.** Without `<PackAsTool>true</PackAsTool>`, `dotnet pack` produces a library package, not an installable tool.
-4. **Do not hardcode API keys in packaging scripts.** Use environment variable references (`$NUGET_API_KEY`, `$env:CHOCO_API_KEY`) with a comment noting CI secret configuration.
-5. **Do not mix Homebrew formula and cask for the same CLI tool.** Pure CLI tools should use formulae. Casks are for GUI applications with macOS app bundles.
-6. **Do not skip the `test` block in Homebrew formulae.** Homebrew CI runs formula tests. A missing test block causes review rejection. At minimum, test `--version` output.
+1. **Do not hardcode SHA-256 hashes in package manifests.** Generate checksums from actual release artifacts, not
+   placeholder values. All package managers validate checksums against downloaded files.
+2. **Do not use `InstallerType: exe` for portable CLI tools in winget.** Use `InstallerType: zip` with
+   `NestedInstallerType: portable` for standalone executables. The `exe` type implies an installer with silent flags.
+3. **Do not forget `PackAsTool` for dotnet tool projects.** Without `<PackAsTool>true</PackAsTool>`, `dotnet pack`
+   produces a library package, not an installable tool.
+4. **Do not hardcode API keys in packaging scripts.** Use environment variable references (`$NUGET_API_KEY`,
+   `$env:CHOCO_API_KEY`) with a comment noting CI secret configuration.
+5. **Do not mix Homebrew formula and cask for the same CLI tool.** Pure CLI tools should use formulae. Casks are for GUI
+   applications with macOS app bundles.
+6. **Do not skip the `test` block in Homebrew formulae.** Homebrew CI runs formula tests. A missing test block causes
+   review rejection. At minimum, test `--version` output.
 
 ---
 

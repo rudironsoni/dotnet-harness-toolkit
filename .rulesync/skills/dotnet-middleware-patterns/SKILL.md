@@ -2,21 +2,23 @@
 name: dotnet-middleware-patterns
 description: Builds ASP.NET Core middleware. Pipeline ordering, short-circuit, exception handling.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-middleware-patterns
 
-ASP.NET Core middleware patterns for the HTTP request pipeline. Covers correct ordering, writing custom middleware as classes or inline delegates, short-circuit logic, request/response manipulation, exception handling middleware, and conditional middleware registration.
+ASP.NET Core middleware patterns for the HTTP request pipeline. Covers correct ordering, writing custom middleware as
+classes or inline delegates, short-circuit logic, request/response manipulation, exception handling middleware, and
+conditional middleware registration.
 
 ## Scope
 
@@ -34,13 +36,15 @@ ASP.NET Core middleware patterns for the HTTP request pipeline. Covers correct o
 - Observability middleware (OpenTelemetry, health checks) -- see [skill:dotnet-observability]
 - Minimal API endpoint filters -- see [skill:dotnet-minimal-apis]
 
-Cross-references: [skill:dotnet-observability] for logging and telemetry middleware, [skill:dotnet-api-security] for auth middleware, [skill:dotnet-minimal-apis] for endpoint filters (the Minimal API equivalent of middleware).
+Cross-references: [skill:dotnet-observability] for logging and telemetry middleware, [skill:dotnet-api-security] for
+auth middleware, [skill:dotnet-minimal-apis] for endpoint filters (the Minimal API equivalent of middleware).
 
 ---
 
 ## Pipeline Ordering
 
-Middleware executes in the order it is registered. The order is critical -- placing middleware in the wrong position causes subtle bugs (missing CORS headers, unhandled exceptions, auth bypasses).
+Middleware executes in the order it is registered. The order is critical -- placing middleware in the wrong position
+causes subtle bugs (missing CORS headers, unhandled exceptions, auth bypasses).
 
 ### Recommended Order
 
@@ -85,18 +89,19 @@ app.MapRazorPages();
 
 ### Why Order Matters
 
-| Mistake | Consequence |
-|---------|-------------|
-| `UseAuthorization()` before `UseRouting()` | Authorization has no endpoint metadata -- all requests pass |
-| `UseCors()` after `UseAuthorization()` | Preflight requests fail because they lack auth tokens |
-| `UseExceptionHandler()` after custom middleware | Exceptions in custom middleware are unhandled |
-| `UseStaticFiles()` after `UseAuthorization()` | Static files require authentication unnecessarily |
+| Mistake                                         | Consequence                                                 |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| `UseAuthorization()` before `UseRouting()`      | Authorization has no endpoint metadata -- all requests pass |
+| `UseCors()` after `UseAuthorization()`          | Preflight requests fail because they lack auth tokens       |
+| `UseExceptionHandler()` after custom middleware | Exceptions in custom middleware are unhandled               |
+| `UseStaticFiles()` after `UseAuthorization()`   | Static files require authentication unnecessarily           |
 
 ---
 
 ## Custom Middleware Classes
 
-Convention-based middleware uses a constructor with `RequestDelegate` and an `InvokeAsync` method. This is the standard pattern for reusable middleware.
+Convention-based middleware uses a constructor with `RequestDelegate` and an `InvokeAsync` method. This is the standard
+pattern for reusable middleware.
 
 ### Basic Pattern
 
@@ -149,7 +154,8 @@ app.UseRequestTiming();
 
 ### Factory-Based (IMiddleware)
 
-For middleware that requires scoped services, implement `IMiddleware`. This uses DI to create middleware instances per-request instead of once at startup:
+For middleware that requires scoped services, implement `IMiddleware`. This uses DI to create middleware instances
+per-request instead of once at startup:
 
 ```csharp
 public sealed class TenantMiddleware : IMiddleware
@@ -187,12 +193,12 @@ app.UseMiddleware<TenantMiddleware>();
 
 **Convention-based vs IMiddleware:**
 
-| Aspect | Convention-based | `IMiddleware` |
-|--------|-----------------|---------------|
-| Lifetime | Singleton (created once) | Per-request (from DI) |
-| Scoped services | Via `InvokeAsync` parameters only | Via constructor injection |
-| Registration | `UseMiddleware<T>()` only | Requires `services.Add*<T>()` + `UseMiddleware<T>()` |
-| Performance | Slightly faster (no per-request allocation) | Resolved from DI each request (lifetime depends on registration) |
+| Aspect          | Convention-based                            | `IMiddleware`                                                    |
+| --------------- | ------------------------------------------- | ---------------------------------------------------------------- |
+| Lifetime        | Singleton (created once)                    | Per-request (from DI)                                            |
+| Scoped services | Via `InvokeAsync` parameters only           | Via constructor injection                                        |
+| Registration    | `UseMiddleware<T>()` only                   | Requires `services.Add*<T>()` + `UseMiddleware<T>()`             |
+| Performance     | Slightly faster (no per-request allocation) | Resolved from DI each request (lifetime depends on registration) |
 
 ---
 
@@ -245,7 +251,8 @@ app.Map("/api/diagnostics", diagnosticApp =>
 
 ## Short-Circuit Logic
 
-Middleware can short-circuit the pipeline by not calling `next()`. Use this for early validation, rate limiting, or feature flags.
+Middleware can short-circuit the pipeline by not calling `next()`. Use this for early validation, rate limiting, or
+feature flags.
 
 ### Request Validation
 
@@ -380,7 +387,8 @@ public async Task InvokeAsync(HttpContext context)
 }
 ```
 
-**Caution:** Response body replacement adds memory overhead and should only be used for diagnostics or specific transformation requirements, not in high-throughput paths.
+**Caution:** Response body replacement adds memory overhead and should only be used for diagnostics or specific
+transformation requirements, not in high-throughput paths.
 
 ---
 
@@ -388,7 +396,8 @@ public async Task InvokeAsync(HttpContext context)
 
 ### Built-in Exception Handler
 
-ASP.NET Core provides `UseExceptionHandler` for production-grade exception handling. This should always be the outermost middleware:
+ASP.NET Core provides `UseExceptionHandler` for production-grade exception handling. This should always be the outermost
+middleware:
 
 ```csharp
 app.UseExceptionHandler(exceptionApp =>
@@ -420,7 +429,8 @@ app.UseExceptionHandler(exceptionApp =>
 
 ### IExceptionHandler (.NET 8+)
 
-.NET 8 introduced `IExceptionHandler` for DI-friendly, composable exception handling. Multiple handlers can be registered and are invoked in order until one handles the exception:
+.NET 8 introduced `IExceptionHandler` for DI-friendly, composable exception handling. Multiple handlers can be
+registered and are invoked in order until one handles the exception:
 
 ```csharp
 public sealed class ValidationExceptionHandler : IExceptionHandler
@@ -552,23 +562,37 @@ else
 
 ## Key Principles
 
-- **Order is everything** -- middleware executes top-to-bottom for requests and bottom-to-top for responses; incorrect order causes auth bypasses, missing headers, and unhandled exceptions
-- **Exception handler goes first** -- `UseExceptionHandler` must be the outermost middleware to catch exceptions from all downstream components
-- **Prefer classes over inline for reusable middleware** -- convention-based middleware classes are testable, composable, and follow the single-responsibility principle
-- **Use `IMiddleware` for scoped dependencies** -- convention-based middleware is singleton; if you need scoped services (DbContext, user-scoped caches), use `IMiddleware`
-- **Short-circuit intentionally** -- always document why a middleware does not call `next()` and ensure it writes a complete response
-- **Avoid response body manipulation in hot paths** -- replacing `Response.Body` with `MemoryStream` doubles memory usage per request
+- **Order is everything** -- middleware executes top-to-bottom for requests and bottom-to-top for responses; incorrect
+  order causes auth bypasses, missing headers, and unhandled exceptions
+- **Exception handler goes first** -- `UseExceptionHandler` must be the outermost middleware to catch exceptions from
+  all downstream components
+- **Prefer classes over inline for reusable middleware** -- convention-based middleware classes are testable,
+  composable, and follow the single-responsibility principle
+- **Use `IMiddleware` for scoped dependencies** -- convention-based middleware is singleton; if you need scoped services
+  (DbContext, user-scoped caches), use `IMiddleware`
+- **Short-circuit intentionally** -- always document why a middleware does not call `next()` and ensure it writes a
+  complete response
+- **Avoid response body manipulation in hot paths** -- replacing `Response.Body` with `MemoryStream` doubles memory
+  usage per request
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not place `UseAuthorization()` before `UseRouting()`** -- authorization requires endpoint metadata from routing to evaluate policies. Without routing, all authorization checks are skipped.
-2. **Do not place `UseCors()` after `UseAuthorization()`** -- CORS preflight (OPTIONS) requests do not carry auth tokens. If auth runs first, preflights are rejected with 401.
-3. **Do not forget to call `next()` in pass-through middleware** -- forgetting `await _next(context)` silently short-circuits the pipeline, causing downstream middleware and endpoints to never execute.
-4. **Do not read `Request.Body` without `EnableBuffering()`** -- the request body stream is forward-only by default. Reading it without buffering consumes it, causing model binding and subsequent reads to fail with empty data.
-5. **Do not register `IMiddleware` implementations without DI registration** -- unlike convention-based middleware, `IMiddleware` requires explicit `services.AddScoped<T>()` or `services.AddTransient<T>()`. Without it, `UseMiddleware<T>()` throws at startup.
-6. **Do not write to `Response.Body` after calling `next()` if downstream middleware has already started the response** -- once headers are sent (response has started), modifications throw `InvalidOperationException`. Check `context.Response.HasStarted` before writing.
+1. **Do not place `UseAuthorization()` before `UseRouting()`** -- authorization requires endpoint metadata from routing
+   to evaluate policies. Without routing, all authorization checks are skipped.
+2. **Do not place `UseCors()` after `UseAuthorization()`** -- CORS preflight (OPTIONS) requests do not carry auth
+   tokens. If auth runs first, preflights are rejected with 401.
+3. **Do not forget to call `next()` in pass-through middleware** -- forgetting `await _next(context)` silently
+   short-circuits the pipeline, causing downstream middleware and endpoints to never execute.
+4. **Do not read `Request.Body` without `EnableBuffering()`** -- the request body stream is forward-only by default.
+   Reading it without buffering consumes it, causing model binding and subsequent reads to fail with empty data.
+5. **Do not register `IMiddleware` implementations without DI registration** -- unlike convention-based middleware,
+   `IMiddleware` requires explicit `services.AddScoped<T>()` or `services.AddTransient<T>()`. Without it,
+   `UseMiddleware<T>()` throws at startup.
+6. **Do not write to `Response.Body` after calling `next()` if downstream middleware has already started the response**
+   -- once headers are sent (response has started), modifications throw `InvalidOperationException`. Check
+   `context.Response.HasStarted` before writing.
 
 ---
 
@@ -576,8 +600,11 @@ else
 
 Middleware patterns in this skill are grounded in publicly available content from:
 
-- **Andrew Lock's "Exploring ASP.NET Core" Blog Series** -- Deep coverage of middleware authoring patterns, including IMiddleware vs convention-based trade-offs, pipeline ordering pitfalls, endpoint routing internals, and IExceptionHandler composition. Source: https://andrewlock.net/
-- **Official ASP.NET Core Middleware Documentation** -- Middleware fundamentals, factory-based activation, and error handling patterns. Source: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/
+- **Andrew Lock's "Exploring ASP.NET Core" Blog Series** -- Deep coverage of middleware authoring patterns, including
+  IMiddleware vs convention-based trade-offs, pipeline ordering pitfalls, endpoint routing internals, and
+  IExceptionHandler composition. Source: https://andrewlock.net/
+- **Official ASP.NET Core Middleware Documentation** -- Middleware fundamentals, factory-based activation, and error
+  handling patterns. Source: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/
 
 > **Note:** This skill applies publicly documented guidance. It does not represent or speak for the named sources.
 

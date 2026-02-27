@@ -2,22 +2,24 @@
 name: dotnet-build-analysis
 description: Interprets MSBuild output, NuGet errors, analyzer warnings. Error codes, CI drift.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
   model: haiku
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-build-analysis
 
-Help agents interpret and act on MSBuild build output. Covers error code prefixes, NuGet restore failures, analyzer warning interpretation, multi-targeting build differences, and "works locally, fails in CI" diagnosis patterns. Each subsection includes example output, diagnosis steps, and a fix pattern.
+Help agents interpret and act on MSBuild build output. Covers error code prefixes, NuGet restore failures, analyzer
+warning interpretation, multi-targeting build differences, and "works locally, fails in CI" diagnosis patterns. Each
+subsection includes example output, diagnosis steps, and a fix pattern.
 
 ## Scope
 
@@ -36,13 +38,16 @@ Help agents interpret and act on MSBuild build output. Covers error code prefixe
 
 .NET 8.0+ SDK. MSBuild (included with .NET SDK). Understanding of SDK-style project format.
 
-Cross-references: [skill:dotnet-agent-gotchas] for common code mistakes that cause build errors, [skill:dotnet-csproj-reading] for project file structure and modification, [skill:dotnet-project-structure] for project organization and SDK selection.
+Cross-references: [skill:dotnet-agent-gotchas] for common code mistakes that cause build errors,
+[skill:dotnet-csproj-reading] for project file structure and modification, [skill:dotnet-project-structure] for project
+organization and SDK selection.
 
 ---
 
 ## Error Code Prefixes
 
-MSBuild output uses standardized prefixes to indicate the error source. Understanding the prefix tells you which system produced the error and where to look for fixes.
+MSBuild output uses standardized prefixes to indicate the error source. Understanding the prefix tells you which system
+produced the error and where to look for fixes.
 
 ### CS -- C# Compiler Errors and Warnings
 
@@ -56,17 +61,24 @@ src/MyApp.Api/Models/User.cs(15,9): warning CS8618: Non-nullable property 'Name'
 ```
 
 **Diagnosis:**
+
 1. Parse the file path and line number from the error -- `src/MyApp.Api/Services/OrderService.cs` line 42, column 17.
-2. CS0246 means a type is missing. Check: is the type defined? Is the namespace imported? Is the project referencing the assembly that contains it?
-3. CS8618 is a nullable reference type warning. The property needs a `required` modifier, nullable annotation (`string?`), or constructor initialization.
+2. CS0246 means a type is missing. Check: is the type defined? Is the namespace imported? Is the project referencing the
+   assembly that contains it?
+3. CS8618 is a nullable reference type warning. The property needs a `required` modifier, nullable annotation
+   (`string?`), or constructor initialization.
 
 **Fix pattern:**
-- CS0xxx (syntax/type errors): Fix source code at the indicated location. Add `using` directives, fix type names, add missing references.
-- CS8xxx (nullable warnings): Add null annotations, null checks, or `required` modifiers. Do NOT suppress with `#pragma` or `!` operator.
+
+- CS0xxx (syntax/type errors): Fix source code at the indicated location. Add `using` directives, fix type names, add
+  missing references.
+- CS8xxx (nullable warnings): Add null annotations, null checks, or `required` modifiers. Do NOT suppress with `#pragma`
+  or `!` operator.
 
 ### MSB -- MSBuild Engine Errors
 
-Produced by the MSBuild build engine itself. These indicate project file problems, target failures, or build system misconfiguration.
+Produced by the MSBuild build engine itself. These indicate project file problems, target failures, or build system
+misconfiguration.
 
 **Example output:**
 
@@ -76,11 +88,16 @@ error MSB3644: The reference assemblies for .NETFramework,Version=v4.8 were not 
 ```
 
 **Diagnosis:**
-1. MSB4019: An MSBuild `.targets` file is missing. This usually means wrong SDK type, missing workload, or corrupt SDK installation.
-2. MSB3644: Targeting a framework version whose targeting pack is not installed. Common when a project targets .NET Framework but only .NET (Core) SDK is installed.
+
+1. MSB4019: An MSBuild `.targets` file is missing. This usually means wrong SDK type, missing workload, or corrupt SDK
+   installation.
+2. MSB3644: Targeting a framework version whose targeting pack is not installed. Common when a project targets .NET
+   Framework but only .NET (Core) SDK is installed.
 
 **Fix pattern:**
-- MSB4019: Verify `<Project Sdk="...">` is correct (e.g., `Microsoft.NET.Sdk.Web` for ASP.NET Core). Run `dotnet workload list` and install missing workloads.
+
+- MSB4019: Verify `<Project Sdk="...">` is correct (e.g., `Microsoft.NET.Sdk.Web` for ASP.NET Core). Run
+  `dotnet workload list` and install missing workloads.
 - MSB3xxx: Check `<TargetFramework>` value. Ensure the required SDK or targeting pack is installed.
 
 ### NU -- NuGet Errors and Warnings
@@ -96,17 +113,22 @@ error NU1605: Detected package downgrade: Microsoft.Extensions.Logging from 9.0.
 ```
 
 **Diagnosis:**
-1. NU1101: Package ID does not exist. Check spelling, verify the package source is configured, check if the package was renamed or deprecated.
+
+1. NU1101: Package ID does not exist. Check spelling, verify the package source is configured, check if the package was
+   renamed or deprecated.
 2. NU1603: Transitive dependency version conflict. A package wants a newer version than what is resolved.
 3. NU1605: Explicit downgrade detected. Two packages require different versions of the same dependency.
 
 **Fix pattern:**
+
 - NU1101: Fix the package name. Search [nuget.org](https://www.nuget.org/) for the correct ID.
-- NU1603/NU1605: Add a direct `<PackageReference>` for the conflicting package at a compatible version, or use central package management to pin versions.
+- NU1603/NU1605: Add a direct `<PackageReference>` for the conflicting package at a compatible version, or use central
+  package management to pin versions.
 
 ### IDE -- IDE/Roslyn Analyzer Code Style Diagnostics
 
-Produced by Roslyn IDE analyzers for code style enforcement. These are usually warnings, not errors (unless `.editorconfig` escalates them).
+Produced by Roslyn IDE analyzers for code style enforcement. These are usually warnings, not errors (unless
+`.editorconfig` escalates them).
 
 **Example output:**
 
@@ -117,12 +139,15 @@ src/MyApp.Api/Services/Report.cs(22,5): warning IDE0058: Expression value is nev
 ```
 
 **Diagnosis:**
+
 1. IDE0005: Unused `using` directive. Safe to remove.
 2. IDE0044: Field can be `readonly` because it is only assigned in the constructor.
 3. IDE0058: A method return value is discarded. Either assign it or use `_ = ...` to explicitly discard.
 
 **Fix pattern:**
-- IDE analyzers enforce code style. Fix them by applying the suggested change. Configure severity in `.editorconfig` to promote warnings to errors for CI enforcement.
+
+- IDE analyzers enforce code style. Fix them by applying the suggested change. Configure severity in `.editorconfig` to
+  promote warnings to errors for CI enforcement.
 
 ### CA -- .NET Code Analysis (FxCop/Microsoft.CodeAnalysis.NetAnalyzers)
 
@@ -137,20 +162,26 @@ src/MyApp.Api/Crypto/HashService.cs(8,9): warning CA5351: Do Not Use Broken Cryp
 ```
 
 **Diagnosis:**
-1. CA1848: High-performance logging. Use `[LoggerMessage]` source generator attributes instead of string interpolation in log calls.
-2. CA2007: `ConfigureAwait(false)` guidance for library code. Not applicable to ASP.NET Core app code (no `SynchronizationContext`).
+
+1. CA1848: High-performance logging. Use `[LoggerMessage]` source generator attributes instead of string interpolation
+   in log calls.
+2. CA2007: `ConfigureAwait(false)` guidance for library code. Not applicable to ASP.NET Core app code (no
+   `SynchronizationContext`).
 3. CA5351: Security-critical. MD5 is broken for cryptographic purposes. Switch to SHA-256 or SHA-512.
 
 **Fix pattern:**
+
 - CA1xxx (design): Apply suggested API changes. These improve API consistency.
-- CA2xxx (reliability/performance): Fix per suggestion. CA2007 can be suppressed in ASP.NET Core apps via `.editorconfig`.
+- CA2xxx (reliability/performance): Fix per suggestion. CA2007 can be suppressed in ASP.NET Core apps via
+  `.editorconfig`.
 - CA5xxx (security): Always fix. These flag real security vulnerabilities.
 
 ---
 
 ## NuGet Restore Failures
 
-NuGet restore is the first build step. When it fails, no compilation occurs. These are the most common restore failure patterns.
+NuGet restore is the first build step. When it fails, no compilation occurs. These are the most common restore failure
+patterns.
 
 ### Pattern: Package Not Found
 
@@ -164,9 +195,12 @@ NuGet restore is the first build step. When it fails, no compilation occurs. The
 ```
 
 **Diagnosis:**
+
 1. Is the package ID spelled correctly? NuGet IDs are case-insensitive but must be exact.
-2. Is the package from a private feed? Check `nuget.config` for feed configuration. NuGet searches feeds hierarchically upward from the project directory.
-3. Is `packageSourceMapping` configured? If so, the package must be mapped to a source that contains it. `MyCompany.*` patterns take precedence over `*` wildcard.
+2. Is the package from a private feed? Check `nuget.config` for feed configuration. NuGet searches feeds hierarchically
+   upward from the project directory.
+3. Is `packageSourceMapping` configured? If so, the package must be mapped to a source that contains it. `MyCompany.*`
+   patterns take precedence over `*` wildcard.
 
 **Fix pattern:**
 
@@ -207,6 +241,7 @@ error NU1107: Version conflict detected for Microsoft.Extensions.DependencyInjec
 ```
 
 **Diagnosis:**
+
 1. Two dependency chains require different major versions of the same package.
 2. Trace each chain to find which top-level package is pinned at an older version.
 3. The fix is usually upgrading the older top-level package.
@@ -231,6 +266,7 @@ error NU1301: Unable to load the service index for source https://pkgs.dev.azure
 ```
 
 **Diagnosis:**
+
 1. Credentials are missing or expired for the private feed.
 2. In CI, check that the credential provider or PAT is configured.
 3. Locally, run `dotnet nuget update source` with credentials or use Azure Artifacts Credential Provider.
@@ -251,7 +287,8 @@ dotnet nuget update source MyCompany --username az --password $PAT --store-passw
 
 ## Analyzer Warning Interpretation
 
-Analyzer warnings are produced by Roslyn analyzers bundled with the SDK or added via NuGet. Understanding when to fix vs. when to configure severity is critical.
+Analyzer warnings are produced by Roslyn analyzers bundled with the SDK or added via NuGet. Understanding when to fix
+vs. when to configure severity is critical.
 
 ### Example Output
 
@@ -262,24 +299,28 @@ src/MyApp.Api/Models/UserDto.cs(8,12): warning IDE0032: Use auto-implemented pro
 ```
 
 **Diagnosis:**
+
 1. Identify the prefix: `CA` = Code Analysis (.NET analyzers), `IDE` = IDE code style analyzers.
 2. Check severity: warnings don't break builds unless `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set.
-3. Determine if the rule applies to your project type (e.g., CA2007 is irrelevant in ASP.NET Core — no SynchronizationContext).
+3. Determine if the rule applies to your project type (e.g., CA2007 is irrelevant in ASP.NET Core — no
+   SynchronizationContext).
 4. Decide: fix the code, configure severity in `.editorconfig`, or suppress with documented justification.
 
 **Fix pattern:**
-- **Fix the code** when the analyzer identifies a real issue (CA1062 — add null validation or use `ArgumentNullException.ThrowIfNull`).
+
+- **Fix the code** when the analyzer identifies a real issue (CA1062 — add null validation or use
+  `ArgumentNullException.ThrowIfNull`).
 - **Configure severity** in `.editorconfig` when the rule doesn't apply project-wide (see below).
 - **Suppress inline** only with documented justification (see "When Suppression Is Acceptable" below).
 
 ### Severity Levels
 
-| Severity | Build Impact | Action |
-|----------|-------------|--------|
-| **Error** | Build fails | Must fix before build succeeds |
-| **Warning** | Build succeeds (unless `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`) | Fix or configure in `.editorconfig` |
-| **Suggestion** | Build succeeds; shown in IDE | Fix when practical |
-| **Hidden** | Not shown; available via code fix | Ignore unless actively refactoring |
+| Severity       | Build Impact                                                                  | Action                              |
+| -------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
+| **Error**      | Build fails                                                                   | Must fix before build succeeds      |
+| **Warning**    | Build succeeds (unless `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`) | Fix or configure in `.editorconfig` |
+| **Suggestion** | Build succeeds; shown in IDE                                                  | Fix when practical                  |
+| **Hidden**     | Not shown; available via code fix                                             | Ignore unless actively refactoring  |
 
 ### Configuring Severity
 
@@ -305,6 +346,7 @@ dotnet_diagnostic.CA5351.severity = error
 ### When Suppression Is Acceptable
 
 Suppression is acceptable ONLY when:
+
 1. The analyzer cannot understand the code's safety guarantee (e.g., a custom guard clause that ensures non-null).
 2. The rule does not apply to the project type (e.g., CA2007 in ASP.NET Core apps).
 3. A documented justification is provided.
@@ -342,6 +384,7 @@ Build FAILED for net8.0.
 ```
 
 **Diagnosis:**
+
 1. The error tag `[...csproj -> net8.0]` shows which TFM failed. `net9.0` succeeded.
 2. `GetAlternateLookup` was added in .NET 9. The code uses an API not available in .NET 8.
 3. The fix requires conditional compilation or an alternative API for the older TFM.
@@ -373,6 +416,7 @@ Build FAILED for net8.0.
 ### Reading Multi-Target Output
 
 Key patterns for identifying TFM-specific issues:
+
 - `[ProjectPath -> TFM]` suffix on every diagnostic line identifies the target.
 - `Build succeeded for netX.0` / `Build FAILED for netX.0` summary at the end.
 - Restore output shows all TFMs: `Restored ... (net8.0, net9.0)`.
@@ -382,7 +426,8 @@ Key patterns for identifying TFM-specific issues:
 
 ## CI Drift: Works Locally, Fails in CI
 
-The most frustrating build failures are ones that pass locally but fail in CI. These are almost always caused by environmental differences.
+The most frustrating build failures are ones that pass locally but fail in CI. These are almost always caused by
+environmental differences.
 
 ### Pattern: Different SDK Version
 
@@ -397,6 +442,7 @@ error CS8652: The feature 'field keyword' is currently in Preview and *unsupport
 ```
 
 **Diagnosis:**
+
 1. The local SDK (9.0.200) includes a language preview feature that the CI SDK (9.0.100) does not.
 2. A `global.json` file is either missing or not pinning the SDK version.
 
@@ -422,6 +468,7 @@ error NETSDK1147: To build this project, the following workloads must be install
 ```
 
 **Diagnosis:**
+
 1. MAUI/Aspire/WASM workloads installed locally but not in the CI image.
 2. CI pipeline needs explicit workload install step.
 
@@ -444,11 +491,13 @@ error NU1101: Unable to find package MyCompany.Internal.Lib.
 ```
 
 **Diagnosis:**
+
 1. Local machine has the package in the global NuGet cache from a previous restore.
 2. CI starts with a clean cache and cannot find the package because the private feed is not configured.
 3. A `nuget.config` file is missing from the repository, or CI lacks feed credentials.
 
 **Fix pattern:**
+
 1. Add `nuget.config` to the repository root with all required package sources.
 2. Configure CI to authenticate to private feeds (credential provider, PAT, or managed identity).
 3. Do NOT rely on global NuGet cache for CI builds.
@@ -464,11 +513,13 @@ CI (Linux):       error MSB4018: The "ResolveAssemblyReference" task failed.
 ```
 
 **Diagnosis:**
+
 1. Windows file system is case-insensitive; Linux is case-sensitive.
 2. A file reference uses different casing than the actual file on disk.
 3. Or backslash path separators in MSBuild properties that Linux cannot resolve.
 
 **Fix pattern:**
+
 - Ensure file and directory names match the case used in project references exactly.
 - Use forward slashes (`/`) in `.csproj` paths -- MSBuild normalizes them on all platforms.
 - Test in a Linux container locally with `docker run` before pushing.
@@ -484,18 +535,23 @@ CI:    error CS8602: Dereference of a possibly null reference.
 ```
 
 **Diagnosis:**
-1. CI pipeline or `Directory.Build.props` enables `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` via a CI-only condition.
+
+1. CI pipeline or `Directory.Build.props` enables `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` via a CI-only
+   condition.
 2. Developers see warnings locally but never fix them because the build succeeds.
 
 **Fix pattern:**
-- Enable `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` unconditionally in `Directory.Build.props` so local and CI builds behave identically.
+
+- Enable `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` unconditionally in `Directory.Build.props` so local and
+  CI builds behave identically.
 - Fix all warnings. Do NOT add CI-only MSBuild properties that diverge from local behavior.
 
 ---
 
 ## Slopwatch Anti-Patterns
 
-These patterns indicate an agent is hiding build problems rather than fixing them. Flag these during code review. See [skill:dotnet-slopwatch] for the automated quality gate that detects these patterns.
+These patterns indicate an agent is hiding build problems rather than fixing them. Flag these during code review. See
+[skill:dotnet-slopwatch] for the automated quality gate that detects these patterns.
 
 ### Warning Suppressions
 
@@ -517,7 +573,8 @@ public class UserModel
 #pragma warning restore CS8618
 ```
 
-**Fix:** Remove `<NoWarn>` entries and fix the underlying issues. If suppression is truly needed, use `.editorconfig` with per-rule severity and a comment explaining why.
+**Fix:** Remove `<NoWarn>` entries and fix the underlying issues. If suppression is truly needed, use `.editorconfig`
+with per-rule severity and a comment explaining why.
 
 ### Silenced Analyzers Without Justification
 
@@ -539,7 +596,8 @@ dotnet_diagnostic.CA5351.severity = none
 dotnet_diagnostic.CA5358.severity = none
 ```
 
-**Fix:** Replace insecure algorithms (MD5 -> SHA-256). If suppression is unavoidable (e.g., interop with a system requiring MD5), add a `Justification` string explaining the constraint.
+**Fix:** Replace insecure algorithms (MD5 -> SHA-256). If suppression is unavoidable (e.g., interop with a system
+requiring MD5), add a `Justification` string explaining the constraint.
 
 ---
 

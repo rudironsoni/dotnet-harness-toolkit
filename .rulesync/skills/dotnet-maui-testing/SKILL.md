@@ -2,23 +2,26 @@
 name: dotnet-maui-testing
 description: Tests .NET MAUI apps. Appium device automation, XHarness, platform validation.
 license: MIT
-targets: ["*"]
-tags: ["testing", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['testing', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for testing tasks"
+  short-description: '.NET skill guidance for testing tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-maui-testing
 
-Testing .NET MAUI applications using Appium for UI automation and XHarness for cross-platform test execution. Covers device and emulator testing, platform-specific behavior validation, element location strategies for MAUI controls, and test infrastructure for mobile/desktop apps.
+Testing .NET MAUI applications using Appium for UI automation and XHarness for cross-platform test execution. Covers
+device and emulator testing, platform-specific behavior validation, element location strategies for MAUI controls, and
+test infrastructure for mobile/desktop apps.
 
-**Version assumptions:** .NET 8.0+ baseline, Appium 2.x with UIAutomator2 (Android) and XCUITest (iOS) drivers, XHarness 1.x. Examples use the latest Appium .NET client (5.x+).
+**Version assumptions:** .NET 8.0+ baseline, Appium 2.x with UIAutomator2 (Android) and XCUITest (iOS) drivers, XHarness
+1.x. Examples use the latest Appium .NET client (5.x+).
 
 ## Scope
 
@@ -34,9 +37,14 @@ Testing .NET MAUI applications using Appium for UI automation and XHarness for c
 - Browser-based testing -- see [skill:dotnet-playwright]
 - Test project scaffolding -- see [skill:dotnet-add-testing]
 
-**Prerequisites:** MAUI test project scaffolded via [skill:dotnet-add-testing]. Appium server installed (`npm install -g appium`). For Android: Android SDK with emulator configured. For iOS: Xcode with simulator (macOS only). For Windows: WinAppDriver installed.
+**Prerequisites:** MAUI test project scaffolded via [skill:dotnet-add-testing]. Appium server installed
+(`npm install -g appium`). For Android: Android SDK with emulator configured. For iOS: Xcode with simulator (macOS
+only). For Windows: WinAppDriver installed.
 
-Cross-references: [skill:dotnet-ui-testing-core] for page object model, test selectors, and async wait patterns, [skill:dotnet-xunit] for xUnit fixtures and test organization, [skill:dotnet-maui-development] for MAUI project structure, XAML/MVVM patterns, and platform services, [skill:dotnet-maui-aot] for Native AOT on iOS/Mac Catalyst and AOT build testing considerations.
+Cross-references: [skill:dotnet-ui-testing-core] for page object model, test selectors, and async wait patterns,
+[skill:dotnet-xunit] for xUnit fixtures and test organization, [skill:dotnet-maui-development] for MAUI project
+structure, XAML/MVVM patterns, and platform services, [skill:dotnet-maui-aot] for Native AOT on iOS/Mac Catalyst and AOT
+build testing considerations.
 
 ---
 
@@ -132,7 +140,8 @@ public static class TestConfig
 
 ## Element Location with AutomationId
 
-MAUI's `AutomationId` property maps to the platform-native accessibility identifier. This is the most reliable selector for cross-platform tests.
+MAUI's `AutomationId` property maps to the platform-native accessibility identifier. This is the most reliable selector
+for cross-platform tests.
 
 ### Setting AutomationId in XAML
 
@@ -386,7 +395,8 @@ public void Dashboard_LandscapeMode_ShowsSidePanel()
 
 ## XHarness Test Execution
 
-XHarness is a command-line tool for running tests on devices and emulators across platforms. It handles app installation, test execution, and result collection.
+XHarness is a command-line tool for running tests on devices and emulators across platforms. It handles app
+installation, test execution, and result collection.
 
 ### Running Tests with XHarness
 
@@ -437,21 +447,31 @@ public static MauiApp CreateMauiApp()
 
 ## Key Principles
 
-- **Use `AutomationId` for all testable elements.** It is the cross-platform equivalent of `data-testid` and maps to the native accessibility identifier on every platform.
-- **Run tests against real emulators/simulators, not just unit tests.** MAUI rendering, navigation, and platform services behave differently than in-memory tests.
-- **Use explicit waits, never implicit waits or delays.** `WebDriverWait` with a condition is reliable; `Thread.Sleep` and implicit waits hide timing issues.
-- **Tag platform-specific tests with `[Trait]` and `Assert.SkipWhen`.** xUnit v3's native skip support allows running the correct tests per platform in CI without failures from unsupported features.
-- **Apply the page object model for maintainability.** MAUI apps have complex navigation flows; page objects keep tests readable as the app grows.
+- **Use `AutomationId` for all testable elements.** It is the cross-platform equivalent of `data-testid` and maps to the
+  native accessibility identifier on every platform.
+- **Run tests against real emulators/simulators, not just unit tests.** MAUI rendering, navigation, and platform
+  services behave differently than in-memory tests.
+- **Use explicit waits, never implicit waits or delays.** `WebDriverWait` with a condition is reliable; `Thread.Sleep`
+  and implicit waits hide timing issues.
+- **Tag platform-specific tests with `[Trait]` and `Assert.SkipWhen`.** xUnit v3's native skip support allows running
+  the correct tests per platform in CI without failures from unsupported features.
+- **Apply the page object model for maintainability.** MAUI apps have complex navigation flows; page objects keep tests
+  readable as the app grows.
 
 ---
 
 ## Agent Gotchas
 
-1. **Do not use `FindElement` without a wait strategy.** Elements may not be available immediately after navigation. Always use `WebDriverWait` for elements that appear after async operations or page transitions.
-2. **Do not hardcode emulator/simulator names.** Use environment variables or test configuration so CI can specify the available device. Different CI environments have different emulators installed.
-3. **Do not forget to set `AutomationId` on MAUI controls.** Without it, Appium falls back to platform-specific selectors (XPath, class name) that differ across Android, iOS, and Windows -- breaking cross-platform tests.
-4. **Do not run iOS tests on non-macOS machines.** iOS simulators require Xcode, which is macOS-only. Use platform-conditional test skipping or separate CI pipelines per platform.
-5. **Do not leave the Appium server unmanaged.** Start Appium as a fixture or CI service, not manually. Forgotten Appium processes cause port conflicts and test hangs.
+1. **Do not use `FindElement` without a wait strategy.** Elements may not be available immediately after navigation.
+   Always use `WebDriverWait` for elements that appear after async operations or page transitions.
+2. **Do not hardcode emulator/simulator names.** Use environment variables or test configuration so CI can specify the
+   available device. Different CI environments have different emulators installed.
+3. **Do not forget to set `AutomationId` on MAUI controls.** Without it, Appium falls back to platform-specific
+   selectors (XPath, class name) that differ across Android, iOS, and Windows -- breaking cross-platform tests.
+4. **Do not run iOS tests on non-macOS machines.** iOS simulators require Xcode, which is macOS-only. Use
+   platform-conditional test skipping or separate CI pipelines per platform.
+5. **Do not leave the Appium server unmanaged.** Start Appium as a fixture or CI service, not manually. Forgotten Appium
+   processes cause port conflicts and test hangs.
 
 ---
 

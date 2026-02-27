@@ -34,11 +34,7 @@
       "description": "WinDbg crash and dump analysis MCP",
       "type": "stdio",
       "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/svnscha/mcp-windbg@v0.12.2",
-        "mcp-windbg"
-      ],
+      "args": ["--from", "git+https://github.com/svnscha/mcp-windbg@v0.12.2", "mcp-windbg"],
       "env": {}
     }
   }

@@ -2,23 +2,26 @@
 name: dotnet-ci-benchmarking
 description: Gates CI on perf regressions. Automated threshold alerts, baseline tracking, trend reports.
 license: MIT
-targets: ["*"]
-tags: ["cicd", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['cicd', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for cicd tasks"
+  short-description: '.NET skill guidance for cicd tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-ci-benchmarking
 
-Continuous benchmarking guidance for detecting performance regressions in CI pipelines. Covers baseline file management with BenchmarkDotNet JSON exporters, GitHub Actions workflows for artifact-based baseline comparison, regression detection patterns with configurable thresholds, and alerting strategies for performance degradation.
+Continuous benchmarking guidance for detecting performance regressions in CI pipelines. Covers baseline file management
+with BenchmarkDotNet JSON exporters, GitHub Actions workflows for artifact-based baseline comparison, regression
+detection patterns with configurable thresholds, and alerting strategies for performance degradation.
 
-**Version assumptions:** BenchmarkDotNet v0.14+ for JSON export, GitHub Actions runner environment. Examples use `actions/upload-artifact@v4` and `actions/download-artifact@v4`.
+**Version assumptions:** BenchmarkDotNet v0.14+ for JSON export, GitHub Actions runner environment. Examples use
+`actions/upload-artifact@v4` and `actions/download-artifact@v4`.
 
 ## Scope
 
@@ -35,7 +38,9 @@ Continuous benchmarking guidance for detecting performance regressions in CI pip
 - OpenTelemetry metrics and distributed tracing -- see [skill:dotnet-observability]
 - Composable CI/CD workflow design -- see [skill:dotnet-gha-patterns]
 
-Cross-references: [skill:dotnet-benchmarkdotnet] for benchmark class setup and JSON exporter configuration, [skill:dotnet-observability] for correlating benchmark regressions with runtime metrics changes, [skill:dotnet-gha-patterns] for composable workflow patterns (reusable workflows, composite actions, matrix builds).
+Cross-references: [skill:dotnet-benchmarkdotnet] for benchmark class setup and JSON exporter configuration,
+[skill:dotnet-observability] for correlating benchmark regressions with runtime metrics changes,
+[skill:dotnet-gha-patterns] for composable workflow patterns (reusable workflows, composite actions, matrix builds).
 
 ---
 
@@ -43,7 +48,8 @@ Cross-references: [skill:dotnet-benchmarkdotnet] for benchmark class setup and J
 
 ### BenchmarkDotNet JSON Export
 
-BenchmarkDotNet's JSON exporter produces machine-readable results for automated comparison. Configure the exporter in benchmark classes:
+BenchmarkDotNet's JSON exporter produces machine-readable results for automated comparison. Configure the exporter in
+benchmark classes:
 
 ```csharp
 using BenchmarkDotNet.Attributes;
@@ -106,22 +112,23 @@ The exported JSON file (`*-report-full.json`) contains structured benchmark resu
 
 Key fields for regression comparison:
 
-| Field | Purpose |
-|-------|---------|
-| `Statistics.Mean` | Average execution time (nanoseconds) |
-| `Statistics.Median` | Middle execution time (more robust to outliers) |
-| `Statistics.StandardDeviation` | Measurement variability |
-| `Memory.BytesAllocatedPerOperation` | GC allocation per operation |
+| Field                               | Purpose                                         |
+| ----------------------------------- | ----------------------------------------------- |
+| `Statistics.Mean`                   | Average execution time (nanoseconds)            |
+| `Statistics.Median`                 | Middle execution time (more robust to outliers) |
+| `Statistics.StandardDeviation`      | Measurement variability                         |
+| `Memory.BytesAllocatedPerOperation` | GC allocation per operation                     |
 
 ### Baseline Storage Strategies
 
-| Strategy | Pros | Cons | Best For |
-|----------|------|------|----------|
-| Git-committed baseline file | Versioned, auditable, no external deps | Repo size grows; must update deliberately | Small benchmark suites, stable hardware |
-| GitHub Actions artifacts | No repo bloat; automatic retention | 90-day default retention; cross-workflow access requires tokens | Large benchmark suites, shared runners |
-| External storage (S3/Azure Blob) | Unlimited history; cross-repo sharing | Extra infrastructure; credential management | Multi-repo benchmark comparison |
+| Strategy                         | Pros                                   | Cons                                                            | Best For                                |
+| -------------------------------- | -------------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
+| Git-committed baseline file      | Versioned, auditable, no external deps | Repo size grows; must update deliberately                       | Small benchmark suites, stable hardware |
+| GitHub Actions artifacts         | No repo bloat; automatic retention     | 90-day default retention; cross-workflow access requires tokens | Large benchmark suites, shared runners  |
+| External storage (S3/Azure Blob) | Unlimited history; cross-repo sharing  | Extra infrastructure; credential management                     | Multi-repo benchmark comparison         |
 
-This skill focuses on the **GitHub Actions artifact** strategy as the default. For composable workflow patterns and reusable actions, see [skill:dotnet-gha-patterns].
+This skill focuses on the **GitHub Actions artifact** strategy as the default. For composable workflow patterns and
+reusable actions, see [skill:dotnet-gha-patterns].
 
 ---
 
@@ -141,7 +148,7 @@ on:
 
 permissions:
   contents: read
-  actions: read   # required for artifact download
+  actions: read # required for artifact download
 
 jobs:
   benchmark:
@@ -251,7 +258,8 @@ For converting these inline workflows into reusable `workflow_call` patterns, se
 
 ### Threshold-Based Comparison
 
-Compare current benchmark results against baseline using percentage thresholds. A regression is flagged when the current mean exceeds the baseline mean by more than the configured threshold:
+Compare current benchmark results against baseline using percentage thresholds. A regression is flagged when the current
+mean exceeds the baseline mean by more than the configured threshold:
 
 ```python
 #!/usr/bin/env python3
@@ -339,17 +347,20 @@ if __name__ == "__main__":
 
 ### Choosing Thresholds
 
-| Environment | Suggested Threshold | Rationale |
-|-------------|-------------------|-----------|
-| Dedicated benchmark hardware | 5% | Low noise floor; small regressions are signal |
-| GitHub Actions shared runners | 10-15% | Shared runners introduce 5-10% variance from noisy neighbors |
-| Self-hosted runners | 5-10% | More stable than shared, but still monitor variance |
+| Environment                   | Suggested Threshold | Rationale                                                    |
+| ----------------------------- | ------------------- | ------------------------------------------------------------ |
+| Dedicated benchmark hardware  | 5%                  | Low noise floor; small regressions are signal                |
+| GitHub Actions shared runners | 10-15%              | Shared runners introduce 5-10% variance from noisy neighbors |
+| Self-hosted runners           | 5-10%               | More stable than shared, but still monitor variance          |
 
-**Calibrate thresholds empirically:** Run the same benchmark suite 5-10 times on your CI environment without code changes. The maximum observed variance sets your noise floor. Set the threshold above this noise floor (typically 2x the observed variance).
+**Calibrate thresholds empirically:** Run the same benchmark suite 5-10 times on your CI environment without code
+changes. The maximum observed variance sets your noise floor. Set the threshold above this noise floor (typically 2x the
+observed variance).
 
 ### Allocation Regression Detection
 
-Memory allocation regressions are more reliable signals than timing regressions because allocations are deterministic (not affected by noisy neighbors):
+Memory allocation regressions are more reliable signals than timing regressions because allocations are deterministic
+(not affected by noisy neighbors):
 
 ```python
 # Add to the compare function:
@@ -363,7 +374,8 @@ if alloc_change > 0:
     })
 ```
 
-Use allocation changes as a **hard gate** (zero tolerance for new allocations in zero-alloc paths) and timing changes as a **soft gate** (warning with threshold).
+Use allocation changes as a **hard gate** (zero tolerance for new allocations in zero-alloc paths) and timing changes as
+a **soft gate** (warning with threshold).
 
 ---
 
@@ -374,51 +386,54 @@ Use allocation changes as a **hard gate** (zero tolerance for new allocations in
 Post benchmark comparison results as a PR comment for reviewer visibility:
 
 ```yaml
-      - name: Comment PR with results
-        if: steps.download-baseline.outcome == 'success' && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const body = fs.readFileSync('benchmark-comparison.md', 'utf8');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
-            });
+- name: Comment PR with results
+  if: steps.download-baseline.outcome == 'success' && github.event_name == 'pull_request'
+  uses: actions/github-script@v7
+  with:
+    script: |
+      const fs = require('fs');
+      const body = fs.readFileSync('benchmark-comparison.md', 'utf8');
+      await github.rest.issues.createComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        body: body
+      });
 ```
 
 ### Fail the Build on Regression
 
-Exit with non-zero status from the comparison script to fail the GitHub Actions job. This prevents merging PRs that introduce performance regressions:
+Exit with non-zero status from the comparison script to fail the GitHub Actions job. This prevents merging PRs that
+introduce performance regressions:
 
 ```yaml
-      - name: Check for regressions
-        if: steps.download-baseline.outcome == 'success'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/compare-benchmarks.py \
-            --baseline ./baseline-results \
-            --current "${{ env.RESULTS_DIR }}" \
-            --threshold 10
-          # Script exits non-zero if regressions found -- fails the job
+- name: Check for regressions
+  if: steps.download-baseline.outcome == 'success'
+  shell: bash
+  run: |
+    set -euo pipefail
+    python3 scripts/compare-benchmarks.py \
+      --baseline ./baseline-results \
+      --current "${{ env.RESULTS_DIR }}" \
+      --threshold 10
+    # Script exits non-zero if regressions found -- fails the job
 ```
 
 For required status checks and branch protection integration with benchmark gates, see [skill:dotnet-gha-patterns].
 
 ### Trend Tracking
 
-For long-term trend analysis beyond single-PR comparison, upload results to a persistent store and track metrics over time:
+For long-term trend analysis beyond single-PR comparison, upload results to a persistent store and track metrics over
+time:
 
-| Approach | Tool | Complexity |
-|----------|------|------------|
-| GitHub Actions artifacts | Built-in, 90-day retention | Low -- artifact download/upload only |
+| Approach                           | Tool                                          | Complexity                            |
+| ---------------------------------- | --------------------------------------------- | ------------------------------------- |
+| GitHub Actions artifacts           | Built-in, 90-day retention                    | Low -- artifact download/upload only  |
 | GitHub Pages with benchmark-action | `benchmark-action/github-action-benchmark@v1` | Medium -- auto-generates trend charts |
-| External time-series DB | InfluxDB, Prometheus + Grafana | High -- full observability stack |
+| External time-series DB            | InfluxDB, Prometheus + Grafana                | High -- full observability stack      |
 
-The simplest approach for most projects is the artifact-based baseline comparison shown in this skill. Graduate to trend tracking when you need historical regression analysis across many releases.
+The simplest approach for most projects is the artifact-based baseline comparison shown in this skill. Graduate to trend
+tracking when you need historical regression analysis across many releases.
 
 ---
 
@@ -426,7 +441,8 @@ The simplest approach for most projects is the artifact-based baseline compariso
 
 ### ShortRun for CI Speed
 
-Full benchmark runs take 10-30+ minutes. Use `Job.ShortRun` in CI to reduce iteration counts while retaining regression detection capability:
+Full benchmark runs take 10-30+ minutes. Use `Job.ShortRun` in CI to reduce iteration counts while retaining regression
+detection capability:
 
 ```csharp
 using BenchmarkDotNet.Configs;
@@ -494,7 +510,7 @@ name: Nightly Benchmarks (Full Suite)
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # 3 AM UTC daily
+    - cron: '0 3 * * *' # 3 AM UTC daily
   workflow_dispatch:
 
 jobs:
@@ -526,10 +542,19 @@ For scheduled workflow patterns and matrix builds across TFMs, see [skill:dotnet
 
 ## Agent Gotchas
 
-1. **Use `Job.ShortRun` in CI, not `Job.Default`** -- default benchmark jobs run many iterations for statistical precision, taking 10-30+ minutes per benchmark class. CI pipelines need faster feedback with `ShortRun` (3 warmup, 5 iteration).
-2. **Set threshold above measured noise floor** -- shared CI runners introduce 5-10% timing variance from noisy neighbors. A 5% threshold on shared runners produces false positives. Calibrate by running the same code multiple times and measuring variance.
-3. **Use allocation changes as hard gates** -- allocation counts are deterministic and unaffected by runner noise. A zero-to-nonzero allocation change is always a real regression, unlike timing variations.
-4. **Only update baselines from main branch** -- if PR branches can update the baseline, a regression in one PR becomes the new baseline, masking it from subsequent comparisons.
-5. **Always set `set -euo pipefail` in bash steps** -- without `pipefail`, a regression detection script that exits non-zero in a pipeline (e.g., `script | tee`) does not fail the GitHub Actions step.
-6. **Handle missing baselines gracefully** -- the first CI run has no baseline to compare against. Use `continue-on-error: true` on the baseline download step and skip comparison when no baseline exists.
-7. **Export JSON, not just Markdown** -- Markdown reports are human-readable but not machine-parseable for automated regression detection. Always include `[JsonExporterAttribute.Full]` or `JsonExporter.Full` in the config.
+1. **Use `Job.ShortRun` in CI, not `Job.Default`** -- default benchmark jobs run many iterations for statistical
+   precision, taking 10-30+ minutes per benchmark class. CI pipelines need faster feedback with `ShortRun` (3 warmup, 5
+   iteration).
+2. **Set threshold above measured noise floor** -- shared CI runners introduce 5-10% timing variance from noisy
+   neighbors. A 5% threshold on shared runners produces false positives. Calibrate by running the same code multiple
+   times and measuring variance.
+3. **Use allocation changes as hard gates** -- allocation counts are deterministic and unaffected by runner noise. A
+   zero-to-nonzero allocation change is always a real regression, unlike timing variations.
+4. **Only update baselines from main branch** -- if PR branches can update the baseline, a regression in one PR becomes
+   the new baseline, masking it from subsequent comparisons.
+5. **Always set `set -euo pipefail` in bash steps** -- without `pipefail`, a regression detection script that exits
+   non-zero in a pipeline (e.g., `script | tee`) does not fail the GitHub Actions step.
+6. **Handle missing baselines gracefully** -- the first CI run has no baseline to compare against. Use
+   `continue-on-error: true` on the baseline download step and skip comparison when no baseline exists.
+7. **Export JSON, not just Markdown** -- Markdown reports are human-readable but not machine-parseable for automated
+   regression detection. Always include `[JsonExporterAttribute.Full]` or `JsonExporter.Full` in the config.

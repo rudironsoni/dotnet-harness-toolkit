@@ -2,21 +2,22 @@
 name: dotnet-csharp-modern-patterns
 description: Using records, pattern matching, primary constructors, collection expressions. C# 12-15 by TFM.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-modern-patterns
 
-Modern C# language feature guidance adapted to the project's target framework. Always run [skill:dotnet-version-detection] first to determine TFM and C# version.
+Modern C# language feature guidance adapted to the project's target framework. Always run
+[skill:dotnet-version-detection] first to determine TFM and C# version.
 
 ## Scope
 
@@ -30,24 +31,26 @@ Modern C# language feature guidance adapted to the project's target framework. A
 - Async/await patterns -- see [skill:dotnet-csharp-async-patterns]
 - Source generator usage (GeneratedRegex, LoggerMessage) -- see [skill:dotnet-csharp-source-generators]
 
-Cross-references: [skill:dotnet-csharp-coding-standards] for naming/style conventions, [skill:dotnet-csharp-async-patterns] for async-specific patterns.
+Cross-references: [skill:dotnet-csharp-coding-standards] for naming/style conventions,
+[skill:dotnet-csharp-async-patterns] for async-specific patterns.
 
 ---
 
 ## Quick Reference: TFM to C# Version
 
-| TFM | C# | Key Language Features |
-|-----|----|-----------------------|
-| net8.0 | 12 | Primary constructors, collection expressions, alias any type |
-| net9.0 | 13 | `params` collections, `Lock` type, partial properties |
-| net10.0 | 14 | `field` keyword, extension blocks, `nameof` unbound generics |
-| net11.0 | 15 (preview) | Collection expression `with()` arguments |
+| TFM     | C#           | Key Language Features                                        |
+| ------- | ------------ | ------------------------------------------------------------ |
+| net8.0  | 12           | Primary constructors, collection expressions, alias any type |
+| net9.0  | 13           | `params` collections, `Lock` type, partial properties        |
+| net10.0 | 14           | `field` keyword, extension blocks, `nameof` unbound generics |
+| net11.0 | 15 (preview) | Collection expression `with()` arguments                     |
 
 ---
 
 ## Records
 
-Use records for immutable data transfer objects, value semantics, and domain modeling where equality is based on values rather than identity.
+Use records for immutable data transfer objects, value semantics, and domain modeling where equality is based on values
+rather than identity.
 
 ### Record Classes (reference type)
 
@@ -74,13 +77,13 @@ public record struct MutablePoint(double X, double Y);
 
 ### When to Use Records vs Classes
 
-| Use Case | Prefer |
-|----------|--------|
-| DTOs, API responses | `record` |
-| Domain value objects (Money, Email) | `readonly record struct` |
-| Entities with identity (User, Order) | `class` |
-| High-throughput, small data | `readonly record struct` |
-| Inheritance needed | `record` (class-based) |
+| Use Case                             | Prefer                   |
+| ------------------------------------ | ------------------------ |
+| DTOs, API responses                  | `record`                 |
+| Domain value objects (Money, Email)  | `readonly record struct` |
+| Entities with identity (User, Order) | `class`                  |
+| High-throughput, small data          | `readonly record struct` |
+| Inheritance needed                   | `record` (class-based)   |
 
 ### Non-destructive Mutation
 
@@ -92,7 +95,8 @@ var updated = order with { Total = order.Total + tax };
 
 ## Primary Constructors (C# 12+, net8.0+)
 
-Capture constructor parameters directly in the class/struct body. Parameters become available throughout the type but are **not** fields or properties -- they are captured state.
+Capture constructor parameters directly in the class/struct body. Parameters become available throughout the type but
+are **not** fields or properties -- they are captured state.
 
 ### For Services (DI injection)
 
@@ -109,9 +113,12 @@ public class OrderService(IOrderRepository repo, ILogger<OrderService> logger)
 
 ### Gotchas
 
-- Primary constructor parameters are **mutable** captures, not `readonly` fields. If immutability matters, assign to a `readonly` field in the body.
-- Do not use primary constructors when you need to validate parameters at construction time -- use a traditional constructor with guard clauses instead.
-- For records, positional parameters become public properties automatically. For classes/structs, they remain private captures.
+- Primary constructor parameters are **mutable** captures, not `readonly` fields. If immutability matters, assign to a
+  `readonly` field in the body.
+- Do not use primary constructors when you need to validate parameters at construction time -- use a traditional
+  constructor with guard clauses instead.
+- For records, positional parameters become public properties automatically. For classes/structs, they remain private
+  captures.
 
 ```csharp
 // Explicit readonly field when immutability matters
@@ -243,7 +250,8 @@ public class TemperatureSensor
 }
 ```
 
-Replaces the manual pattern of declaring a private field plus a property with custom logic. Use when you need validation or transformation in a setter without a separate backing field.
+Replaces the manual pattern of declaring a private field plus a property with custom logic. Use when you need validation
+or transformation in a setter without a separate backing field.
 
 > **net10.0+ only.** On earlier TFMs, use a traditional private field.
 
@@ -287,7 +295,8 @@ Useful for tuple aliases and domain type aliases without creating a full type.
 
 ## `params` Collections (C# 13, net9.0+)
 
-`params` now supports additional collection types beyond arrays, including `Span<T>`, `ReadOnlySpan<T>`, and types implementing certain collection interfaces.
+`params` now supports additional collection types beyond arrays, including `Span<T>`, `ReadOnlySpan<T>`, and types
+implementing certain collection interfaces.
 
 ```csharp
 public void Log(params ReadOnlySpan<string> messages)
@@ -370,7 +379,8 @@ Useful in logging, diagnostics, and reflection scenarios.
 
 When targeting multiple TFMs, newer language features may not compile on older targets. Use these approaches:
 
-1. **PolySharp** -- Polyfills compiler-required types (`IsExternalInit`, `RequiredMemberAttribute`, etc.) so language features like `init`, `required`, and `record` work on older TFMs.
+1. **PolySharp** -- Polyfills compiler-required types (`IsExternalInit`, `RequiredMemberAttribute`, etc.) so language
+   features like `init`, `required`, and `record` work on older TFMs.
 2. **Polyfill** -- Polyfills runtime APIs (e.g., `string.Contains(char)` for netstandard2.0).
 3. **Conditional compilation** -- Use `#if` for features that cannot be polyfilled:
 
@@ -392,10 +402,17 @@ See [skill:dotnet-multi-targeting] for comprehensive polyfill guidance.
 
 Feature guidance in this skill is grounded in publicly available language design rationale from:
 
-- **C# Language Design Notes (Mads Torgersen et al.)** -- Design decisions behind each C# version's features. Key rationale relevant to this skill: primary constructors (reducing boilerplate for DI-heavy services), collection expressions (unifying collection initialization syntax), `field` keyword (eliminating backing field ceremony), and extension blocks (grouping extensions by target type). Each feature balances expressiveness with safety -- e.g., primary constructor parameters are intentionally mutable captures (not readonly) to keep the feature simple; use explicit readonly fields when immutability is needed. Source: https://github.com/dotnet/csharplang/tree/main/meetings
-- **C# Language Proposals Repository** -- Detailed specifications and design rationale for accepted and proposed features. Source: https://github.com/dotnet/csharplang/tree/main/proposals
+- **C# Language Design Notes (Mads Torgersen et al.)** -- Design decisions behind each C# version's features. Key
+  rationale relevant to this skill: primary constructors (reducing boilerplate for DI-heavy services), collection
+  expressions (unifying collection initialization syntax), `field` keyword (eliminating backing field ceremony), and
+  extension blocks (grouping extensions by target type). Each feature balances expressiveness with safety -- e.g.,
+  primary constructor parameters are intentionally mutable captures (not readonly) to keep the feature simple; use
+  explicit readonly fields when immutability is needed. Source: https://github.com/dotnet/csharplang/tree/main/meetings
+- **C# Language Proposals Repository** -- Detailed specifications and design rationale for accepted and proposed
+  features. Source: https://github.com/dotnet/csharplang/tree/main/proposals
 
-> **Note:** This skill applies publicly documented design rationale. It does not represent or speak for the named sources.
+> **Note:** This skill applies publicly documented design rationale. It does not represent or speak for the named
+> sources.
 
 ## References
 

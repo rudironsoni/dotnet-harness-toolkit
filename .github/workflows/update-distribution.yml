@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - '.rulesync/**'
-      - 'rulesync.jsonc'
-      - 'scripts/build/**'
-      - 'packages/opencode-plugin/**'
+      - ".rulesync/**"
+      - "rulesync.jsonc"
+      - "scripts/build/**"
+      - "packages/opencode-plugin/**"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (skip PR creation)'
+        description: "Dry run (skip PR creation)"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
 
 # Restrict to read-only by default; jobs opt-in as needed

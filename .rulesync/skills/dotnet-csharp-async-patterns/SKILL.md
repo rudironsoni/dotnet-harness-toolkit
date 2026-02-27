@@ -2,21 +2,22 @@
 name: dotnet-csharp-async-patterns
 description: Writing async/await code. Task patterns, ConfigureAwait, cancellation, and common agent pitfalls.
 license: MIT
-targets: ["*"]
-tags: ["csharp", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['csharp', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for csharp tasks"
+  short-description: '.NET skill guidance for csharp tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-csharp-async-patterns
 
-Async/await best practices for .NET applications. Covers correct task usage, cancellation propagation, and the most common mistakes AI agents make when generating async code.
+Async/await best practices for .NET applications. Covers correct task usage, cancellation propagation, and the most
+common mistakes AI agents make when generating async code.
 
 ## Scope
 
@@ -31,7 +32,9 @@ Async/await best practices for .NET applications. Covers correct task usage, can
 - Channel<T> producer/consumer patterns -- see [skill:dotnet-channels]
 - BackgroundService registration and lifecycle -- see [skill:dotnet-background-services]
 
-Cross-references: [skill:dotnet-csharp-dependency-injection] for `IHostedService`/`BackgroundService` registration, [skill:dotnet-csharp-coding-standards] for `Async` suffix naming, [skill:dotnet-csharp-modern-patterns] for language-level features.
+Cross-references: [skill:dotnet-csharp-dependency-injection] for `IHostedService`/`BackgroundService` registration,
+[skill:dotnet-csharp-coding-standards] for `Async` suffix naming, [skill:dotnet-csharp-modern-patterns] for
+language-level features.
 
 ---
 
@@ -39,7 +42,8 @@ Cross-references: [skill:dotnet-csharp-dependency-injection] for `IHostedService
 
 ### Always Async All the Way
 
-Every method in the async call chain must be `async` and `await`ed. Mixing sync and async causes deadlocks or thread pool starvation.
+Every method in the async call chain must be `async` and `await`ed. Mixing sync and async causes deadlocks or thread
+pool starvation.
 
 ```csharp
 // Correct: async all the way
@@ -58,7 +62,8 @@ public Order GetOrder(int id)
 
 ### Prefer `Task` and `ValueTask`
 
-Return `Task` or `Task<T>` by default. Use `ValueTask<T>` when the method frequently completes synchronously (cache hits, buffered I/O) to avoid `Task` allocation.
+Return `Task` or `Task<T>` by default. Use `ValueTask<T>` when the method frequently completes synchronously (cache
+hits, buffered I/O) to avoid `Task` allocation.
 
 ```csharp
 // ValueTask: frequently synchronous completion
@@ -85,6 +90,7 @@ private async ValueTask<User?> LoadUserAsync(int id, CancellationToken ct)
 ```
 
 **ValueTask rules:**
+
 - Never `await` a `ValueTask` more than once
 - Never use `.Result` or `.GetAwaiter().GetResult()` on an incomplete `ValueTask`
 - If you need to await multiple times or pass it around, convert with `.AsTask()`
@@ -107,7 +113,8 @@ var result = GetDataAsync().GetAwaiter().GetResult();
 var result = await GetDataAsync();
 ```
 
-The only safe place for `.GetAwaiter().GetResult()` is in `Main()` pre-C# 7.1 or in rare infrastructure code where async is impossible (static constructors, `Dispose()`).
+The only safe place for `.GetAwaiter().GetResult()` is in `Main()` pre-C# 7.1 or in rare infrastructure code where async
+is impossible (static constructors, `Dispose()`).
 
 ### 2. `async void`
 
@@ -127,11 +134,13 @@ async Task ProcessOrderAsync(Order order)
 }
 ```
 
-The **only** valid use of `async void` is event handlers (WinForms, WPF, Blazor `@onclick`), where the framework requires a `void` return type.
+The **only** valid use of `async void` is event handlers (WinForms, WPF, Blazor `@onclick`), where the framework
+requires a `void` return type.
 
 ### 3. Missing `ConfigureAwait`
 
-In **library code**, use `ConfigureAwait(false)` to avoid capturing the synchronization context. In **application code** (ASP.NET Core, console apps), it is not needed because there is no synchronization context.
+In **library code**, use `ConfigureAwait(false)` to avoid capturing the synchronization context. In **application code**
+(ASP.NET Core, console apps), it is not needed because there is no synchronization context.
 
 ```csharp
 // Library code
@@ -277,7 +286,8 @@ public async IAsyncEnumerable<Order> GetOrdersStreamAsync(
 
 ## Background Work
 
-For background processing, use `BackgroundService` (or `IHostedService`) instead of `Task.Run` or fire-and-forget patterns. See [skill:dotnet-csharp-dependency-injection] for registration patterns.
+For background processing, use `BackgroundService` (or `IHostedService`) instead of `Task.Run` or fire-and-forget
+patterns. See [skill:dotnet-csharp-dependency-injection] for registration patterns.
 
 ```csharp
 public sealed class OrderProcessorWorker(
@@ -337,9 +347,14 @@ public async Task ProcessAsync_WhenCancelled_ThrowsOperationCanceled()
 
 Async patterns in this skill are grounded in publicly available content from:
 
-- **Stephen Cleary's "Concurrency in C#" and Blog** -- Definitive async best practices for .NET. Key guidance applied in this skill: "async all the way" (never block on async), "there is no thread" (async I/O does not consume a thread while waiting), correct CancellationToken propagation, async disposal via IAsyncDisposable, and BackgroundService patterns for long-running work. Source: https://blog.stephencleary.com/
-- **David Fowler's Async Guidance** -- Practical async anti-patterns and diagnostic scenarios for ASP.NET Core. Source: https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md
-- **Stephen Toub's ConfigureAwait FAQ** -- Canonical reference for ConfigureAwait behavior across application types. Source: https://devblogs.microsoft.com/dotnet/configureawait-faq/
+- **Stephen Cleary's "Concurrency in C#" and Blog** -- Definitive async best practices for .NET. Key guidance applied in
+  this skill: "async all the way" (never block on async), "there is no thread" (async I/O does not consume a thread
+  while waiting), correct CancellationToken propagation, async disposal via IAsyncDisposable, and BackgroundService
+  patterns for long-running work. Source: https://blog.stephencleary.com/
+- **David Fowler's Async Guidance** -- Practical async anti-patterns and diagnostic scenarios for ASP.NET Core. Source:
+  https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md
+- **Stephen Toub's ConfigureAwait FAQ** -- Canonical reference for ConfigureAwait behavior across application types.
+  Source: https://devblogs.microsoft.com/dotnet/configureawait-faq/
 
 > **Note:** This skill applies publicly documented guidance. It does not represent or speak for the named sources.
 

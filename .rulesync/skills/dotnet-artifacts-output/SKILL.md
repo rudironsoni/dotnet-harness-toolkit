@@ -2,23 +2,26 @@
 name: dotnet-artifacts-output
 description: Configures artifacts output layout. UseArtifactsOutput, ArtifactsPath, impact on CI and Docker.
 license: MIT
-targets: ["*"]
-tags: ["foundation", "dotnet", "skill"]
-version: "0.0.1"
-author: "dotnet-agent-harness"
+targets: ['*']
+tags: ['foundation', 'dotnet', 'skill']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:
-  short-description: ".NET skill guidance for foundation tasks"
+  short-description: '.NET skill guidance for foundation tasks'
 opencode:
-  allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 ---
 
 # dotnet-artifacts-output
 
-Reference guide for the .NET SDK artifacts output layout, which centralizes build outputs (`bin/`, `obj/`, `publish/`, `package/`) into a single `artifacts/` directory at the repo root. Available since .NET 8 as an opt-in feature. Recommended for new projects; evaluate tradeoffs before migrating existing projects.
+Reference guide for the .NET SDK artifacts output layout, which centralizes build outputs (`bin/`, `obj/`, `publish/`,
+`package/`) into a single `artifacts/` directory at the repo root. Available since .NET 8 as an opt-in feature.
+Recommended for new projects; evaluate tradeoffs before migrating existing projects.
 
-**Prerequisites:** Run [skill:dotnet-version-detection] first to confirm .NET 8+ SDK -- artifacts output layout is not available in earlier SDK versions.
+**Prerequisites:** Run [skill:dotnet-version-detection] first to confirm .NET 8+ SDK -- artifacts output layout is not
+available in earlier SDK versions.
 
 ## Scope
 
@@ -31,22 +34,29 @@ Reference guide for the .NET SDK artifacts output layout, which centralizes buil
 
 - Source tree organization (.sln, .csproj, src/, tests/) -- see [skill:dotnet-project-structure]
 
-Cross-references: [skill:dotnet-project-structure] for solution layout, [skill:dotnet-containers] for Dockerfile path adjustments, [skill:dotnet-gha-build-test] for CI artifact upload paths, [skill:dotnet-scaffold-project] for generating new projects with artifacts output enabled.
+Cross-references: [skill:dotnet-project-structure] for solution layout, [skill:dotnet-containers] for Dockerfile path
+adjustments, [skill:dotnet-gha-build-test] for CI artifact upload paths, [skill:dotnet-scaffold-project] for generating
+new projects with artifacts output enabled.
 
 ---
 
 ## Why Use Artifacts Output
 
-Traditional .NET build output scatters `bin/` and `obj/` directories throughout the source tree, one per project. The artifacts output layout consolidates all build outputs under a single `artifacts/` directory next to `Directory.Build.props`.
+Traditional .NET build output scatters `bin/` and `obj/` directories throughout the source tree, one per project. The
+artifacts output layout consolidates all build outputs under a single `artifacts/` directory next to
+`Directory.Build.props`.
 
 Benefits:
+
 - **Simpler `.gitignore`** -- one `artifacts/` entry replaces per-project `bin/` and `obj/` entries
 - **Easier clean builds** -- delete one directory instead of hunting for scattered `bin/`/`obj/` folders
 - **Predictable output paths** -- tooling can anticipate where to find build outputs without traversing the source tree
 - **Cleaner source tree** -- no build artifacts mixed into project directories
 
 Tradeoffs:
-- **Breaking path assumptions** -- existing CI pipelines, Dockerfiles, and tooling that reference `bin/Debug/net10.0/` paths must be updated
+
+- **Breaking path assumptions** -- existing CI pipelines, Dockerfiles, and tooling that reference `bin/Debug/net10.0/`
+  paths must be updated
 - **IDE/tool compatibility** -- some older tools may not resolve the new output paths correctly
 - **Migration effort** -- existing projects require updating all hardcoded output path references
 
@@ -80,13 +90,15 @@ This creates:
 </Project>
 ```
 
-Setting `ArtifactsPath` directly is equivalent to `UseArtifactsOutput=true` and additionally lets you customize the root directory location.
+Setting `ArtifactsPath` directly is equivalent to `UseArtifactsOutput=true` and additionally lets you customize the root
+directory location.
 
 ---
 
 ## Output Path Structure
 
-All build outputs are organized under `artifacts/` with three levels: output type, project name, and pivot (configuration/TFM/RID).
+All build outputs are organized under `artifacts/` with three levels: output type, project name, and pivot
+(configuration/TFM/RID).
 
 ```
 artifacts/
@@ -110,23 +122,24 @@ artifacts/
 
 ### Output Type Directories
 
-| Directory | Contents | Traditional equivalent |
-|-----------|----------|----------------------|
-| `artifacts/bin/` | Compiled assemblies and dependencies | `<project>/bin/` |
-| `artifacts/obj/` | Intermediate build files, generated code | `<project>/obj/` |
-| `artifacts/publish/` | Published application output | `<project>/bin/<config>/<tfm>/publish/` |
-| `artifacts/package/` | NuGet packages (`.nupkg`, `.snupkg`) | `<project>/bin/<config>/` |
+| Directory            | Contents                                 | Traditional equivalent                  |
+| -------------------- | ---------------------------------------- | --------------------------------------- |
+| `artifacts/bin/`     | Compiled assemblies and dependencies     | `<project>/bin/`                        |
+| `artifacts/obj/`     | Intermediate build files, generated code | `<project>/obj/`                        |
+| `artifacts/publish/` | Published application output             | `<project>/bin/<config>/<tfm>/publish/` |
+| `artifacts/package/` | NuGet packages (`.nupkg`, `.snupkg`)     | `<project>/bin/<config>/`               |
 
 ### Pivot Naming
 
-The pivot subfolder combines configuration, TFM, and RID joined by underscores. Components that are not present are omitted:
+The pivot subfolder combines configuration, TFM, and RID joined by underscores. Components that are not present are
+omitted:
 
-| Scenario | Pivot | Full path example |
-|----------|-------|-------------------|
-| Single-targeted, debug | `debug` | `artifacts/bin/MyApp/debug/` |
-| Multi-targeted, debug | `debug_net10.0` | `artifacts/bin/MyApp/debug_net10.0/` |
-| Release, RID-specific | `release_linux-x64` | `artifacts/bin/MyApp/release_linux-x64/` |
-| Package output | `release` | `artifacts/package/release/` |
+| Scenario               | Pivot               | Full path example                        |
+| ---------------------- | ------------------- | ---------------------------------------- |
+| Single-targeted, debug | `debug`             | `artifacts/bin/MyApp/debug/`             |
+| Multi-targeted, debug  | `debug_net10.0`     | `artifacts/bin/MyApp/debug_net10.0/`     |
+| Release, RID-specific  | `release_linux-x64` | `artifacts/bin/MyApp/release_linux-x64/` |
+| Package output         | `release`           | `artifacts/package/release/`             |
 
 Note: `artifacts/package/` omits the project name subfolder. The pivot includes only the configuration.
 
@@ -181,7 +194,8 @@ If using a custom `ArtifactsPath`, update the `.gitignore` entry to match.
 
 ## Impact on Dockerfiles
 
-Multi-stage Dockerfiles that copy build output must reference the new path structure. See [skill:dotnet-containers] for full Dockerfile patterns.
+Multi-stage Dockerfiles that copy build output must reference the new path structure. See [skill:dotnet-containers] for
+full Dockerfile patterns.
 
 **Traditional paths:**
 
@@ -196,6 +210,7 @@ COPY --from=build /app/artifacts/publish/MyApp/release/ .
 ```
 
 Key differences in Dockerfile paths:
+
 - Output is under `artifacts/publish/` not `bin/Release/<tfm>/publish/`
 - Project name becomes a subdirectory under the output type
 - Configuration pivot is lowercase (`release` not `Release`)
@@ -205,7 +220,8 @@ Key differences in Dockerfile paths:
 
 ## Impact on CI Pipelines
 
-CI workflows that upload build artifacts or reference output paths must be updated. See [skill:dotnet-gha-build-test] for full CI workflow patterns.
+CI workflows that upload build artifacts or reference output paths must be updated. See [skill:dotnet-gha-build-test]
+for full CI workflow patterns.
 
 **GitHub Actions -- upload build output:**
 
@@ -264,11 +280,17 @@ When enabling artifacts output on an existing project:
 
 ## Agent Gotchas
 
-1. **Do not hardcode TFM in artifacts output paths for single-targeted projects.** The pivot for single-targeted projects is just the configuration (e.g., `debug`), not `debug_net10.0`. Multi-targeted projects include the TFM in the pivot.
-2. **Do not use capitalized configuration names in artifacts paths.** The artifacts layout uses lowercase pivots (`debug`, `release`), not the traditional capitalized names (`Debug`, `Release`).
-3. **Do not assume `artifacts/package/` has a project name subfolder.** Unlike `bin/`, `obj/`, and `publish/`, the `package/` output type omits the project name level. Packages appear directly under `artifacts/package/<config>/`.
-4. **Do not enable artifacts output without updating Dockerfiles and CI pipelines first.** Path changes will break `COPY --from=build` directives and artifact upload steps that reference traditional `bin/` paths.
-5. **Do not present artifacts output as the default .NET layout.** It is opt-in since .NET 8 and remains opt-in. Recommend it for new projects; for existing projects, evaluate the migration effort against the benefits.
+1. **Do not hardcode TFM in artifacts output paths for single-targeted projects.** The pivot for single-targeted
+   projects is just the configuration (e.g., `debug`), not `debug_net10.0`. Multi-targeted projects include the TFM in
+   the pivot.
+2. **Do not use capitalized configuration names in artifacts paths.** The artifacts layout uses lowercase pivots
+   (`debug`, `release`), not the traditional capitalized names (`Debug`, `Release`).
+3. **Do not assume `artifacts/package/` has a project name subfolder.** Unlike `bin/`, `obj/`, and `publish/`, the
+   `package/` output type omits the project name level. Packages appear directly under `artifacts/package/<config>/`.
+4. **Do not enable artifacts output without updating Dockerfiles and CI pipelines first.** Path changes will break
+   `COPY --from=build` directives and artifact upload steps that reference traditional `bin/` paths.
+5. **Do not present artifacts output as the default .NET layout.** It is opt-in since .NET 8 and remains opt-in.
+   Recommend it for new projects; for existing projects, evaluate the migration effort against the benefits.
 
 ---
 
