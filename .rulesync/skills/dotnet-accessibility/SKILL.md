@@ -5,7 +5,7 @@ license: MIT
 targets: ['*']
 tags: ['ui', 'dotnet', 'skill']
 version: '0.0.1'
-author: 'dotnet-agent-harness'
+author: 'dotnet-harness'
 claudecode:
   allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit']
 codexcli:

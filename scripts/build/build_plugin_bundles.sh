@@ -63,12 +63,12 @@ echo ""
 echo "=== Building platform bundles ==="
 
 for config in "${PLATFORM_CONFIGS[@]}"; do
-    IFS='|' read -r platform dir_name root_files <<< "$config"
+    IFS='|' read -r platform dir_name root_files <<< "${config}"
     src_dir="${PROJECT_ROOT}/${dir_name}"
-    bundle_name="dotnet-agent-harness-${platform}.zip"
+    bundle_name="dotnet-harness-${platform}.zip"
     bundle_path="${DIST_DIR}/${bundle_name}"
 
-    if [[ ! -d "$src_dir" ]]; then
+    if [[ ! -d "${src_dir}" ]]; then
         echo "Skipping ${platform}: directory ${src_dir} does not exist"
         continue
     fi
@@ -76,7 +76,7 @@ for config in "${PLATFORM_CONFIGS[@]}"; do
     echo "Building ${bundle_name}..."
     cd "${PROJECT_ROOT}"
 
-    if [[ "$platform" == "copilot" ]]; then
+    if [[ "${platform}" == "copilot" ]]; then
         # Copilot: selectively zip only copilot content from .github/
         # Excludes CI infrastructure (.github/actions/, .github/workflows/)
         local_args=()
@@ -108,8 +108,8 @@ for config in "${PLATFORM_CONFIGS[@]}"; do
     fi
 
     # Add root-level files if specified
-    if [[ -n "$root_files" ]]; then
-        IFS=',' read -ra files <<< "$root_files"
+    if [[ -n "${root_files}" ]]; then
+        IFS=',' read -ra files <<< "${root_files}"
         for rf in "${files[@]}"; do
             if [[ -f "${PROJECT_ROOT}/${rf}" ]]; then
                 zip "${bundle_path}" "${rf}" || echo "Warning: failed to add ${rf} to ${bundle_name}" >&2
@@ -117,8 +117,8 @@ for config in "${PLATFORM_CONFIGS[@]}"; do
         done
     fi
 
-    if [[ -f "$bundle_path" ]]; then
-        size=$(du -h "$bundle_path" | cut -f1)
+    if [[ -f "${bundle_path}" ]]; then
+        size=$(du -h "${bundle_path}" | cut -f1)
         echo "  Created ${bundle_name} (${size})"
         BUNDLES_CREATED=$((BUNDLES_CREATED + 1))
     fi
@@ -128,7 +128,7 @@ done
 echo ""
 echo "=== Build complete ==="
 
-if [[ "$BUNDLES_CREATED" -eq 0 ]]; then
+if [[ "${BUNDLES_CREATED}" -eq 0 ]]; then
     echo "ERROR: No bundles were created. Check for errors above." >&2
     exit 1
 fi

@@ -7,7 +7,7 @@ on:
       - ".rulesync/**"
       - "rulesync.jsonc"
       - "scripts/build/**"
-      - "packages/opencode-plugin/**"
+      - "packages/dotnet-harness-opencode/**"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -70,7 +70,7 @@ jobs:
           # Mask the token so it never appears in logs
           echo "::add-mask::${DIST_TOKEN}"
           git clone --recurse-submodules \
-            "https://x-access-token:${DIST_TOKEN}@github.com/rudironsoni/dotnet-agent-harness-plugin.git" \
+            "https://x-access-token:${DIST_TOKEN}@github.com/rudironsoni/dotnet-harness-plugin.git" \
             /tmp/dist-repo
 
       - name: Update distribution content
@@ -82,7 +82,7 @@ jobs:
 
           # ===================================================================
           # PROTECTED (never removed):
-          #   .git/  .gitmodules  dotnet-agent-harness/  (submodule)
+          #   .git/  .gitmodules  dotnet-harness/  (submodule)
           #   README.md  LICENSE  .gitignore
           #   .github/workflows/  .github/actions/  (dist-repo CI, if any)
           #
@@ -146,17 +146,17 @@ jobs:
           done
 
           # 5. Copy the OpenCode plugin package
-          mkdir -p "${DIST}/packages/opencode-plugin"
-          cp -r packages/opencode-plugin/package.json "${DIST}/packages/opencode-plugin/"
-          cp -r packages/opencode-plugin/index.js "${DIST}/packages/opencode-plugin/"
-          cp -r packages/opencode-plugin/index.d.ts "${DIST}/packages/opencode-plugin/"
-          cp -r packages/opencode-plugin/README.md "${DIST}/packages/opencode-plugin/"
-          if [[ -d packages/opencode-plugin/bundled ]]; then
-            cp -r packages/opencode-plugin/bundled "${DIST}/packages/opencode-plugin/"
+          mkdir -p "${DIST}/packages/dotnet-harness-opencode"
+          cp -r packages/dotnet-harness-opencode/package.json "${DIST}/packages/dotnet-harness-opencode/"
+          cp -r packages/dotnet-harness-opencode/index.js "${DIST}/packages/dotnet-harness-opencode/"
+          cp -r packages/dotnet-harness-opencode/index.d.ts "${DIST}/packages/dotnet-harness-opencode/"
+          cp -r packages/dotnet-harness-opencode/README.md "${DIST}/packages/dotnet-harness-opencode/"
+          if [[ -d packages/dotnet-harness-opencode/bundled ]]; then
+            cp -r packages/dotnet-harness-opencode/bundled "${DIST}/packages/dotnet-harness-opencode/"
           fi
 
           # 6. Update submodule reference to latest source commit
-          cd "${DIST}/dotnet-agent-harness"
+          cd "${DIST}/dotnet-harness"
           git fetch origin main
           git checkout "$SOURCE_SHA_FULL"
           cd "${DIST}"
@@ -200,34 +200,34 @@ jobs:
 
           git checkout -b "$BRANCH"
           git commit -m "chore: update plugins from source (${SOURCE_SHA})" \
-            -m "Source commit: rudironsoni/dotnet-agent-harness@${SOURCE_SHA_FULL}" \
+            -m "Source commit: rudironsoni/dotnet-harness@${SOURCE_SHA_FULL}" \
             -m "Source message: ${SOURCE_MSG}"
 
           git push origin "$BRANCH"
 
           # Close any existing PR for this branch before creating a new one
           EXISTING_PR="$(gh pr list \
-            --repo "rudironsoni/dotnet-agent-harness-plugin" \
+            --repo "rudironsoni/dotnet-harness-plugin" \
             --head "${BRANCH}" \
             --state open \
             --json number \
             --jq '.[0].number // empty' 2>/dev/null || true)"
           if [[ -n "$EXISTING_PR" ]]; then
             echo "Closing existing PR #${EXISTING_PR}..."
-            gh pr close "$EXISTING_PR" --repo "rudironsoni/dotnet-agent-harness-plugin" || true
+            gh pr close "$EXISTING_PR" --repo "rudironsoni/dotnet-harness-plugin" || true
           fi
 
           gh pr create \
-            --repo "rudironsoni/dotnet-agent-harness-plugin" \
+            --repo "rudironsoni/dotnet-harness-plugin" \
             --base main \
             --head "$BRANCH" \
             --title "chore: update plugins from source (${SOURCE_SHA})" \
             --body "$(cat <<EOF
           ## Plugin Update
 
-          Automated update from source repo [\`dotnet-agent-harness\`](https://github.com/rudironsoni/dotnet-agent-harness).
+          Automated update from source repo [\`dotnet-harness\`](https://github.com/rudironsoni/dotnet-harness).
 
-          **Source commit:** [\`${SOURCE_SHA}\`](https://github.com/rudironsoni/dotnet-agent-harness/commit/${SOURCE_SHA_FULL})
+          **Source commit:** [\`${SOURCE_SHA}\`](https://github.com/rudironsoni/dotnet-harness/commit/${SOURCE_SHA_FULL})
           **Source message:** ${SOURCE_MSG}
 
           ### What changed
@@ -236,7 +236,7 @@ jobs:
           - Updated submodule reference to latest source commit
 
           ### Preserved
-          - Submodule (\`dotnet-agent-harness/\`)
+          - Submodule (\`dotnet-harness/\`)
           - Repository metadata (\`README.md\`, \`LICENSE\`, \`.gitignore\`, \`.gitmodules\`)
           EOF
           )"

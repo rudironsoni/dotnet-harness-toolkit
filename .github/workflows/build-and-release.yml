@@ -117,13 +117,13 @@ jobs:
       - name: Build OpenCode plugin
         run: |
           set -euo pipefail
-          cd packages/opencode-plugin
+          cd packages/dotnet-harness-opencode
           npm run build
 
       - name: Publish to GitHub Packages
         run: |
           set -euo pipefail
-          cd packages/opencode-plugin
+          cd packages/dotnet-harness-opencode
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

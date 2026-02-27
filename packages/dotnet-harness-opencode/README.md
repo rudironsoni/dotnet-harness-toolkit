@@ -1,12 +1,12 @@
-# @rudironsoni/opencode-plugin
+# @rudironsoni/dotnet-harness-opencode
 
-OpenCode plugin for dotnet-agent-harness - bundles agents, skills, commands, and rules for .NET development.
+OpenCode plugin for dotnet-harness - bundles agents, skills, commands, and rules for .NET development.
 
 ## Installation
 
 ```bash
 npm config set @rudironsoni:registry https://npm.pkg.github.com
-npm install @rudironsoni/opencode-plugin
+npm install @rudironsoni/dotnet-harness-opencode
 ```
 
 For private package authentication, configure a GitHub token with `read:packages` in your `.npmrc`.
@@ -17,7 +17,7 @@ Add to your `opencode.json`:
 
 ```json
 {
-  "plugin": ["@rudironsoni/opencode-plugin"]
+  "plugin": ["@rudironsoni/dotnet-harness-opencode"]
 }
 ```
 

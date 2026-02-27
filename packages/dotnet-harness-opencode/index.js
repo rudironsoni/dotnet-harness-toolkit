@@ -3,7 +3,7 @@ const fsp = require('fs/promises');
 const path = require('path');
 
 /**
- * dotnet-agent-harness OpenCode Plugin
+ * dotnet-harness OpenCode Plugin
  *
  * This plugin bundles agents, skills, commands, and rules for .NET development
  * and installs them into the project's .opencode/ directory.
@@ -16,7 +16,7 @@ const path = require('path');
  *   bundled/plugins/    -> .opencode/plugins/
  */
 
-const PLUGIN_NAME = 'dotnet-agent-harness';
+const PLUGIN_NAME = 'dotnet-harness';
 
 // Read version from package.json at load time (sync is acceptable here, runs once)
 const PLUGIN_VERSION = (() => {
@@ -116,7 +116,7 @@ async function installBundledContent(projectDir) {
  * @param {string} [context.worktree] - Git worktree
  * @returns {Object} Plugin hooks
  */
-module.exports = function dotnetAgentHarnessPlugin(context) {
+module.exports = function dotnetHarnessPlugin(context) {
   if (!context || typeof context !== 'object') {
     console.error(`[${PLUGIN_NAME}] Invalid plugin context provided`);
     return {};
@@ -151,7 +151,7 @@ module.exports = function dotnetAgentHarnessPlugin(context) {
     'plugin.info': () => ({
       name: PLUGIN_NAME,
       version: PLUGIN_VERSION,
-      description: '.NET Agent Harness - 14 specialist agents, 131 skills, commands, and rules',
+      description: '.NET Harness - 14 specialist agents, 131 skills, commands, and rules',
       agents: 14,
       skills: 131,
     }),

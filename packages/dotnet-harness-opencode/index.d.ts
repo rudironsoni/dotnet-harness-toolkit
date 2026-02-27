@@ -1,5 +1,5 @@
 /**
- * dotnet-agent-harness OpenCode Plugin
+ * dotnet-harness OpenCode Plugin
  *
  * Type definitions for the OpenCode plugin
  */
@@ -29,7 +29,7 @@ export interface PluginHooks {
   'plugin.info'?: () => PluginInfo;
 }
 
-export type DotnetAgentHarnessPlugin = (context: PluginContext) => PluginHooks;
+export type DotnetHarnessPlugin = (context: PluginContext) => PluginHooks;
 
-declare const plugin: DotnetAgentHarnessPlugin;
+declare const plugin: DotnetHarnessPlugin;
 export = plugin;

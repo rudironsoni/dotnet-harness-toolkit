@@ -1,4 +1,4 @@
-# markdownlint-cli2 configuration for dotnet-agent-harness
+# markdownlint-cli2 configuration for dotnet-harness
 # RuleSync-aware markdown linting
 
 config:
@@ -56,4 +56,4 @@ ignores:
   - ".agents/**"
   - ".agent/**"
   - "dist/**"
-  - "packages/opencode-plugin/bundled/**"
+  - "packages/dotnet-harness-opencode/bundled/**"
