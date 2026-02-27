@@ -209,7 +209,35 @@ jobs:
         run: |
           set -euo pipefail
 
-          previous_tag="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -vx "$VERSION" | head -n1 || true)"
+          previous_tag="$(python3 - <<'PY'
+          import re
+          import os
+          import subprocess
+
+          version = os.environ["VERSION"]
+          m = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", version)
+          if not m:
+              raise SystemExit(1)
+          current = tuple(map(int, m.groups()))
+
+          tags = subprocess.check_output([
+              "git", "tag", "--list", "v[0-9]*.[0-9]*.[0-9]*"
+          ], text=True).splitlines()
+
+          parsed = []
+          for t in tags:
+              mm = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", t)
+              if not mm:
+                  continue
+              tup = tuple(map(int, mm.groups()))
+              if tup < current:
+                  parsed.append((tup, t))
+
+          if parsed:
+              parsed.sort()
+              print(parsed[-1][1])
+          PY
+          )"
           if [[ -n "$previous_tag" ]]; then
             range="${previous_tag}..HEAD"
             compare_text="Compared against ${previous_tag}."
