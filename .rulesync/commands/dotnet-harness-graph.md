@@ -65,7 +65,7 @@ Graphviz-compatible format for custom visualization.
 
 **Dependency Graph** (default):
 
-- Shows `[skill:x]` references
+- Shows `skill references` references
 - Displays dependency chains
 - Highlights circular dependencies
 
@@ -83,7 +83,7 @@ Graphviz-compatible format for custom visualization.
 
 ## Analysis Features
 
-- **Circular Dependency Detection**: Warns about circular `[skill:x]` references
+- **Circular Dependency Detection**: Warns about circular `skill references` references
 - **Orphan Skills**: Lists skills with no references
 - **Hub Skills**: Identifies heavily-referenced skills
 - **Category Boundaries**: Shows cross-category dependencies

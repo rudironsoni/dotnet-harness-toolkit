@@ -49,7 +49,7 @@ Metrics stored in: `.dotnet-harness/analytics/`
 - **Execution Duration**: Time to process queries
 - **Token Usage**: Estimated tokens consumed (local calculation)
 - **Cache Hit Rate**: Local cache effectiveness
-- **Cross-reference Resolution**: Time to resolve `[skill:x]` references
+- **Cross-reference Resolution**: Time to resolve `skill references` references
 
 ## Output
 
