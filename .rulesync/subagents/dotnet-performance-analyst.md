@@ -14,14 +14,16 @@ claudecode:
     - Read
     - Grep
     - Glob
+    - Write
+    - Edit
 opencode:
   mode: 'subagent'
   tools:
-    bash: false
-    edit: false
-    write: false
+    bash: true
+    edit: true
+    write: true
 copilot:
-  tools: ['read', 'search']
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
   sandbox_mode: 'read-only'
 ---

@@ -15,15 +15,17 @@ claudecode:
     - Grep
     - Glob
     - Bash
+    - Write
+    - Edit
 opencode:
   mode: primary
   hidden: false
   tools:
     bash: true
-    edit: false
-    write: false
+    edit: true
+    write: true
 copilot:
-  tools: ['read', 'search', 'execute']
+  tools: ['read', 'search', 'execute', 'edit']
 ---
 
 # dotnet-architect
