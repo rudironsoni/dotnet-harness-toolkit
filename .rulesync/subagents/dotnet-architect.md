@@ -5,7 +5,7 @@ description:
   and design patterns. Triggers on: what framework to use, how to structure a project, recommend an approach,
   architecture review.'
 targets: ['*']
-tags: ['dotnet', 'subagent']
+tags: ['dotnet', 'agent']
 version: '0.0.1'
 author: 'dotnet-harness'
 claudecode:
@@ -15,15 +15,13 @@ claudecode:
     - Grep
     - Glob
     - Bash
-    - Write
-    - Edit
 opencode:
-  mode: primary
+  mode: 'primary'
   hidden: false
   tools:
     bash: true
-    edit: true
-    write: true
+    edit: false
+    write: false
 copilot:
   tools: ['read', 'search', 'execute', 'edit']
 ---

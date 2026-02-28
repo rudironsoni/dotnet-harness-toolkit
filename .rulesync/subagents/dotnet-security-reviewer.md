@@ -13,19 +13,16 @@ claudecode:
     - Read
     - Grep
     - Glob
-    - Bash
-    - Write
-    - Edit
 opencode:
   mode: 'subagent'
   tools:
-    bash: true
-    edit: true
-    write: true
+    bash: false
+    edit: false
+    write: false
 copilot:
-  tools: ['read', 'search', 'execute', 'edit']
+  tools: ['read', 'search']
 codexcli:
-  sandbox_mode: 'inherit'
+  sandbox_mode: 'read-only'
 ---
 
 # dotnet-security-reviewer
