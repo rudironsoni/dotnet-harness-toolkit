@@ -251,6 +251,9 @@ Before any .NET guidance, determine the project's target framework:
 
 ### 21. Intelligence & Recommendations `implemented`
 
+- [skill:dotnet-harness-recommender] -- AI-powered skill recommendations
+- [skill:dotnet-harness-search] -- Semantic skill search with filtering
+
 - [skill:dotnet-harness-recommender] -- AI-powered skill recommendations based on project analysis
 - [skill:dotnet-harness-search] -- Semantic skill search with filtering
 
@@ -258,7 +261,7 @@ Before any .NET guidance, determine the project's target framework:
 
 - [skill:dotnet-harness-manifest] -- Skill manifest management: dependencies, conflicts, version resolution
 
-### 22. Debugging `implemented`
+### 23. Testing & Debugging `implemented`
 
 - [skill:dotnet-windbg-debugging] -- WinDbg MCP: crash dumps, hangs, high CPU, memory triage (any Windows app)
 
