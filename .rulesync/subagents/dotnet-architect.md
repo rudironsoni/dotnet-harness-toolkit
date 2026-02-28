@@ -17,6 +17,7 @@ claudecode:
     - Bash
 opencode:
   mode: 'primary'
+  hidden: false
   tools:
     bash: true
     edit: false
