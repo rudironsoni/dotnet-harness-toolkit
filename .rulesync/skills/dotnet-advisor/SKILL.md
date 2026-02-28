@@ -241,7 +241,8 @@ Before any .NET guidance, determine the project's target framework:
 
 ### 20. AI & LLM Integration `implemented`
 
-- [skill:dotnet-semantic-kernel] -- Semantic Kernel: plugins, prompt templates, memory, agents
+- [skill:dotnet-microsoft-agent-framework] -- Microsoft Agent Framework: agents, workflows, tools, MCP servers,
+  multi-agent orchestration
 
 ### 21. Debugging `implemented`
 
@@ -408,7 +409,7 @@ Use this decision tree to load the right skills for the current task.
 
 ### AI & LLM Integration
 
-- Semantic Kernel, LLM orchestration, plugins -> [skill:dotnet-semantic-kernel]
+- Microsoft Agent Framework, AI agents, workflows, tools -> [skill:dotnet-microsoft-agent-framework]
 
 ### Debugging
 
@@ -423,4 +424,6 @@ For complex analysis that benefits from domain expertise, delegate to specialist
 - Test architecture, test type selection, test data management, microservice testing ->
   [skill:dotnet-testing-specialist]
 - Cloud deployment, .NET Aspire, AKS, CI/CD pipelines, distributed tracing -> [skill:dotnet-cloud-specialist]
+- Microsoft Agent Framework: agent design, workflow orchestration, multi-agent patterns, tool integration ->
+  [skill:dotnet-microsoft-agent-framework-specialist]
 - General code review (correctness, performance, security, architecture) -> [skill:dotnet-code-review-agent]
