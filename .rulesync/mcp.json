@@ -40,14 +40,14 @@
       "type": "http",
       "url": "https://mcp.deepwiki.com/mcp"
     },
-    "github-mcp": {
-      "description": "GitHub MCP for repository operations, PRs, and issues",
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      }
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer {env:GITHUB_TOKEN}"
+      },
+      "enabled": true
     }
   }
 }

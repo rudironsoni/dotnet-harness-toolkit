@@ -65,7 +65,7 @@ Connect to remote APIs via HTTP:
 
 - **microsoftdocs-mcp** -- Microsoft Learn documentation
 - **deepwiki** -- DeepWiki MCP server
-- **github-mcp** -- GitHub API operations
+- **github** -- GitHub API operations
 
 ## Health Check Methods
 

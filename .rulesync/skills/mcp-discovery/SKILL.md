@@ -151,7 +151,7 @@ exit 0
 | mcp-windbg        | stdio | Windows      | Active | Debugging         |
 | microsoftdocs-mcp | http  | Full         | Active | MS Learn          |
 | deepwiki          | http  | Full         | Active | Wiki search       |
-| github-mcp        | http  | Full         | New    | GitHub API        |
+| github            | http  | Full         | New    | GitHub API        |
 
 ## Auto-Configuration
 
@@ -283,7 +283,7 @@ Inform user of discovered MCPs:
 Discovered MCP servers:
 ✓ serena (local)
 ✓ microsoftdocs-mcp (cloud)
-✓ github-mcp (new - available)
+✓ github (new - available)
 
 Run [mcp-discovery:update-config] to add new MCPs.
 ```text
