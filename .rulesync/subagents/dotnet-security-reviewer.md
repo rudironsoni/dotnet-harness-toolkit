@@ -13,8 +13,6 @@ claudecode:
     - Read
     - Grep
     - Glob
-    - Write
-    - Edit
 opencode:
   mode: 'subagent'
   tools:

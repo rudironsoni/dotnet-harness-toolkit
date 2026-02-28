@@ -15,10 +15,6 @@ claudecode:
     - Grep
     - Glob
     - Bash
-    - Write
-    - Edit
-    - Edit
-    - Write
 opencode:
   mode: 'subagent'
   tools:

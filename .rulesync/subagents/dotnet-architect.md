@@ -15,8 +15,6 @@ claudecode:
     - Grep
     - Glob
     - Bash
-    - Write
-    - Edit
 opencode:
   mode: primary
   hidden: false
