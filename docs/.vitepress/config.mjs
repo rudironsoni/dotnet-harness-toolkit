@@ -1,18 +1,19 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   title: 'dotnet-harness',
-  description: 'Comprehensive .NET development guidance for modern C#, ASP.NET Core, MAUI, Blazor, and cloud-native apps',
+  description:
+    'Comprehensive .NET development guidance for modern C#, ASP.NET Core, MAUI, Blazor, and cloud-native apps',
   base: '/dotnet-harness/',
-  
+
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/' },
       { text: 'Skills', link: '/skills/' },
-      { text: 'API', link: '/api/' }
+      { text: 'API', link: '/api/' },
     ],
-    
+
     sidebar: {
       '/guide/': [
         {
@@ -20,8 +21,8 @@ export default defineConfig({
           items: [
             { text: 'Installation', link: '/guide/installation' },
             { text: 'Quick Start', link: '/guide/quickstart' },
-            { text: 'Configuration', link: '/guide/configuration' }
-          ]
+            { text: 'Configuration', link: '/guide/configuration' },
+          ],
         },
         {
           text: 'Architecture',
@@ -29,19 +30,19 @@ export default defineConfig({
             { text: 'Overview', link: '/guide/architecture' },
             { text: 'Skills', link: '/guide/skills' },
             { text: 'Subagents', link: '/guide/subagents' },
-            { text: 'Commands', link: '/guide/commands' }
-          ]
+            { text: 'Commands', link: '/guide/commands' },
+          ],
         },
         {
           text: 'Advanced',
           items: [
             { text: 'MCP Integration', link: '/guide/mcp' },
             { text: 'Hooks', link: '/guide/hooks' },
-            { text: 'Templates', link: '/guide/templates' }
-          ]
-        }
+            { text: 'Templates', link: '/guide/templates' },
+          ],
+        },
       ],
-      
+
       '/skills/': [
         {
           text: 'Categories',
@@ -50,47 +51,45 @@ export default defineConfig({
             { text: 'UI Frameworks', link: '/skills/ui' },
             { text: 'Data Access', link: '/skills/data' },
             { text: 'Testing', link: '/skills/testing' },
-            { text: 'DevOps', link: '/skills/devops' }
-          ]
-        }
-      ]
+            { text: 'DevOps', link: '/skills/devops' },
+          ],
+        },
+      ],
     },
-    
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/rudironsoni/dotnet-harness' }
-    ],
-    
+
+    socialLinks: [{ icon: 'github', link: 'https://github.com/rudironsoni/dotnet-harness' }],
+
     editLink: {
-      pattern: 'https://github.com/rudironsoni/dotnet-harness/edit/main/docs/:path'
+      pattern: 'https://github.com/rudironsoni/dotnet-harness/edit/main/docs/:path',
     },
-    
+
     search: {
-      provider: 'local'
+      provider: 'local',
     },
-    
+
     outline: {
-      level: 'deep'
-    }
+      level: 'deep',
+    },
   },
-  
+
   markdown: {
     theme: {
       light: 'github-light',
-      dark: 'github-dark'
+      dark: 'github-dark',
     },
     lineNumbers: true,
-    config: (md) => {
+    config: md => {
       // Mermaid support
-      md.use(require('markdown-it-mermaid'))
-    }
+      md.use(require('markdown-it-mermaid'));
+    },
   },
-  
+
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#512BD4' }]
+    ['meta', { name: 'theme-color', content: '#512BD4' }],
   ],
-  
+
   sitemap: {
-    hostname: 'https://rudironsoni.github.io'
-  }
-})
+    hostname: 'https://rudironsoni.github.io',
+  },
+});
