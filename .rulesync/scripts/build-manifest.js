@@ -36,14 +36,12 @@ function parseFrontmatter(content) {
 function extractSkillReferences(content) {
   const references = new Set();
   const regex = /\[skill:([a-z0-9-]+)\]/g;
-  let match;
 
-  do {
-    match = regex.exec(content);
-    if (match) {
-      references.add(match[1]);
-    }
-  } while (match !== null);
+  while (true) {
+    const match = regex.exec(content);
+    if (match === null) break;
+    references.add(match[1]);
+  }
 
   return Array.from(references);
 }
