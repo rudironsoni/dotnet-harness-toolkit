@@ -162,7 +162,7 @@ exit 0
       "latency_ms": 45
     },
     "context7": {
-      "type": "remote",
+      "type": "http",
       "status": "healthy",
       "url": "https://mcp.context7.com/mcp"
     }

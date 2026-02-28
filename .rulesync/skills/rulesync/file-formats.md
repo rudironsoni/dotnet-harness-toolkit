@@ -214,12 +214,12 @@ Example:
       "env": {}
     },
     "context7": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
         "CONTEXT7_API_KEY": "YOUR_API_KEY"
       },
-      "enabled": true
+      "tools": ["query-docs", "resolve-library-id"]
     }
   }
 }
