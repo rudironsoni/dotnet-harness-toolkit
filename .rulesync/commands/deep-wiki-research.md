@@ -1,5 +1,6 @@
 ---
 description: Deep research with evidence-based analysis
+targets: ['*']
 ---
 
 # /deep-wiki:research

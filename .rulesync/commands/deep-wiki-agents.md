@@ -1,5 +1,6 @@
 ---
 description: Generate AGENTS.md files for coding agent context
+targets: ['*']
 ---
 
 # /deep-wiki:agents

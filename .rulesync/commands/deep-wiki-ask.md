@@ -1,5 +1,6 @@
 ---
 description: Ask questions about the repository
+targets: ['*']
 ---
 
 # /deep-wiki:ask

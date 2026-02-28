@@ -1,5 +1,6 @@
 ---
 description: Generate single wiki page with dark-mode diagrams
+targets: ['*']
 ---
 
 # /deep-wiki:page

@@ -1,5 +1,6 @@
 ---
 description: Generate Node.js script to convert wiki to Azure DevOps Wiki format
+targets: ['*']
 ---
 
 # /deep-wiki:ado

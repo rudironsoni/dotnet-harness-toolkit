@@ -1,5 +1,6 @@
 ---
 description: Generate structured changelog from git commits
+targets: ['*']
 ---
 
 # /deep-wiki:changelog

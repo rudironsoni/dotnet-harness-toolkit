@@ -1,5 +1,6 @@
 ---
 description: Fast wiki generation (concise, rate-limit-friendly)
+targets: ['*']
 ---
 
 # /deep-wiki:crisp

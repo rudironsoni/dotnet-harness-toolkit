@@ -1,5 +1,6 @@
 ---
 description: Generate complete wiki with pages and onboarding
+targets: ['*']
 ---
 
 # /deep-wiki:generate

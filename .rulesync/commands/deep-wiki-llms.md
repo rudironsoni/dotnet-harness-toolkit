@@ -1,5 +1,6 @@
 ---
 description: Generate llms.txt for LLM-friendly project access
+targets: ['*']
 ---
 
 # /deep-wiki:llms

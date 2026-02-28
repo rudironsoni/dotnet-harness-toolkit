@@ -4,6 +4,7 @@ description:
   Use when building .NET 10 or C# 14 applications; when using minimal APIs, modular monolith patterns, or feature
   folders; when implementing HTTP resilience, Options pattern, Channels, or validation; when seeing outdated patterns
   like old extension method syntax
+targets: ['*']
 license: MIT
 invocable: true
 ---

@@ -1,5 +1,6 @@
 ---
 description: Generate GitHub Actions workflow to deploy wiki
+targets: ['*']
 ---
 
 # /deep-wiki:deploy

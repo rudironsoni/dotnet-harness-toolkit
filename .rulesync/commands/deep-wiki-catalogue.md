@@ -1,5 +1,6 @@
 ---
 description: Generate hierarchical wiki structure as JSON
+targets: ['*']
 ---
 
 # /deep-wiki:catalogue
