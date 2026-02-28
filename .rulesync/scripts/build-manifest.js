@@ -38,9 +38,12 @@ function extractSkillReferences(content) {
   const regex = /\[skill:([a-z0-9-]+)\]/g;
   let match;
 
-  while ((match = regex.exec(content)) !== null) {
-    references.add(match[1]);
-  }
+  do {
+    match = regex.exec(content);
+    if (match) {
+      references.add(match[1]);
+    }
+  } while (match !== null);
 
   return Array.from(references);
 }

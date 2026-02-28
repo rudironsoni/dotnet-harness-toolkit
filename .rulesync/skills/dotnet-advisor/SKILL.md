@@ -249,7 +249,12 @@ Before any .NET guidance, determine the project's target framework:
 - [skill:mcp-health] -- Validate MCP server connectivity and health status
 - [skill:mcp-discovery] -- Discover and catalog available MCP servers from registries
 
-### 21. Skill Management `implemented`
+### 21. Intelligence & Recommendations `implemented`
+
+- [skill:dotnet-harness-recommender] -- AI-powered skill recommendations based on project analysis
+- [skill:dotnet-harness-search] -- Semantic skill search with filtering
+
+### 22. Skill Management `implemented`
 
 - [skill:dotnet-harness-manifest] -- Skill manifest management: dependencies, conflicts, version resolution
 
