@@ -67,6 +67,19 @@ jobs:
           DIST_TOKEN: ${{ secrets.DOTNET_HARNESS_TOOLKIT_GH_TOKEN }}
         run: |
           set -euo pipefail
+          if [[ -z "${DIST_TOKEN}" ]]; then
+            echo "DOTNET_HARNESS_TOOLKIT_GH_TOKEN is required."
+            exit 1
+          fi
+
+          if ! curl -fsS \
+            -H "Authorization: Bearer ${DIST_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/rudironsoni/dotnet-harness-plugin >/dev/null; then
+            echo "DOTNET_HARNESS_TOOLKIT_GH_TOKEN cannot access rudironsoni/dotnet-harness-plugin."
+            exit 1
+          fi
+
           # Mask the token so it never appears in logs
           echo "::add-mask::${DIST_TOKEN}"
           git clone --recurse-submodules \
@@ -167,9 +180,29 @@ jobs:
           done
 
           # 6. Update submodule reference to latest source commit
-          cd "${DIST}/dotnet-harness"
-          git fetch origin main
-          git checkout "$SOURCE_SHA_FULL"
+          git -C "${DIST}" submodule sync --recursive
+          git -C "${DIST}" submodule update --init --recursive
+
+          SUBMODULE_PATH="dotnet-harness"
+          if [[ ! -d "${DIST}/${SUBMODULE_PATH}" ]]; then
+            SUBMODULE_PATH="dotnet-agent-harness"
+          fi
+
+          cd "${DIST}/${SUBMODULE_PATH}"
+          git fetch --force --prune origin +refs/heads/main:refs/remotes/origin/main
+          git fetch --force --prune --unshallow origin || true
+
+          if ! git cat-file -e "${SOURCE_SHA_FULL}^{commit}" 2>/dev/null; then
+            git fetch --force --prune origin "${SOURCE_SHA_FULL}" || true
+          fi
+
+          if git cat-file -e "${SOURCE_SHA_FULL}^{commit}" 2>/dev/null; then
+            git checkout "${SOURCE_SHA_FULL}"
+          else
+            echo "Warning: could not resolve source commit in submodule: ${SOURCE_SHA_FULL}"
+            echo "Falling back to submodule origin/main."
+            git checkout origin/main
+          fi
           cd "${DIST}"
 
       - name: Check for changes
@@ -188,7 +221,7 @@ jobs:
           fi
 
       - name: Create PR on distribution repo
-        if: steps.changes.outputs.HAS_CHANGES == 'true' && (inputs.dry_run != 'true')
+        if: steps.changes.outputs.HAS_CHANGES == 'true' && !inputs.dry_run
         env:
           GH_TOKEN: ${{ secrets.DOTNET_HARNESS_TOOLKIT_GH_TOKEN }}
           SOURCE_SHA: ${{ steps.source_info.outputs.SHA }}
